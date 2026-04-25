@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#efffe3",
+                        "primary-container": "#39ff14",
+                        "on-primary-container": "#053900",
+                        "background": "#0c1609",
+                        "surface-container-low": "#141e11",
+                        "outline-variant": "#3c4b35",
+                        "on-surface-variant": "#baccb0"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Space Grotesk"],
+                        "display-xl": ["Noto Serif"],
+                        "headline-md": ["Noto Serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0c1609; color: #dae6d0; }
+        .bg-noise {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.05;
+        }
+    </style>
+</head>
+<body class="font-body-md bg-background selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+    <nav class="bg-black/90 backdrop-blur-md border-b border-zinc-800 sticky top-0 z-50">
+        <div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+            <a href="index.html" class="text-2xl font-black italic tracking-tighter text-lime-400">Goró da Mansão</a>
+            <div class="hidden md:flex space-x-8 font-serif uppercase tracking-widest text-xs">
+                <a href="index.html" class="text-zinc-500 hover:text-white transition-colors">Home</a>
+                <a href="catalog.html" class="text-zinc-500 hover:text-white transition-colors">Catálogo</a>
+                <a href="mansao.html" class="text-zinc-500 hover:text-white transition-colors">A Mansão</a>
+                <a href="saude.html" class="text-zinc-500 hover:text-white transition-colors">Saúde</a>
+            </div>
+            <div class="flex items-center space-x-6 text-lime-400">
+                <a href="checkout.html" class="material-symbols-outlined hover:text-white transition-all active:scale-90" id="cart-icon">shopping_cart</a>
+                <a href="login.html" class="material-symbols-outlined text-white transition-all active:scale-90">account_circle</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center px-6 py-xxl">
+        <div class="w-full max-w-2xl bg-surface-container-low border border-outline-variant rounded-lg p-8 relative overflow-hidden">
+            <div class="absolute inset-0 bg-noise pointer-events-none"></div>
+            <div class="relative z-10">
+                <h2 class="font-display-xl text-3xl text-primary mb-8 text-center uppercase tracking-widest italic">Criar Conta</h2>
+                
+                <form id="signup-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">Nome Completo</label>
+                        <input id="name" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="Seu nome" type="text"/>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">E-mail</label>
+                        <input id="email" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="ritual@mansao.com" type="email"/>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">Telefone</label>
+                        <input id="phone" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="(00) 00000-0000" type="text"/>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">Senha</label>
+                        <input id="password" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="••••••••" type="password"/>
+                    </div>
+
+                    <!-- Endereço Section -->
+                    <div class="md:col-span-2 pt-4 border-t border-outline-variant/30">
+                        <h3 class="text-xs text-zinc-500 uppercase tracking-[0.2em] mb-6">Informações de Entrega</h3>
+                    </div>
+
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">CEP</label>
+                        <input id="zip" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="00000-000" type="text"/>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">Endereço</label>
+                        <input id="address" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="Rua, Avenida..." type="text"/>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">Número</label>
+                        <input id="number" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="123" type="text"/>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">Complemento</label>
+                        <input id="complement" class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="Apt, Bloco..." type="text"/>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">Cidade</label>
+                        <input id="city" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="São Paulo" type="text"/>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-caps text-on-surface-variant text-xs uppercase tracking-widest">Estado</label>
+                        <input id="state" required class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary-container focus:ring-0 transition-colors py-3 px-0 font-body-md placeholder:text-zinc-700" placeholder="SP" type="text"/>
+                    </div>
+                    
+                    <div class="md:col-span-2 pt-6">
+                        <button type="submit" class="w-full py-4 bg-primary-container text-on-primary-container font-label-caps text-sm tracking-widest uppercase rounded shadow-[0_0_20px_rgba(57,255,20,0.3)] hover:shadow-[0_0_40px_rgba(57,255,20,0.5)] transition-all active:scale-95">
+                            Cadastrar Agora
+                        </button>
+                    </div>
+                </form>
+                
+                <p class="mt-8 text-center text-xs text-on-surface-variant">
+                    Já faz parte do ritual? <a href="login.html" class="text-primary hover:underline">Faça login</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value,
+                zip: document.getElementById('zip').value,
+                address: document.getElementById('address').value,
+                number: document.getElementById('number').value,
+                complement: document.getElementById('complement').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value
+            };
+
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Cadastro realizado com sucesso! Bem-vindo ao ritual.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert(data.error || 'Erro ao realizar cadastro');
+                }
+            } catch (err) {
+                console.error('Error signing up:', err);
+                alert('Erro na conexão com o servidor');
+            }
+        });
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const count = cart.reduce((acc, item) => acc + item.quantity, 0);
+            const cartBtn = document.getElementById('cart-icon');
+            if (cartBtn) {
+                cartBtn.innerHTML = `shopping_cart (${count})`;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+    </script>
+</body>
+</html>

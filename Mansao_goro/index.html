@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,900&amp;family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#071105",
+                    "on-secondary": "#520070",
+                    "on-tertiary-fixed": "#2c1513",
+                    "inverse-surface": "#dae6d0",
+                    "primary-fixed-dim": "#2ae500",
+                    "on-tertiary": "#442927",
+                    "surface-tint": "#2ae500",
+                    "surface-dim": "#0c1609",
+                    "secondary-container": "#d05bff",
+                    "primary-container": "#39ff14",
+                    "on-secondary-container": "#480063",
+                    "surface-variant": "#2d3828",
+                    "on-background": "#dae6d0",
+                    "tertiary-fixed": "#ffdad6",
+                    "inverse-primary": "#106e00",
+                    "on-surface": "#dae6d0",
+                    "tertiary-fixed-dim": "#e7bdb8",
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#ecb1ff",
+                    "on-primary-fixed": "#022100",
+                    "surface-container-highest": "#2d3828",
+                    "tertiary": "#fff8f7",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-low": "#141e11",
+                    "on-surface-variant": "#baccb0",
+                    "surface-bright": "#323c2d",
+                    "outline": "#85967c",
+                    "error": "#ffb4ab",
+                    "surface-container": "#182214",
+                    "on-tertiary-container": "#7a5955",
+                    "primary-fixed": "#79ff5b",
+                    "surface-container-high": "#222d1e",
+                    "primary": "#efffe3",
+                    "background": "#0c1609",
+                    "on-primary": "#053900",
+                    "outline-variant": "#3c4b35",
+                    "error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xxl": "80px",
+                    "xs": "4px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "container-max": "1200px",
+                    "lg": "24px",
+                    "gutter": "24px",
+                    "xl": "48px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Space Grotesk"],
+                    "display-xl": ["Noto Serif"],
+                    "headline-lg": ["Noto Serif"],
+                    "headline-md": ["Noto Serif"],
+                    "body-md": ["Space Grotesk"],
+                    "label-caps": ["Space Grotesk"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "display-xl": ["80px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #0c1609; color: #dae6d0; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .neon-glow-text { text-shadow: 0 0 10px rgba(57, 255, 20, 0.6); }
+        .bg-effervescence {
+            background-image: radial-gradient(circle at 2px 2px, rgba(57, 255, 20, 0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at center, rgba(57, 255, 20, 0.12) 0%, rgba(12, 22, 9, 1) 70%);
+        }
+    </style>
+</head>
+<body class="font-body-md bg-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="bg-black/90 dark:bg-black/95 backdrop-blur-md text-lime-400 dark:text-lime-400 font-serif text-base tracking-wide uppercase docked full-width top-0 sticky z-50 border-b border-zinc-800 dark:border-zinc-900 shadow-[0_4px_20px_rgba(57,255,20,0.1)]">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+<div class="text-2xl font-black italic tracking-tighter text-lime-400 dark:text-lime-400">Goró da Mansão</div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-lime-400 font-bold border-b-2 border-lime-400 pb-1 hover:text-white hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.8)] transition-all active:scale-95 duration-200 ease-in-out" href="#">Home</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-white hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.8)] transition-all active:scale-95 duration-200 ease-in-out" href="catalog.html">Catálogo</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-white hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.8)] transition-all active:scale-95 duration-200 ease-in-out" href="mansao.html">A Mansão</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-white hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.8)] transition-all active:scale-95 duration-200 ease-in-out" href="saude.html">Saúde</a>
+</div>
+<div class="flex items-center gap-4">
+<a href="checkout.html" class="material-symbols-outlined text-lime-400 hover:text-white transition-all">shopping_cart</a>
+<a href="login.html" class="material-symbols-outlined text-lime-400 hover:text-white transition-all">account_circle</a>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative min-h-[921px] flex items-center overflow-hidden hero-gradient bg-effervescence">
+<div class="max-w-screen-2xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full">
+<div class="z-10 order-2 md:order-1">
+<span class="font-label-caps text-label-caps text-primary-container mb-4 block tracking-[0.3em] uppercase">The Ritual of Performance</span>
+<h1 class="font-display-xl text-display-xl text-white mb-6">
+                    Sabor de festa, <br/>
+<span class="italic text-primary-container neon-glow-text">0% estimulantes</span>, <br/>
+                    100% Marcha.
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mb-10">
+                    A primeira bebida desenhada para o lifestyle sem filtros. Hidratação premium com o visual das noites mais exclusivas da Mansão.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<a href="catalog.html" class="bg-primary-container text-center text-on-primary-container font-label-caps py-4 px-10 tracking-widest uppercase hover:shadow-[0_0_30px_rgba(57,255,20,0.4)] transition-all duration-300">
+                        Garantir Meu Goró
+                    </a>
+<a href="catalog.html" class="border border-outline text-center text-white font-label-caps py-4 px-10 tracking-widest uppercase hover:bg-white/5 transition-all">
+                        Ver Coleção
+                    </a>
+</div>
+</div>
+<div class="relative order-1 md:order-2 flex justify-center items-center">
+<div class="absolute w-[400px] h-[400px] bg-primary-container/10 blur-[120px] rounded-full"></div>
+<img alt="Goró da Mansão Bottle" class="relative z-10 h-[500px] md:h-[700px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]" data-alt="Modern 3D render of a sleek black beverage bottle floating in mid-air with neon green liquid accents and professional studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr9yjw0ATeBUrRGeBbuHoHgsWwvhX2j-9ngj7rrDOLor78b_3cKzZPo0sq9W40E_GkiTeSC3wSBskwgDqLlC5wmm6Fe1fSlZieFZYg1j_RFswqxY7ZbiHZd9qFI6cDX3d3JCcVGNXRnL2UidI-LkGzpAenNziTqj94SJoLX2e6NV2WpuJHYwrDZXefS4Ke6OXTQUHzud540YydULRasXtjLF1eqIe7DsIYvosfPk_nA-vg09SMRgA0eWqx7XDbBVdqtqfaN-1856M"/>
+<!-- Floating HUD elements -->
+<div class="absolute top-10 right-10 border border-primary-container/30 bg-black/40 backdrop-blur-md p-4 rounded-lg hidden lg:block">
+<p class="font-label-caps text-[10px] text-primary-container">PERFORMANCE_LEVEL</p>
+<p class="font-display-xl text-[24px] text-white">MAX_MARCHA</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Social Proof Section: 'Sem Corte' Lifestyle -->
+<section class="py-xxl bg-surface-container-low border-y border-zinc-900">
+<div class="max-w-screen-2xl mx-auto px-6">
+<div class="flex flex-col md:flex-row justify-between items-end mb-xl gap-6">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-white mb-2">Sem Corte. Sem Filtro.</h2>
+<p class="font-body-md text-on-surface-variant italic">A realidade da Mansão Maromba por quem vive o ritual.</p>
+</div>
+<div class="flex gap-2">
+<button onclick="alert('Explorando o ritual anterior...')" class="w-12 h-12 flex items-center justify-center border border-outline text-white hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button onclick="alert('Próximo ritual na Mansão...')" class="w-12 h-12 flex items-center justify-center border border-outline text-white hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Testimonial 1 -->
+<div class="group relative overflow-hidden bg-surface-container-highest border border-outline-variant p-sm">
+<img alt="Athlete Lifestyle" class="w-full aspect-[3/4] object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="Intense close-up of a muscular athlete in a dark urban gym, high contrast lighting, sweat glinting under neon green lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWn-RGNukHpvnfRKcYtLAJmiBe4tXgAv_WkGooCjFjVKnUukQv2yNmwF1rC123l8OgOFAQmB7qy_y1djd_oNZJgXTIt9LjqT5ly-rKL7PF5BRLabiYxEIAVSSwkLABdhLV8pgynGdkx4cODEnHU_wkTbxAm6QxJpSRWqRF4xtZm1jdSP1hA71wTUbZ5oiG0_R_nAdAptS7Wh_Htv9QBjLl4Q9rwRUeqnXA6H_t-YWiH8jLmY-KNYGqrUXyKuzlhf6a_dxJRLap4j8"/>
+<div class="absolute bottom-0 left-0 right-0 p-lg bg-gradient-to-t from-black/90 to-transparent">
+<p class="font-body-md text-white mb-4 italic">"O Goró é o que faltava pra manter o foco na dieta sem perder a vibe da noite. Marcha no progresso."</p>
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 bg-primary-container rounded-full flex items-center justify-center font-bold text-black text-xs">BT</div>
+<div>
+<p class="font-label-caps text-white">Big Thales</p>
+<p class="text-[10px] text-primary-container uppercase">Team Mansão</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Testimonial 2 -->
+<div class="group relative overflow-hidden bg-surface-container-highest border border-outline-variant p-sm">
+<img alt="Party Lifestyle" class="w-full aspect-[3/4] object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="Blurred background of a high-end luxury nightclub with deep purple and green ambient lights, sophisticated atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGrkGQ2l_t4BIueAC6fg4XqusZnv_8Qee4T88KHlprwa9s7ENJ_Lnbwbw5ZcEp7Il7BA4r5YdNbEEnbNopQDgzIfXgyMGY2kNLDWqeyV8zWSmv9j8RLP-2ij3RKkN1cq0sLKRj-uJLTCSTeaiAPOkfS-ctgS9NDdfnT9Ggs-JPM3db68MTKoaF3fEO0hfLnEjlIrNdhNbmspCiJK_3XOU1AyYbXqZE1iilU_T1e-iLJgNYpmvUcn4pNbR0HIp-ZtBdvnMv9TNkpx8"/>
+<div class="absolute bottom-0 left-0 right-0 p-lg bg-gradient-to-t from-black/90 to-transparent">
+<p class="font-body-md text-white mb-4 italic">"Acordar no dia seguinte sem aquela sensação de 'lixo' dos energéticos. Hidratação é a chave."</p>
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 bg-secondary-container rounded-full flex items-center justify-center font-bold text-black text-xs">GA</div>
+<div>
+<p class="font-label-caps text-white">Gabi Alpha</p>
+<p class="text-[10px] text-secondary-container uppercase">Digital Influencer</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Testimonial 3 -->
+<div class="group relative overflow-hidden bg-surface-container-highest border border-outline-variant p-sm">
+<img alt="Gym Lifestyle" class="w-full aspect-[3/4] object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="A shelf of heavy dumbbells in a professional bodybuilding gym, atmospheric dark lighting with emerald highlights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRaFfglI511ybiY4BQDhtp5jrobVMJbvzGtPWutb-uNRhqc23yRtBlylG20BPomSqh1BYVUuLWaozfAO2pmySQ30x0_55Ow7-xjP23elkon744D7g64bJG0l4jynuVig9XYZhqYfZ5uiZbUhU5Ezsecht7ifBKZ4qgKVBX6KKimxsYbhq5AvX4PiCtLuZUQ57dclJVvAK-4kwupcJQJPlXXjf0EEn9aPFkWGQ_BTA9eouqG_N-GWqRQ18rMenDgq2_IH9AsIBPSZA"/>
+<div class="absolute bottom-0 left-0 right-0 p-lg bg-gradient-to-t from-black/90 to-transparent">
+<p class="font-body-md text-white mb-4 italic">"Performance real não precisa de tremedeira. Goró é o ritual de quem sabe o que quer."</p>
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 bg-primary-container rounded-full flex items-center justify-center font-bold text-black text-xs">RE</div>
+<div>
+<p class="font-label-caps text-white">Renatão</p>
+<p class="text-[10px] text-primary-container uppercase">Treinador Head</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Infographic Section: Safety vs Danger -->
+<section class="py-xxl relative overflow-hidden">
+<div class="max-w-screen-2xl mx-auto px-6">
+<div class="text-center mb-xl">
+<span class="font-label-caps text-label-caps text-primary-container tracking-widest uppercase mb-4 block">Ciência e Consciência</span>
+<h2 class="font-headline-lg text-headline-lg text-white">O Peso da Escolha</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<!-- Danger Side -->
+<div class="bg-black/40 border border-error-container/20 p-xl relative">
+<div class="absolute -top-4 -left-4 bg-error-container text-white px-4 py-2 font-label-caps">MIX PERIGOSO</div>
+<div class="space-y-8">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-error text-4xl">skull</span>
+<div>
+<h4 class="font-headline-md text-white text-xl mb-1">Taquicardia Mascarada</h4>
+<p class="text-on-surface-variant font-body-md">Cafeína + Álcool enganam seu cérebro, forçando o coração ao limite sem você perceber.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 opacity-70">
+<span class="material-symbols-outlined text-error text-4xl">opacity</span>
+<div>
+<h4 class="font-headline-md text-white text-xl mb-1">Desidratação Crítica</h4>
+<p class="text-on-surface-variant font-body-md">Perda acelerada de eletrólitos essenciais para a recuperação muscular.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 opacity-50">
+<span class="material-symbols-outlined text-error text-4xl">warning</span>
+<div>
+<h4 class="font-headline-md text-white text-xl mb-1">Crash Metabólico</h4>
+<p class="text-on-surface-variant font-body-md">O famoso 'rebote' que destrói seu treino no dia seguinte.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Goró Side -->
+<div class="bg-primary-container/5 border border-primary-container/30 p-xl relative shadow-[0_0_50px_rgba(57,255,20,0.05)]">
+<div class="absolute -top-4 -right-4 bg-primary-container text-on-primary-container px-4 py-2 font-label-caps">GORÓ DA MANSÃO</div>
+<div class="space-y-8">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary-container text-4xl">bolt</span>
+<div>
+<h4 class="font-headline-md text-white text-xl mb-1">Foco Sem Tremedeira</h4>
+<p class="text-on-surface-variant font-body-md">Zero cafeína. Zero taurina. Apenas o prazer do ritual com clareza mental.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary-container text-4xl">water_drop</span>
+<div>
+<h4 class="font-headline-md text-white text-xl mb-1">Recarga de Eletrólitos</h4>
+<p class="text-on-surface-variant font-body-md">Potássio e Magnésio para manter a hidratação intracelular no ápice.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary-container text-4xl">verified</span>
+<div>
+<h4 class="font-headline-md text-white text-xl mb-1">Harm Reduction Real</h4>
+<p class="text-on-surface-variant font-body-md">Desenvolvido para acompanhar sua noite sem comprometer seu shape.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-xl text-center">
+<p class="font-label-caps text-outline italic">#RespeiteSeuCorpo #FoqueNoRitual</p>
+</div>
+</div>
+</section>
+<!-- Bento Grid Section -->
+<section class="py-xxl bg-black">
+<div class="max-w-screen-2xl mx-auto px-6">
+<div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
+<a href="mansao.html" class="md:col-span-2 md:row-span-2 border border-zinc-800 bg-surface-container relative group overflow-hidden block">
+<img alt="Training Scene" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000" data-alt="Cinematic shot of a heavy barbell being lifted in a dark gym, chalk dust in the air, backlit with neon green light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS6jLgLwVe9JwQz0li7VElciOt4pJaGxL9eNJNB4m4EtFrT75oTtQY3JrRoXksvRDHiPgP2uCUW6GPrxRf0nWnihWEnFU8Ra0ZsRLySneTymQVDQlbtCYL7mQ_mfHln7IIOU_rMqXwp_y3G5liL48ZmYfchjFAeEGBvwmgfU_P4G2IlUZPoR4TaXEPqREM40XU1y9zl0SbdTxt3HY5v-U001qz9R8N2_Zdwm9wljGqj1vpKFnE139GYvtravAykHbeAy4nIIez-do"/>
+<div class="relative z-10 p-xl flex flex-col h-full justify-end">
+<span class="font-label-caps text-primary-container mb-2">THE PERFORMANCE</span>
+<h3 class="font-display-xl text-headline-lg text-white">O Amanhã é o que importa.</h3>
+</div>
+</a>
+<div class="md:col-span-2 border border-zinc-800 bg-surface-container-high p-lg flex flex-col justify-center">
+<h4 class="font-headline-md text-white mb-2">Ingredientes Premium</h4>
+<p class="text-on-surface-variant font-body-md">Água vulcânica, blend de sais minerais e aroma botânico exclusivo Ghia-Inspired.</p>
+</div>
+<div class="border border-zinc-800 bg-surface-container-highest p-lg flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary-container text-4xl mb-4">eco</span>
+<p class="font-label-caps text-white">100% Reciclável</p>
+</div>
+<div class="border border-zinc-800 bg-primary-container p-lg flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-on-primary-container text-4xl mb-4">local_shipping</span>
+<p class="font-label-caps text-on-primary-container">Envio Imediato</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-zinc-950 dark:bg-black text-lime-400 dark:text-lime-400 font-serif text-xs tracking-widest uppercase full-width border-t-2 border-zinc-900">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 px-10 py-16 max-w-screen-2xl mx-auto">
+<div class="md:col-span-1">
+<div class="text-xl font-bold text-zinc-100 dark:text-zinc-100 mb-6">GORÓ DA MANSÃO</div>
+<p class="text-zinc-600 dark:text-zinc-700 normal-case mb-4 font-body-md">Bebida de performance inspirada na cultura da Mansão Maromba. Foco na saúde, sem abrir mão do ritual.</p>
+</div>
+<div>
+<h5 class="text-white mb-6">Explorar</h5>
+<ul class="space-y-4">
+<li><a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors opacity-100 hover:opacity-80" href="catalog.html">Catálogo</a></li>
+<li><a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors opacity-100 hover:opacity-80" href="mansao.html">A Mansão</a></li>
+<li><a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors opacity-100 hover:opacity-80" href="saude.html">Saúde</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-white mb-6">Ajuda</h5>
+<ul class="space-y-4">
+<li><a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors" href="#">Termos</a></li>
+<li><a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors" href="#">Privacidade</a></li>
+<li><a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors" href="#">FAQ</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-white mb-6">Newsletter</h5>
+<div class="flex border-b border-zinc-800 pb-2">
+<input id="newsletter-email" class="bg-transparent border-none focus:ring-0 text-white w-full placeholder:text-zinc-800" placeholder="SEU E-MAIL" type="email"/>
+<button onclick="subscribeNewsletter()" class="material-symbols-outlined">east</button>
+</div>
+</div>
+</div>
+<div class="border-t border-zinc-900 py-8 px-10 max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-center">
+<span class="text-zinc-600 dark:text-zinc-700">© 2024 GORÓ DA MANSÃO. PERFORMANCE &amp; RITUAL.</span>
+<a href="admin.html" class="text-[8px] text-zinc-900 hover:text-zinc-700 transition-colors uppercase tracking-[0.3em]">System Admin</a>
+</div>
+</footer>
+        }
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+    </script>
+</body></html>

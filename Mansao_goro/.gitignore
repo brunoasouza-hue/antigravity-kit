@@ -1,0 +1,5 @@
+node_modules/
+mansao_goro.db
+scratch/
+.DS_Store
+*.log

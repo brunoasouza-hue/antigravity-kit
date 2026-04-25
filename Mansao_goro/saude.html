@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#39ff14",
+                        "on-primary-container": "#053900",
+                        "background": "#0c1609",
+                        "surface-container-high": "#222d1e",
+                        "error": "#ffb4ab"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Space Grotesk"],
+                        "headline-lg": ["Noto Serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0c1609; color: #dae6d0; }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(57, 255, 20, 0.05) 0%, rgba(12, 22, 9, 1) 100%);
+            border: 1px solid rgba(57, 255, 20, 0.1);
+        }
+    </style>
+</head>
+<body class="font-body-md bg-background min-h-screen">
+    <nav class="bg-black/90 backdrop-blur-md border-b border-zinc-800 sticky top-0 z-50">
+        <div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+            <a href="index.html" class="text-2xl font-black italic tracking-tighter text-lime-400">Goró da Mansão</a>
+            <div class="hidden md:flex space-x-8 font-serif uppercase tracking-widest text-xs">
+                <a href="index.html" class="text-zinc-500 hover:text-white transition-colors">Home</a>
+                <a href="catalog.html" class="text-zinc-500 hover:text-white transition-colors">Catálogo</a>
+                <a href="mansao.html" class="text-zinc-500 hover:text-white transition-colors">A Mansão</a>
+                <a href="saude.html" class="text-lime-400 font-bold">Saúde</a>
+            </div>
+            <div class="flex items-center space-x-6 text-lime-400">
+                <a href="checkout.html" class="material-symbols-outlined hover:text-white transition-all active:scale-90" id="cart-icon">shopping_cart</a>
+                <a href="login.html" class="material-symbols-outlined hover:text-white transition-all active:scale-90">account_circle</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-screen-xl mx-auto px-6 py-xxl">
+        <div class="text-center mb-xxl">
+            <h1 class="font-headline-lg text-6xl text-white mb-6 uppercase tracking-tighter">Ciência da <span class="italic text-primary-container">Alta Performance</span></h1>
+            <p class="text-on-surface-variant max-w-2xl mx-auto text-lg">
+                Substituímos o caos dos estimulantes artificiais pelo equilíbrio dos eletrólitos. Porque o verdadeiro shape se constrói com inteligência.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-xxl">
+            <div class="stat-card p-8 rounded-lg">
+                <span class="material-symbols-outlined text-primary-container text-4xl mb-4">bolt</span>
+                <h3 class="text-white font-bold text-xl mb-2">Zero Crash</h3>
+                <p class="text-sm text-zinc-500">Sem cafeína ou taurina. Seu sistema nervoso permanece em homeostase enquanto você celebra.</p>
+            </div>
+            <div class="stat-card p-8 rounded-lg">
+                <span class="material-symbols-outlined text-primary-container text-4xl mb-4">water_drop</span>
+                <h3 class="text-white font-bold text-xl mb-2">Hidratação Real</h3>
+                <p class="text-sm text-zinc-500">Blend de Potássio e Magnésio para reposição eletrolítica instantânea.</p>
+            </div>
+            <div class="stat-card p-8 rounded-lg">
+                <span class="material-symbols-outlined text-primary-container text-4xl mb-4">verified</span>
+                <h3 class="text-white font-bold text-xl mb-2">Harm Reduction</h3>
+                <p class="text-sm text-zinc-500">Fórmulas botânicas inspiradas em tradições milenares, adaptadas para o futuro.</p>
+            </div>
+        </div>
+
+        <section class="bg-surface-container-high border border-zinc-800 p-12 rounded-2xl relative overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="font-headline-lg text-4xl text-white mb-6">O Mix Perigoso</h2>
+                    <p class="text-on-surface-variant mb-8 leading-relaxed">
+                        A maioria das bebidas noturnas mascara a exaustão com doses cavalares de cafeína. O resultado? Taquicardia, desidratação e um treino perdido no dia seguinte.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-center gap-3 text-error">
+                            <span class="material-symbols-outlined">warning</span>
+                            <span>Aumento da pressão arterial mascarado</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-error">
+                            <span class="material-symbols-outlined">warning</span>
+                            <span>Destruição da síntese proteica</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-black/50 border border-primary-container/20 p-8 rounded-xl">
+                    <h3 class="text-primary-container font-bold mb-4 uppercase tracking-widest">A Solução Goró</h3>
+                    <p class="text-sm italic text-zinc-400 mb-6">"Desenvolvemos um ritual que respeita seu tempo biológico. Beba, divirta-se e acorde pronto para o agachamento às 6h."</p>
+                    <div class="flex gap-4">
+                        <div class="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-primary-container w-[100%] shadow-[0_0_10px_#39ff14]"></div>
+                        </div>
+                        <span class="text-[10px] text-primary-container">100% SAFE</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black py-16 border-t border-zinc-900 text-center">
+        <div class="flex justify-center space-x-8 mb-8 text-xs tracking-widest uppercase font-serif">
+            <a href="catalog.html" class="text-zinc-500 hover:text-white">Loja</a>
+            <a href="mansao.html" class="text-zinc-500 hover:text-white">A Mansão</a>
+            <a href="saude.html" class="text-zinc-500 hover:text-white">Saúde</a>
+        </div>
+        <p class="font-serif text-xs tracking-widest text-zinc-700">© 2024 GORÓ DA MANSÃO. PERFORMANCE & RITUAL.</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

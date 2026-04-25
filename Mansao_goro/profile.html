@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#39ff14",
+                        "background": "#0c1609",
+                        "surface-container-low": "#141e11",
+                        "outline-variant": "#3c4b35"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Space Grotesk"],
+                        "display-xl": ["Noto Serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0c1609; color: #dae6d0; }
+        .membership-card {
+            background: linear-gradient(135deg, #141e11 0%, #0c1609 100%);
+            border: 1px solid #3c4b35;
+            position: relative;
+            overflow: hidden;
+        }
+        .membership-card::after {
+            content: 'INNER CIRCLE';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 80px;
+            font-weight: 900;
+            color: #39ff14;
+            opacity: 0.03;
+            transform: rotate(-15deg);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="font-body-md bg-background min-h-screen flex flex-col">
+    <nav class="bg-black/90 backdrop-blur-md border-b border-zinc-800 sticky top-0 z-50">
+        <div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+            <a href="index.html" class="text-2xl font-black italic tracking-tighter text-lime-400">Goró da Mansão</a>
+            <div class="flex items-center space-x-6 text-lime-400">
+                <button onclick="logout()" class="text-xs uppercase tracking-widest hover:text-white transition-colors">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-screen-xl mx-auto px-6 py-12 w-full grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <!-- Sidebar Profile -->
+        <aside class="lg:col-span-5 space-y-8">
+            <div class="membership-card p-8 rounded-2xl shadow-2xl relative">
+                <div class="flex justify-between items-start mb-8">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-primary-container font-bold tracking-[0.3em] uppercase mb-2">Member Profile</span>
+                        <h2 id="display-name" class="font-display-xl text-3xl text-white uppercase tracking-wider italic">Membro</h2>
+                    </div>
+                    <button onclick="toggleEdit()" id="edit-btn" class="text-zinc-500 hover:text-primary-container transition-colors">
+                        <span class="material-symbols-outlined">edit_note</span>
+                    </button>
+                </div>
+
+                <!-- View Mode -->
+                <div id="view-mode" class="space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <span class="text-[10px] text-zinc-600 uppercase tracking-widest block">E-mail</span>
+                            <p id="view-email" class="text-sm text-zinc-300 truncate"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[10px] text-zinc-600 uppercase tracking-widest block">Telefone</span>
+                            <p id="view-phone" class="text-sm text-zinc-300"></p>
+                        </div>
+                    </div>
+                    <div class="space-y-1 border-t border-outline-variant/20 pt-4">
+                        <span class="text-[10px] text-zinc-600 uppercase tracking-widest block">Endereço de Entrega</span>
+                        <p id="view-full-address" class="text-sm text-zinc-300 leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <!-- Edit Mode (Hidden by default) -->
+                <form id="edit-form" class="hidden space-y-4 pt-4 border-t border-outline-variant/20">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-zinc-600 uppercase tracking-widest">Nome Completo</label>
+                            <input id="edit-name" class="w-full bg-black/50 border border-zinc-800 p-2 rounded text-xs focus:border-primary-container outline-none" type="text">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-zinc-600 uppercase tracking-widest">Telefone</label>
+                            <input id="edit-phone" class="w-full bg-black/50 border border-zinc-800 p-2 rounded text-xs focus:border-primary-container outline-none" type="text">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-zinc-600 uppercase tracking-widest">CEP</label>
+                                <input id="edit-zip" class="w-full bg-black/50 border border-zinc-800 p-2 rounded text-xs focus:border-primary-container outline-none" type="text">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-zinc-600 uppercase tracking-widest">Número</label>
+                                <input id="edit-number" class="w-full bg-black/50 border border-zinc-800 p-2 rounded text-xs focus:border-primary-container outline-none" type="text">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-zinc-600 uppercase tracking-widest">Endereço</label>
+                            <input id="edit-address" class="w-full bg-black/50 border border-zinc-800 p-2 rounded text-xs focus:border-primary-container outline-none" type="text">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-zinc-600 uppercase tracking-widest">Cidade</label>
+                                <input id="edit-city" class="w-full bg-black/50 border border-zinc-800 p-2 rounded text-xs focus:border-primary-container outline-none" type="text">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-zinc-600 uppercase tracking-widest">Estado</label>
+                                <input id="edit-state" class="w-full bg-black/50 border border-zinc-800 p-2 rounded text-xs focus:border-primary-container outline-none" type="text">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 pt-4">
+                        <button type="submit" class="flex-grow py-3 bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-widest rounded shadow-[0_0_15px_rgba(57,255,20,0.3)]">Salvar Alterações</button>
+                        <button type="button" onclick="toggleEdit()" class="px-4 border border-zinc-800 text-zinc-500 rounded text-xs">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main Content: History -->
+        <section class="lg:col-span-7 space-y-8">
+            <h3 class="font-display-xl text-2xl text-white uppercase tracking-widest italic">Histórico de Rituais</h3>
+            
+            <div id="order-history" class="space-y-4">
+                <!-- Orders will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let user = JSON.parse(localStorage.getItem('user'));
+        let isEditing = false;
+
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
+        function toggleEdit() {
+            isEditing = !isEditing;
+            document.getElementById('view-mode').classList.toggle('hidden', isEditing);
+            document.getElementById('edit-form').classList.toggle('hidden', !isEditing);
+            document.getElementById('edit-btn').classList.toggle('text-primary-container', isEditing);
+            
+            if (isEditing) {
+                // Populate form
+                document.getElementById('edit-name').value = user.name;
+                document.getElementById('edit-phone').value = user.phone || '';
+                document.getElementById('edit-zip').value = user.zip || '';
+                document.getElementById('edit-address').value = user.address || '';
+                document.getElementById('edit-number').value = user.number || '';
+                document.getElementById('edit-city').value = user.city || '';
+                document.getElementById('edit-state').value = user.state || '';
+            }
+        }
+
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const updatedData = {
+                name: document.getElementById('edit-name').value,
+                phone: document.getElementById('edit-phone').value,
+                zip: document.getElementById('edit-zip').value,
+                address: document.getElementById('edit-address').value,
+                number: document.getElementById('edit-number').value,
+                city: document.getElementById('edit-city').value,
+                state: document.getElementById('edit-state').value,
+                complement: user.complement || ''
+            };
+
+            try {
+                const res = await fetch(`/api/users/${user.email}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                });
+
+                if (res.ok) {
+                    user = { ...user, ...updatedData };
+                    localStorage.setItem('user', JSON.stringify(user));
+                    alert('Perfil atualizado com sucesso!');
+                    isEditing = false;
+                    loadProfile();
+                    document.getElementById('view-mode').classList.remove('hidden');
+                    document.getElementById('edit-form').classList.add('hidden');
+                }
+            } catch (err) {
+                alert('Erro ao atualizar perfil.');
+            }
+        });
+
+        function loadProfile() {
+            document.getElementById('display-name').innerText = user.name;
+            document.getElementById('view-email').innerText = user.email;
+            document.getElementById('view-phone').innerText = user.phone || 'Não informado';
+            
+            const fullAddress = user.address ? 
+                `${user.address}, ${user.number}${user.complement ? ' - ' + user.complement : ''}. ${user.city}/${user.state}. CEP: ${user.zip}` : 
+                'Endereço não cadastrado.';
+            
+            document.getElementById('view-full-address').innerText = fullAddress;
+            
+            fetchOrders();
+        }
+
+        async function fetchOrders() {
+            try {
+                const res = await fetch(`/api/orders/${user.email}`);
+                const orders = await res.json();
+                const container = document.getElementById('order-history');
+                
+                if (orders.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-12 border border-zinc-900 rounded-xl text-center">
+                            <p class="text-zinc-600 uppercase tracking-widest text-xs">Nenhum ritual realizado ainda.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = orders.map(o => `
+                    <div class="p-6 bg-surface-container-low border border-zinc-900 rounded-xl hover:border-primary-container/30 transition-all group">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="text-[10px] text-primary-container font-bold uppercase tracking-widest">PEDIDO #${o.id}</span>
+                                <h4 class="text-zinc-300 text-sm mt-1">${new Date(o.created_at).toLocaleDateString('pt-BR')}</h4>
+                            </div>
+                            <span class="text-[10px] bg-zinc-900 text-zinc-400 px-3 py-1 rounded-full uppercase tracking-tighter">${o.status}</span>
+                        </div>
+                        <p class="text-xs text-zinc-500 mb-4 line-clamp-1">${o.items_summary}</p>
+                        <div class="flex justify-between items-center pt-4 border-t border-zinc-800/50">
+                            <span class="text-zinc-600 text-xs">Total do Ritual</span>
+                            <span class="text-white font-bold">R$ ${o.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProfile);
+    </script>
+</body>
+</html>

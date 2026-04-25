@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#39ff14",
+                        "background": "#0c1609",
+                        "surface-container-high": "#182214",
+                        "on-surface-variant": "#baccb0",
+                        "outline-variant": "#3c4b35"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Space Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0c1609; color: #dae6d0; }
+        .admin-card { background: #141e11; border: 1px solid #3c4b35; }
+        .btn-neon { 
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.4);
+            background-color: #39ff14;
+            color: #053900;
+        }
+    </style>
+</head>
+<body class="font-body-md bg-background min-h-screen">
+    <nav class="bg-black border-b border-zinc-800 px-6 py-4">
+        <div class="max-w-screen-2xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <span class="text-primary-container font-black italic text-xl tracking-tighter">ADMIN // GORÓ MANSÃO</span>
+                <span class="text-[10px] bg-primary-container/20 text-primary-container px-2 py-1 rounded">V1.0.42</span>
+            </div>
+            <a href="index.html" class="text-xs text-zinc-500 hover:text-white uppercase tracking-widest">Sair do Painel</a>
+        </div>
+    </nav>
+
+    <main class="max-w-screen-2xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Form Section -->
+        <aside class="lg:col-span-4 space-y-6">
+            <div class="admin-card p-8 rounded-lg">
+                <h2 id="form-title" class="text-xl text-white font-bold mb-6 uppercase tracking-widest">Novo Produto</h2>
+                <form id="product-form" class="space-y-4">
+                    <input type="hidden" id="product-id">
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-zinc-500 uppercase tracking-widest">Nome do Produto</label>
+                        <input id="name" required class="w-full bg-black/50 border border-zinc-800 p-3 rounded text-sm focus:border-primary-container outline-none" type="text" placeholder="Ex: Tropical Haze"/>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-zinc-500 uppercase tracking-widest">Preço (R$)</label>
+                        <input id="price" required class="w-full bg-black/50 border border-zinc-800 p-3 rounded text-sm focus:border-primary-container outline-none" type="number" step="0.01" placeholder="189.00"/>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-zinc-500 uppercase tracking-widest">Categoria</label>
+                        <select id="category" class="w-full bg-black/50 border border-zinc-800 p-3 rounded text-sm focus:border-primary-container outline-none text-zinc-400">
+                            <option value="BEBIDAS">BEBIDAS</option>
+                            <option value="KITS">KITS</option>
+                            <option value="MERCH">MERCH</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-zinc-500 uppercase tracking-widest">URL da Imagem</label>
+                        <input id="image" required class="w-full bg-black/50 border border-zinc-800 p-3 rounded text-sm focus:border-primary-container outline-none" type="text" placeholder="https://..."/>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-zinc-500 uppercase tracking-widest">Descrição</label>
+                        <textarea id="description" required class="w-full bg-black/50 border border-zinc-800 p-3 rounded text-sm focus:border-primary-container outline-none h-24" placeholder="Detalhes do ritual..."></textarea>
+                    </div>
+                    <div class="flex gap-2 pt-4">
+                        <button type="submit" class="flex-grow btn-neon border border-primary-container text-primary-container py-3 rounded text-xs font-bold uppercase tracking-widest">
+                            Salvar Produto
+                        </button>
+                        <button type="button" onclick="resetForm()" class="px-4 border border-zinc-800 text-zinc-600 hover:text-white rounded">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </aside>
+
+        <!-- List Section -->
+        <section class="lg:col-span-8">
+            <div class="admin-card rounded-lg overflow-hidden">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-black/50 text-[10px] text-zinc-500 uppercase tracking-widest">
+                        <tr>
+                            <th class="p-6">IMG</th>
+                            <th class="p-6">Produto</th>
+                            <th class="p-6">Categoria</th>
+                            <th class="p-6">Preço</th>
+                            <th class="p-6 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list" class="divide-y divide-zinc-900">
+                        <!-- Products will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let isEditing = false;
+
+        async function loadProducts() {
+            const res = await fetch('/api/products');
+            const products = await res.json();
+            const list = document.getElementById('product-list');
+            list.innerHTML = products.map(p => `
+                <tr class="hover:bg-primary-container/5 transition-colors">
+                    <td class="p-6"><img src="${p.image}" class="w-10 h-10 object-contain bg-black p-1 rounded"></td>
+                    <td class="p-6">
+                        <div class="font-bold text-white">${p.name}</div>
+                        <div class="text-[10px] text-zinc-600 truncate max-w-[200px]">${p.description}</div>
+                    </td>
+                    <td class="p-6"><span class="text-[10px] border border-zinc-800 px-2 py-1 rounded">${p.category}</span></td>
+                    <td class="p-6 text-primary-container font-bold">R$ ${p.price.toFixed(2)}</td>
+                    <td class="p-6 text-right space-x-2">
+                        <button onclick="editProduct(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="text-zinc-500 hover:text-primary-container transition-colors">
+                            <span class="material-symbols-outlined text-lg">edit</span>
+                        </button>
+                        <button onclick="deleteProduct(${p.id})" class="text-zinc-500 hover:text-red-500 transition-colors">
+                            <span class="material-symbols-outlined text-lg">delete</span>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('product-id').value;
+            const product = {
+                name: document.getElementById('name').value,
+                price: parseFloat(document.getElementById('price').value),
+                category: document.getElementById('category').value,
+                image: document.getElementById('image').value,
+                description: document.getElementById('description').value
+            };
+
+            const url = isEditing ? `/api/products/${id}` : '/api/products';
+            const method = isEditing ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(product)
+                });
+
+                if (res.ok) {
+                    alert(isEditing ? 'Produto atualizado!' : 'Produto criado!');
+                    resetForm();
+                    loadProducts();
+                }
+            } catch (err) {
+                alert('Erro ao salvar produto');
+            }
+        });
+
+        function editProduct(p) {
+            isEditing = true;
+            document.getElementById('form-title').innerText = 'Editar Produto';
+            document.getElementById('product-id').value = p.id;
+            document.getElementById('name').value = p.name;
+            document.getElementById('price').value = p.price;
+            document.getElementById('category').value = p.category;
+            document.getElementById('image').value = p.image;
+            document.getElementById('description').value = p.description;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Deseja deletar este ritual?')) return;
+            const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+            if (res.ok) loadProducts();
+        }
+
+        function resetForm() {
+            isEditing = false;
+            document.getElementById('form-title').innerText = 'Novo Produto';
+            document.getElementById('product-form').reset();
+            document.getElementById('product-id').value = '';
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>

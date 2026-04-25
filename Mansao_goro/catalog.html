@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;600;700&amp;family=Space+Grotesk:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#071105",
+                        "on-secondary": "#520070",
+                        "on-tertiary-fixed": "#2c1513",
+                        "inverse-surface": "#dae6d0",
+                        "primary-fixed-dim": "#2ae500",
+                        "on-tertiary": "#442927",
+                        "surface-tint": "#2ae500",
+                        "surface-dim": "#0c1609",
+                        "secondary-container": "#d05bff",
+                        "primary-container": "#39ff14",
+                        "on-secondary-container": "#480063",
+                        "surface-variant": "#2d3828",
+                        "on-background": "#dae6d0",
+                        "tertiary-fixed": "#ffdad6",
+                        "inverse-primary": "#106e00",
+                        "on-surface": "#dae6d0",
+                        "tertiary": "#fff8f7",
+                        "on-primary-fixed-variant": "#095300",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#141e11",
+                        "on-surface-variant": "#baccb0",
+                        "surface-bright": "#323c2d",
+                        "outline": "#85967c",
+                        "on-secondary-fixed": "#320046",
+                        "error": "#ffb4ab",
+                        "surface-container": "#182214",
+                        "on-tertiary-container": "#7a5955",
+                        "primary-fixed": "#79ff5b",
+                        "surface-container-high": "#222d1e",
+                        "primary": "#efffe3",
+                        "background": "#0c1609",
+                        "on-primary": "#053900",
+                        "outline-variant": "#3c4b35",
+                        "error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xxl": "80px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "container-max": "1200px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "xl": "48px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Space Grotesk"],
+                        "display-xl": ["Noto Serif"],
+                        "headline-lg": ["Noto Serif"],
+                        "headline-md": ["Noto Serif"],
+                        "body-md": ["Space Grotesk"],
+                        "label-caps": ["Space Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display-xl": ["80px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                        "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            updateCartCount();
+        });
+    </script>
+    <script src="js/app.js"></script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bloom-green:hover {
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.4);
+        }
+        .bloom-purple:hover {
+            box-shadow: 0 0 20px rgba(208, 91, 255, 0.4);
+        }
+        .text-glow {
+            text-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="bg-black/90 dark:bg-black/95 backdrop-blur-md border-b border-zinc-800 dark:border-zinc-900 docked full-width top-0 sticky z-50 shadow-[0_4px_20px_rgba(57,255,20,0.1)]">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+<div class="text-2xl font-black italic tracking-tighter text-lime-400 dark:text-lime-400">Goró da Mansão</div>
+<nav class="hidden md:flex items-center space-x-8 font-serif text-base tracking-wide uppercase">
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-white hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.8)] transition-all active:scale-95 duration-200 ease-in-out" href="index.html">Home</a>
+<a class="text-lime-400 font-bold border-b-2 border-lime-400 pb-1 hover:text-white hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.8)] transition-all active:scale-95 duration-200 ease-in-out" href="#">Catálogo</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-white hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.8)] transition-all active:scale-95 duration-200 ease-in-out" href="mansao.html">A Mansão</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-white hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.8)] transition-all active:scale-95 duration-200 ease-in-out" href="saude.html">Saúde</a>
+</nav>
+<div class="flex items-center space-x-6 text-lime-400">
+<a href="checkout.html" class="material-symbols-outlined hover:text-white transition-all active:scale-90" data-icon="shopping_cart">shopping_cart</a>
+<a href="login.html" class="material-symbols-outlined hover:text-white transition-all active:scale-90" data-icon="account_circle">account_circle</a>
+</div>
+</div>
+</header>
+<main class="max-w-screen-2xl mx-auto px-6 md:px-10 py-xxl">
+<!-- Hero Section -->
+<section class="mb-xxl relative">
+<div class="flex flex-col md:flex-row justify-between items-end gap-md">
+<div class="max-w-3xl">
+<span class="font-label-caps text-label-caps text-primary-fixed-dim uppercase tracking-widest mb-md block">High-Performance Rituals</span>
+<h1 class="font-display-xl text-display-xl text-white mb-lg">A Coleção <br/><span class="italic text-primary-container">Out-of-Office</span></h1>
+</div>
+<div class="md:text-right">
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-sm mb-md">
+                        Frutas Tropicais &amp; Frescor Sem Rebote. Ritual de consumo elevado para quem nunca para.
+                    </p>
+<div class="flex flex-wrap gap-sm justify-end">
+<span class="px-sm py-xs border border-outline-variant text-label-caps rounded-full text-on-surface-variant">0% TAURINA</span>
+<span class="px-sm py-xs border border-outline-variant text-label-caps rounded-full text-on-surface-variant">0% CAFEÍNA</span>
+<span class="px-sm py-xs border border-primary-container text-label-caps rounded-full text-primary-container">+ELETRÓLITOS</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Filters & Sort -->
+<section class="mb-xl flex flex-wrap justify-between items-center border-y border-zinc-900 py-md gap-md">
+<div class="flex gap-lg items-center">
+<button class="font-label-caps text-label-caps text-white flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">filter_list</span> FILTRAR POR
+                </button>
+<div class="flex gap-md">
+<button onclick="filterProducts('ALL')" class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary-container transition-colors active:text-primary-container">TUDO</button>
+<button onclick="filterProducts('BEBIDAS')" class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary-container transition-colors active:text-primary-container">BEBIDAS</button>
+<button onclick="filterProducts('KITS')" class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary-container transition-colors active:text-primary-container">KITS</button>
+<button onclick="filterProducts('MERCH')" class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary-container transition-colors active:text-primary-container">MERCH</button>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<span class="font-label-caps text-label-caps text-zinc-600">8 PRODUTOS</span>
+</div>
+</section>
+    <!-- Product Grid -->
+    <section id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-xl">
+        <!-- Products will be loaded here -->
+    </section>
+
+    <script>
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        let allProducts = [];
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                allProducts = await response.json();
+                renderProducts(allProducts);
+            } catch (err) {
+                console.error('Error loading products:', err);
+            }
+        }
+
+        function filterProducts(category) {
+            if (category === 'ALL') {
+                renderProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(p => p.category === category);
+                renderProducts(filtered);
+            }
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = products.map(product => `
+                <div class="group relative flex flex-col ${product.category === 'KITS' ? 'lg:col-span-2' : ''}">
+                    <div class="aspect-[4/5] bg-zinc-950 border border-zinc-900 flex items-center justify-center p-xl relative overflow-hidden ${product.category === 'KITS' ? 'lg:aspect-[16/7]' : ''}">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-primary-container/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div class="pt-lg flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-sm">
+                            <h3 class="font-headline-md text-headline-md text-white">${product.name}</h3>
+                            <span class="font-headline-md text-headline-md text-primary-container">R$ ${product.price}</span>
+                        </div>
+                        <p class="font-body-md text-body-md text-on-surface-variant mb-lg leading-relaxed">
+                            ${product.description}
+                        </p>
+                        <button onclick="addToCart(${product.id}, '${product.name}', ${product.price}, '${product.image}')" class="mt-auto w-full py-md bg-transparent border border-primary-container text-primary-container font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary-container hover:text-on-primary transition-all bloom-green active:scale-95">
+                            Adicionar ao Carrinho
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(id, name, price, image) {
+            const existing = cart.find(item => item.id === id);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ id, name, price, image, quantity: 1 });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            alert(`${name} adicionado ao carrinho!`);
+        }
+<div class="flex-1 z-10">
+<h2 class="font-headline-lg text-headline-lg text-white mb-md uppercase tracking-tighter">Performance &amp; <span class="italic text-primary-container">Harm Reduction</span></h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                    Nossas fórmulas são desenhadas para o ritual social sem comprometer o amanhã. Substituímos estimulantes agressivos por complexos eletrolíticos de alta absorção.
+                </p>
+</div>
+<div class="grid grid-cols-2 gap-md w-full md:w-auto z-10">
+<div class="p-md border border-zinc-800 bg-black/50">
+<span class="text-primary-container font-bold text-headline-md block">0%</span>
+<span class="text-label-caps text-zinc-500">CRASH MATINAL</span>
+</div>
+<div class="p-md border border-zinc-800 bg-black/50">
+<span class="text-primary-container font-bold text-headline-md block">100%</span>
+<span class="text-label-caps text-zinc-500">RITUAL</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-zinc-950 dark:bg-black full-width border-t-2 border-zinc-900">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 px-10 py-16 max-w-screen-2xl mx-auto">
+<div class="md:col-span-1">
+<div class="text-xl font-bold text-zinc-100 dark:text-zinc-100 mb-md uppercase">Goró da Mansão</div>
+<p class="text-zinc-600 dark:text-zinc-700 font-serif text-xs tracking-widest leading-loose">
+                    O RITUAL DE QUEM CONSOLIDA O SUCESSO DE DIA E CELEBRA A ESTRATÉGIA À NOITE.
+                </p>
+</div>
+<div class="flex flex-col gap-sm">
+<h5 class="text-lime-400 font-serif text-xs tracking-widest uppercase mb-sm">Shop</h5>
+<a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors uppercase text-[10px] tracking-widest" href="catalog.html">Catálogo</a>
+<a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors uppercase text-[10px] tracking-widest" href="mansao.html">A Mansão</a>
+<a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors uppercase text-[10px] tracking-widest" href="saude.html">Saúde</a>
+</div>
+<div class="flex flex-col gap-sm">
+<h5 class="text-lime-400 font-serif text-xs tracking-widest uppercase mb-sm">Info</h5>
+<a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors uppercase text-[10px] tracking-widest" href="#">Termos</a>
+<a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors uppercase text-[10px] tracking-widest" href="#">Privacidade</a>
+<a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors uppercase text-[10px] tracking-widest" href="saude.html">Harm Reduction</a>
+<a class="text-zinc-600 dark:text-zinc-700 hover:text-lime-400 transition-colors uppercase text-[10px] tracking-widest" href="#">FAQ</a>
+</div>
+<div class="flex flex-col gap-sm">
+<h5 class="text-lime-400 font-serif text-xs tracking-widest uppercase mb-sm">Newsletter</h5>
+<div class="relative">
+<input id="newsletter-email" class="w-full bg-transparent border-b border-zinc-800 py-xs text-[10px] tracking-widest focus:border-lime-400 outline-none text-white placeholder-zinc-700" placeholder="JOIN THE LIST" type="email"/>
+<button onclick="subscribeNewsletter()" class="absolute right-0 bottom-1 material-symbols-outlined text-sm text-lime-400">arrow_forward</button>
+</div>
+<script>
+    function subscribeNewsletter() {
+        const email = document.getElementById('newsletter-email').value;
+        if (email) {
+            alert('Bem-vindo ao círculo interno!');
+            document.getElementById('newsletter-email').value = '';
+        }
+    }
+</script>
+</div>
+</div>
+<div class="border-t border-zinc-900 py-lg px-10">
+<p class="text-zinc-600 dark:text-zinc-700 font-serif text-[10px] tracking-[0.2em] text-center">
+                © 2024 GORÓ DA MANSÃO. PERFORMANCE &amp; RITUAL.
+            </p>
+</div>
+</footer>
+</body></html>

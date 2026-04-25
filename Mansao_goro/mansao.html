@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,900&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#efffe3",
+                        "primary-container": "#39ff14",
+                        "background": "#0c1609",
+                        "surface-container": "#182214",
+                        "on-surface-variant": "#baccb0"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Space Grotesk"],
+                        "display-xl": ["Noto Serif"],
+                        "headline-lg": ["Noto Serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0c1609; color: #dae6d0; }
+        .hero-gradient {
+            background: radial-gradient(circle at center, rgba(57, 255, 20, 0.08) 0%, rgba(12, 22, 9, 1) 70%);
+        }
+    </style>
+</head>
+<body class="font-body-md bg-background selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+    <nav class="bg-black/90 backdrop-blur-md border-b border-zinc-800 sticky top-0 z-50">
+        <div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+            <a href="index.html" class="text-2xl font-black italic tracking-tighter text-lime-400">Goró da Mansão</a>
+            <div class="hidden md:flex space-x-8 font-serif uppercase tracking-widest text-xs">
+                <a href="index.html" class="text-zinc-500 hover:text-white transition-colors">Home</a>
+                <a href="catalog.html" class="text-zinc-500 hover:text-white transition-colors">Catálogo</a>
+                <a href="mansao.html" class="text-lime-400 font-bold">A Mansão</a>
+                <a href="saude.html" class="text-zinc-500 hover:text-white transition-colors">Saúde</a>
+            </div>
+            <div class="flex items-center space-x-6 text-lime-400">
+                <a href="checkout.html" class="material-symbols-outlined hover:text-white transition-all active:scale-90" id="cart-icon">shopping_cart</a>
+                <a href="login.html" class="material-symbols-outlined hover:text-white transition-all active:scale-90">account_circle</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="relative py-xxl hero-gradient overflow-hidden">
+        <div class="max-w-screen-xl mx-auto px-6 text-center relative z-10">
+            <span class="font-label-caps text-primary-container tracking-[0.3em] uppercase mb-4 block">The Inner Circle</span>
+            <h1 class="font-display-xl text-6xl md:text-8xl text-white mb-8 italic">Onde o Ritual <br/> Encontra a <span class="text-primary-container not-italic">Performance</span></h1>
+            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                A Mansão não é apenas um lugar, é um estado de espírito. É onde os líderes se reúnem para consolidar o sucesso sem comprometer o amanhã.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-screen-2xl mx-auto px-6 py-xxl grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8">
+            <h2 class="font-headline-lg text-5xl text-white">O Ritual Sem Filtros</h2>
+            <p class="text-on-surface-variant text-lg leading-relaxed">
+                Nascida na energia frenética da Mansão Maromba, o Goró surgiu da necessidade de uma alternativa premium. Cansados de energéticos que causavam crash e desidratação, decidimos criar nossa própria regra.
+            </p>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="p-6 bg-surface-container border border-zinc-800">
+                    <h3 class="text-primary-container font-bold text-2xl mb-2">Exclusividade</h3>
+                    <p class="text-xs text-zinc-500">Acesso apenas para quem entende que o descanso é parte do treino.</p>
+                </div>
+                <div class="p-6 bg-surface-container border border-zinc-800">
+                    <h3 class="text-primary-container font-bold text-2xl mb-2">Autenticidade</h3>
+                    <p class="text-xs text-zinc-500">Sem fórmulas mágicas, apenas ciência e lifestyle.</p>
+                </div>
+            </div>
+        </div>
+        <div class="relative">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS6jLgLwVe9JwQz0li7VElciOt4pJaGxL9eNJNB4m4EtFrT75oTtQY3JrRoXksvRDHiPgP2uCUW6GPrxRf0nWnihWEnFU8Ra0ZsRLySneTymQVDQlbtCYL7mQ_mfHln7IIOU_rMqXwp_y3G5liL48ZmYfchjFAeEGBvwmgfU_P4G2IlUZPoR4TaXEPqREM40XU1y9zl0SbdTxt3HY5v-U001qz9R8N2_Zdwm9wljGqj1vpKFnE139GYvtravAykHbeAy4nIIez-do" alt="Mansão Interior" class="w-full grayscale hover:grayscale-0 transition-all duration-1000 border border-zinc-800 shadow-2xl">
+            <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-primary-container/20 blur-3xl rounded-full"></div>
+        </div>
+    </main>
+
+    <footer class="bg-black py-16 border-t border-zinc-900 text-center">
+        <div class="flex justify-center space-x-8 mb-8 text-xs tracking-widest uppercase font-serif">
+            <a href="catalog.html" class="text-zinc-500 hover:text-white">Loja</a>
+            <a href="mansao.html" class="text-zinc-500 hover:text-white">A Mansão</a>
+            <a href="saude.html" class="text-zinc-500 hover:text-white">Saúde</a>
+        </div>
+        <p class="font-serif text-xs tracking-widest text-zinc-700">© 2024 GORÓ DA MANSÃO. PERFORMANCE & RITUAL.</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
