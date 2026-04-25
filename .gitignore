@@ -1,0 +1,15 @@
+# Node.js
+node_modules/
+dist/
+build/
+.env
+*.log
+
+# Personal/Sensitive
+ghp_*.txt
+*.key
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
