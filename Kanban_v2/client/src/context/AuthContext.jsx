@@ -1,5 +1,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import { auth, db } from '../firebase';
+import { 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged,
+    updateProfile 
+} from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -8,38 +16,54 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const storedUser = JSON.parse(localStorage.getItem('user'));
-            setUser(storedUser);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
-        setLoading(false);
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser) {
+                // Get additional user data from Firestore if needed
+                const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+                const userData = {
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: firebaseUser.displayName,
+                    ...userDoc.data()
+                };
+                setUser(userData);
+            } else {
+                setUser(null);
+            }
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
     }, []);
 
     const login = async (email, password) => {
-        const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-        const { token, user } = res.data;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        setUser(user);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        return userCredential.user;
     };
 
     const register = async (username, email, password) => {
-        await axios.post('http://localhost:5000/api/auth/register', { username, email, password });
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const newUser = userCredential.user;
+        
+        await updateProfile(newUser, { displayName: username });
+        
+        // Store extra data in Firestore
+        await setDoc(doc(db, 'users', newUser.uid), {
+            username,
+            email,
+            createdAt: new Date().toISOString()
+        });
+        
+        return newUser;
     };
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        delete axios.defaults.headers.common['Authorization'];
-        setUser(null);
+    const logout = async () => {
+        await signOut(auth);
     };
 
     return (
         <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-            {children}
+            {!loading && children}
         </AuthContext.Provider>
     );
 };

@@ -14,9 +14,10 @@ const Login = () => {
         e.preventDefault();
         try {
             await login(email, password);
-            navigate('/dashboard');
+            navigate('/');
         } catch (err) {
-            setError('Credenciais inválidas');
+            console.error(err);
+            setError('Falha ao entrar. Verifique seu e-mail e senha.');
         }
     };
 

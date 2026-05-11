@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { db } from '../firebase';
+import { 
+    collection, 
+    query, 
+    where, 
+    onSnapshot, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    doc, 
+    serverTimestamp 
+} from 'firebase/firestore';
 import { 
     LayoutDashboard, 
     CheckCircle, 
@@ -12,9 +23,6 @@ import {
     CheckSquare,
     List,
     Tag,
-    Briefcase,
-    Home,
-    GraduationCap,
     X
 } from 'lucide-react';
 import KanbanBoard from '../components/KanbanBoard';
@@ -58,25 +66,40 @@ const Dashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [toast, setToast] = useState(null);
-    const [filter, setFilter] = useState({ type: 'all', value: null }); // all, category, status
+    const [filter, setFilter] = useState({ type: 'all', value: null });
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (!user) return;
 
-    const fetchData = async () => {
-        try {
-            const [statsRes, tasksRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/tasks/stats'),
-                axios.get('http://localhost:5000/api/tasks')
-            ]);
-            setStats(statsRes.data);
-            setTasks(tasksRes.data);
-        } catch (err) {
-            console.error('Error fetching data', err);
-            showToast('Erro ao carregar dados. Verifique a conexão.', 'error');
-        }
-    };
+        const q = query(collection(db, 'tasks'), where('userId', '==', user.uid));
+        
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const taskList = [];
+            let total = 0;
+            let completedToday = 0;
+            let overdue = 0;
+            let pending = 0;
+            const today = new Date().toISOString().split('T')[0];
+
+            querySnapshot.forEach((doc) => {
+                const task = { id: doc.id, ...doc.data() };
+                taskList.push(task);
+                
+                total++;
+                if (task.status === 'done' && task.due_date === today) completedToday++;
+                if (task.status !== 'done' && task.due_date < today && task.due_date) overdue++;
+                if (task.status === 'doing') pending++;
+            });
+
+            setTasks(taskList);
+            setStats({ total, completedToday, overdue, pending });
+        }, (error) => {
+            console.error("Error fetching tasks: ", error);
+            showToast('Erro ao carregar tarefas.', 'error');
+        });
+
+        return () => unsubscribe();
+    }, [user]);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -96,14 +119,24 @@ const Dashboard = () => {
         try {
             if (editingTask || taskData.id) {
                 const id = editingTask?.id || taskData.id;
-                await axios.put(`http://localhost:5000/api/tasks/${id}`, taskData);
-                showToast('Tarefa atualizada com sucesso!');
+                const taskRef = doc(db, 'tasks', id);
+                // Remove id from taskData before updating
+                const { id: _, ...dataToSave } = taskData;
+                await updateDoc(taskRef, {
+                    ...dataToSave,
+                    updatedAt: serverTimestamp()
+                });
+                showToast('Tarefa atualizada!');
             } else {
-                await axios.post('http://localhost:5000/api/tasks', taskData);
-                showToast('Tarefa criada com sucesso!');
+                await addDoc(collection(db, 'tasks'), {
+                    ...taskData,
+                    userId: user.uid,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+                showToast('Tarefa criada!');
             }
             setIsModalOpen(false);
-            fetchData();
         } catch (err) {
             console.error('Error saving task', err);
             showToast('Erro ao salvar tarefa.', 'error');
@@ -113,9 +146,8 @@ const Dashboard = () => {
     const handleDeleteTask = async (id) => {
         if (window.confirm('Deseja excluir esta tarefa permanentemente?')) {
             try {
-                await axios.delete(`http://localhost:5000/api/tasks/${id}`);
-                showToast('Tarefa excluída com sucesso!');
-                fetchData();
+                await deleteDoc(doc(db, 'tasks', id));
+                showToast('Tarefa excluída!');
             } catch (err) {
                 console.error('Error deleting task', err);
                 showToast('Erro ao excluir tarefa.', 'error');
@@ -317,4 +349,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 

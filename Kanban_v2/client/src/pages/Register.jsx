@@ -15,9 +15,10 @@ const Register = () => {
         e.preventDefault();
         try {
             await register(username, email, password);
-            navigate('/login');
+            navigate('/');
         } catch (err) {
-            setError('Erro ao criar conta. Tente outro e-mail.');
+            console.error(err);
+            setError('Erro ao criar conta. Este e-mail já pode estar em uso.');
         }
     };
 
