@@ -1,0 +1,145 @@
+/* Tela Padrão */
+
+
+.sec-main h3 {
+    width: 90%;
+    color: var(--corTxt3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.div-header {
+    width: 98%;
+    display: flex;
+    align-items: center;
+    border-radius: 7px;
+    justify-content: space-between;
+    padding: 15px;
+    border: 1px solid var(--corBordas);
+    background: var(--corFundo2);
+    font-size: var(--text-lg);
+    color: var(--corTxt3);
+    cursor: default;
+    box-shadow: var(--sombra);
+}
+
+.div-img-header {
+    color: var(--corBase);
+    width: 25%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.div-img-header h4 {
+    margin: 0;
+    color: var(--corTxt3);
+}
+
+.user-name {
+    color: var(--corDestaque);
+}
+
+.div-txt-header {
+    background: var(--corFundo);
+    padding: 10px;
+    border-radius: 25px;
+    border: 1px solid var(--corBordas);
+}
+
+.div-txt-header p {
+    margin: 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.div-txt-header i {
+    color: var(--corBase);
+}
+
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-radius: 50%;
+    background: var(--corFundo);
+    box-shadow: var(--sombra2);
+    width: 50px;
+    height: 50px;
+    font-size: var(--text-2xl);
+    border: 1px solid var(--corBordas);
+    color: var(--corBase);
+    transition: all 0.3s ease;
+}
+
+.avatar:hover {
+    background: var(--corDestaque);
+    border-radius: 15px;
+    color: var(--txtClaro);
+    transform: scale(1.05);
+}
+
+/* Tablet/Mobile Adjustments */
+@media (max-width: 1024px) {
+    .sec-main {
+        padding-left: 290px; /* Sidebar (275px) + margem (15px) */
+    }
+}
+
+@media (max-width: 768px) {
+    .sec-main {
+        padding-left: 80px; /* Sidebar recolhida (70px) + margem mínima */
+        padding-right: 8px;
+    }
+
+    .div-header {
+        padding: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .div-img-header {
+        justify-content: flex-start;
+        width: auto;
+        flex: 1;
+    }
+
+    .div-txt-header {
+        width: fit-content;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        font-size: var(--text-lg);
+    }
+
+    .div-header h4 {
+        font-size: var(--text-base);
+    }
+}
+
+@media (max-width: 480px) {
+    .sec-main {
+        padding-left: 76px;
+        padding-right: 6px;
+        gap: 3%;
+    }
+
+    .div-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+        width: 96%;
+    }
+
+    .div-img-header {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+        gap: 8px;
+    }
+}

@@ -1,0 +1,1620 @@
+
+<!-- saved from url=(0065)https://manutencao.senaivotuporanga.com.br/php/views/maquinas.php -->
+<html lang="pt-br" data-tema="claro"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><div class="modal-fundo modal-notificacao" id="notificacao-modal" style="display: none">
+    <div class="modal-box">
+        <div class="modal-header" id="modal-notif" style="background: var(--corDestaque); color: var(--txtClaro); padding: 10px; border-radius: 10px 10px 0px 0px;">
+            <h3 id="notif-texto" style="color: var(--txtClaro);">Notificações</h3>
+            <button style="color: var(--txtClaro);" onclick="closeModal(&#39;notificacao-modal&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-notificacao-corpo">
+            <div id="notificacoes-lista">
+                <!-- As notificações serão inseridas aqui dinamicamente -->
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal-fundo" id="adicaoUser" style="display: none">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Registrar</h3>
+            <button class="" onclick="closeModal(&#39;adicaoUser&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/user/register_user.php" class="modal-form" method="POST">
+
+            <div class="modal-input">
+                <label for="nome">Nome:</label>
+                <div class="input-wrapper">
+                    <input type="text" name="nome" id="nome" placeholder="Ex: Matheus dos Ateus">
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="email">E-mail:</label>
+                    <div class="input-wrapper">
+                        <input type="email" name="email" id="email" placeholder="exemplo@email.com">
+                    </div>
+                </div>
+
+                <div class="modal-input">
+                    <label for="senha">Senha:</label>
+                    <!-- coloquei a senha reandoly pois a senha é padrão então tanto faz se coloca ou não, dessa forma fica bonito :> -->
+                    <div class="input-wrapper input-senha-wrapper"> <input type="password" name="senha" id="senha" placeholder="*******" readonly="" value="06022026">
+                        <button type="button" onclick="showPass()" id="btnEye" class="eye-btn">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-input">
+                <label for="permissao">Nível Permissão</label>
+                <div class="input-wrapper">
+                    <select name="permissao" id="permissao">
+                        <option value="semValor" disabled="" selected="">Selecione uma Opção</option>
+                        <option value="NORMAL">Normal</option>
+                        <option value="GESTOR">Gestor</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">
+                    Cadastrar <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Edição de usuário -->
+<div class="modal-fundo" id="edicaoUser" style="display: none">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Editar Usuário</h3>
+            <button class="" id="" onclick="closeModal(&#39;edicaoUser&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/user/update_users.php" class="modal-form" method="POST">
+            <div style="display: none;">
+                <input type="number" id="edit_user_id" name="id">
+            </div>
+
+            <div class="modal-input">
+                <label for="edit_user_nome">Nome:</label>
+                <div class="input-wrapper">
+                    <input type="text" name="nome" id="edit_user_nome" placeholder="Ex: Matheus dos Ateus">
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="edit_user_email">E-mail:</label>
+                    <div class="input-wrapper">
+                        <input type="email" name="email" id="edit_user_email" placeholder="exemplo@email.com">
+                    </div>
+                </div>
+
+                <div class="modal-input">
+                    <label for="edit_user_senha">Senha:</label>
+                    <div class="input-wrapper input-senha-wrapper"> <input type="password" name="senha" id="edit_user_senha" placeholder="*******" readonly="" value="06022026">
+                        <button type="button" onclick="showPass()" id="btnEyeEdit" class="eye-btn">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-input">
+                <label for="edit_user_permissao">Nível Permissão</label>
+                <select name="permissao" id="edit_user_permissao">
+                    <option value="semValor">Selecione uma Opção</option>
+                    <option value="NORMAL">Normal</option>
+                    <option value="GESTOR">Gestor</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+            </div>
+            <div class="modal-btn">
+                <button type="submit" onclick="" class="btn-confirmar-full confirmar">Salvar Alterações <i class="bi bi-check-lg"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-fundo" id="dell" style="display: none;">
+    <div class="modal-box" style="width: 400px; padding: 20px;">
+        <div class="modal-header" style="margin-bottom: 20px;">
+            <h3>Deletar</h3>
+            <button onclick="closeModal(&#39;dell&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div style="text-align: center; margin-bottom: 25px; color: var(--corTxt3);">
+            <p>Tem certeza que quer deletar?</p>
+        </div>
+        <div style="width: 100%; display: flex; gap: 10px; justify-content: center;">
+            <input type="number" name="id_usuario" id="id_usuario" style="display: none;">
+            <button onclick="excluirUser(document.getElementById(&#39;id_usuario&#39;).value)" class="btn-confirmar-full confirmar">Sim</button>
+            <button onclick="closeModal(&#39;dell&#39;)" type="button" class="btn-confirmar-full confirmar" style="background-color: var(--corBase);">Não</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-fundo" id="dellMachine" style="display: none;">
+    <div class="modal-box" style="width: 400px; padding: 20px;">
+        <div class="modal-header" style="margin-bottom: 20px;">
+            <h3>Deletar Máquina</h3>
+            <button onclick="closeModal(&#39;dellMachine&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div style="text-align: center; margin-bottom: 25px; color: var(--corTxt3);">
+            <p>Tem certeza que quer deletar esta máquina?</p>
+        </div>
+        <div style="width: 100%; display: flex; gap: 10px; justify-content: center;">
+            <input type="number" name="id_maquina_del" id="id_maquina_del" style="display: none;">
+            <button onclick="excluirMaquina(document.getElementById(&#39;id_maquina_del&#39;).value)" class="btn-confirmar-full confirmar">Sim</button>
+            <button onclick="closeModal(&#39;dellMachine&#39;)" type="button" class="btn-confirmar-full confirmar" style="background-color: var(--corBase);">Não</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-fundo" id="adicaoMachine" style="display: none">
+    <div class="modal-box modal-box-wide">
+
+        <div class="modal-header">
+            <h3>Registrar Máquina</h3>
+            <button class="" onclick="closeModal(&#39;adicaoMachine&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/machines/register_machines.php" class="modal-form" method="POST">
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="maquina">Descrição Máquina:</label>
+                    <select name="tipomaquina_id" id="tipomaquina_id">
+                        <option value="semValor">Selecione uma Opção</option>
+                                            </select>
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="denominacao">Denominação:</label>
+                    <input type="text" name="denominacao" id="denominacao" placeholder="Ex: TORNO MECÂNICO">
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="marca">Marca:</label>
+                    <input type="text" name="marca" id="marca" placeholder="ROMI">
+                </div>
+                <div class="modal-input">
+                    <label for="modelo">Modelo:</label>
+                    <input type="text" name="modelo" id="modelo" placeholder="T 240">
+                </div>
+                <div class="modal-input">
+                    <label for="ano-fabricacao">Ano:
+                        <input type="number" name="ano_fabricacao" id="ano-fabricacao" min="1800" max="2099" step="1" placeholder="2020">
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-row quebraMobile" id="tabela-frequencia">
+                <div class="modal-input">
+                    <label for="ni">NI:</label>
+                    <input type="text" name="numero_identificacao" id="numero_identificacao" placeholder="1052694 SENAI">
+                </div>
+                <div class="modal-input">
+                    <label for="setor">Setor:</label>
+                    <input type="text" name="setor" id="setor" placeholder="CÉLULA 1">
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="table-container">
+                    <table class="custom-table" id="table-add-inspection">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">N°</th>
+                                <th>Atividade ou item a verificar</th>
+                                <th style="width: 150px;">Freq.</th>
+                                <th style="width: 50px;"><i class="bi bi-trash-fill" id="lixeira"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <input type="text" name="atividade" id="atividade" placeholder="Ex: Inspecionar raspadores de cavacos">
+                                </td>
+                                <td>
+                                    <select name="freq" id="freq">
+                                        <option value="mensal">MENSAL</option>
+                                        <option value="semestral">SEMESTRAL</option>
+                                        <option value="trimestral">TRIMESTRAL</option>
+                                        <option value="anual">ANUAL</option>
+                                        <option value="bianual">BIANUAL</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn-trash"><i class="bi bi-trash-fill"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <button type="button" class="btn-dashed" id="addInspectionItemBtn">
+                    <i class="bi bi-plus-circle-fill"></i> ADICIONAR NOVO ITEM DE INSPEÇÃO
+                </button>
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">
+                    Salvar Registro <i class="bi bi-check-lg"></i>
+                </button>
+                <br>
+                <button type="button" class="btn-confirmar-full btn" onclick="showModal(&#39;maquinasLote&#39;)">
+                    Cadastrar em Lote <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Adicionar Máquina em Lote -->
+<div class="modal-fundo" id="maquinasLote" style="display: none;">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Cadastro em Lote - Máquinas</h3>
+            <button class="" onclick="closeModal(&#39;maquinasLote&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form id="form-cad-maquina-lote" class="modal-form">
+            <div class="modal-input file-input-wrapper">
+                <label for="arquivo-maquina">Faça Upload do Arquivo (CSV ou Excel)</label>
+                <div class="arquivos-div" style="border: 2px dashed var(--corBase); padding: 20px; text-align: center; cursor: pointer;" onclick="document.getElementById(&#39;arquivo-maquina&#39;).click()">
+                    <i class="bi bi-cloud-upload" style="font-size: 2rem; color: var(--corBase);"></i>
+                    <p class="label-arquivo" style="margin-top: 10px;">Arraste ou Pressione o Arquivo.</p>
+                </div>
+                <input type="file" name="arquivo-maquina" id="arquivo-maquina" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display: none;">
+            </div>
+            <div id="preview-maquina" class="preview-lote"></div>
+            <div class="modal-footer footer-lote">
+                <button type="submit" class="btn-confirmar-full btn">
+                    Enviar <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-fundo" id="edicaoMachine" style="display: none">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Editar Máquina</h3>
+            <button class="" onclick="closeModal(&#39;edicaoMachine&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/machines/update_machine.php" class="modal-form" method="POST">
+            <input type="hidden" name="id" id="edit_id">
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="edit_denominacao">Denominação:</label>
+                    <input type="text" name="denominacao" id="edit_denominacao" required="">
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="edit_marca">Marca:</label>
+                    <input type="text" name="marca" id="edit_marca">
+                </div>
+                <div class="modal-input">
+                    <label for="edit_modelo">Modelo:</label>
+                    <input type="text" name="modelo" id="edit_modelo">
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="edit_numero_identificacao">NI:</label>
+                    <input type="text" name="numero_identificacao" id="edit_numero_identificacao" required="">
+                </div>
+                <div class="modal-input">
+                    <label for="edit_ano_fabricacao">Ano:</label>
+                    <input type="number" name="ano_fabricacao" id="edit_ano_fabricacao">
+                </div>
+                <div class="modal-input">
+                    <label for="edit_setor">Setor:</label>
+                    <input type="text" name="setor" id="edit_setor">
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="table-container">
+                    <table class="custom-table" id="table-edit-inspection">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">N°</th>
+                                <th>Atividade ou item a verificar</th>
+                                <th style="width: 150px;">Freq.</th>
+                                <th style="width: 50px;"><i class="bi bi-trash-fill"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <button type="button" class="btn-dashed" onclick="adicionarNovaLinhaEdit()">
+                    <i class="bi bi-plus-circle-fill"></i> ADICIONAR NOVO ITEM DE INSPEÇÃO
+                </button>
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">
+                    Salvar Alterações <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal usuario senha 2 - Formulário para trocar senha -->
+<div class="modal-fundo" id="changePassword" style="display: none;">
+    <div class="modal-box modal-box-wide" style="width: 500px; max-width: 90%;">
+        <div class="modal-header">
+            <h3>Trocar Senha</h3>
+        </div>
+        <div style="margin-bottom: 20px; color: var(--corTxt3); text-align: center;">
+            <p>Por motivos de segurança, você deve alterar sua senha padrão.</p>
+        </div>
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/user/change_password.php" method="POST" class="modal-form">
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="nova_senha">Nova Senha:</label>
+                    <input type="password" name="nova_senha" id="nova_senha" required="" placeholder="Nova Senha">
+                </div>
+            </div>
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="confirmar_senha">Confirmar Senha:</label>
+                    <input type="password" name="confirmar_senha" id="confirmar_senha" required="" placeholder="Confirme a Senha">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">
+                    Alterar Senha <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- modalResetPass2 removida: redefinição passa a executar diretamente a ação de reset -->
+
+<div class="modal-fundo" id="modalAcessorios" style="display: none;">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>ACESSÓRIOS</h3> <!-- Título Vermelho via CSS -->
+            <button class="" onclick="closeModal(&#39;modalAcessorios&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="modal-form">
+            <div class="p-3 mb-3 bg-white border" style="border-radius: 15px;">
+                <small class="text-muted text-uppercase font-weight-bold" style="font-size: 10px;">Equipamento
+                    Selecionado:</small><br>
+                <span class="h5 font-weight-bold text-dark" id="acessorio_maquina_nome">CARREGANDO...</span>
+                <input type="hidden" id="acessorio_maquina_id">
+            </div>
+
+            <div class="modal-row">
+                <div class="table-container">
+                    <table class="custom-table" id="table-acessorios">
+                        <thead>
+                            <tr>
+                                <th>Denominação</th>
+                                <th>Aplicação / Uso</th>
+                                <th>Características</th>
+                                <th style="width: 150px;">NI</th>
+                                <th style="width: 50px;"><i class="bi bi-trash-fill"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Linhas inseridas via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <button type="button" class="btn-dashed" onclick="adicionarAcessorio()">
+                    <i class="bi bi-plus-circle-fill"></i> ADICIONAR NOVO ACESSÓRIO
+                </button>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-confirmar-full confirmar" onclick="salvarAcessorios()">
+                    Salvar Acessórios <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-fundo" id="modalFAQ" style="display: none;">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Dúvidas Frequentes</h3>
+            <button class="" onclick="closeModal(&#39;modalFAQ&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="modal-form" style="max-height: 400px; overflow-y: auto;">
+            <div class="faq-item mb-3">
+                <h5 class="font-weight-bold text-dark"><i class="bi bi-question-circle-fill text-primary"></i> Como
+                    cadastrar uma nova máquina?</h5>
+                <p class="text-muted ml-4">Vá para a página de Máquinas e clique no botão "+ Adicionar Máquina".
+                    Preencha os dados solicitados e salve.</p>
+            </div>
+
+            <div class="faq-item mb-3">
+                <h5 class="font-weight-bold text-dark"><i class="bi bi-question-circle-fill text-primary"></i> Como
+                    resetar a senha de um usuário?</h5>
+                <p class="text-muted ml-4">Na página de Usuários, clique no ícone de chave amarela ao lado do nome do
+                    usuário. A senha será resetada para o padrão.</p>
+            </div>
+
+            <div class="faq-item mb-3">
+                <h5 class="font-weight-bold text-dark"><i class="bi bi-question-circle-fill text-primary"></i> Como
+                    adicionar acessórios a uma máquina?</h5>
+                <p class="text-muted ml-4">Na página de Máquinas, clique no ícone roxo de ferramentas na linha da
+                    máquina desejada. Uma janela se abrirá para gerenciar os acessórios.</p>
+            </div>
+
+            <div class="faq-item mb-3">
+                <h5 class="font-weight-bold text-dark"><i class="bi bi-question-circle-fill text-primary"></i> O que
+                    fazer se esquecer minha senha?</h5>
+                <p class="text-muted ml-4">Entre em contato com um administrador do sistema para que ele realize o reset
+                    da sua senha.</p>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-confirmar-full confirmar" onclick="closeModal(&#39;modalFAQ&#39;)">
+                Entendi <i class="bi bi-check-lg"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ações Corretiva -->
+<div class="modal-fundo" id="corretiva" style="display: none">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Corretiva Máquina</h3>
+            <button class="" onclick="closeModal(&#39;corretiva&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/machines/update_machine.php" class="modal-form" method="POST">
+            <input type="hidden" name="id" id="edit_id">
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="data_corretiva">Date:</label>
+                    <input type="date" name="data_corretiva" id="data_corretiva">
+                </div>
+                <div class="modal-input">
+                    <label for="edit_modelo">Responsavel:</label>
+                    <input type="text" name="modelo" id="edit_modelo" placeholder="Ex: Josias da Silva">
+                </div>
+            </div>
+
+            <div class="modal-row">
+                <div class="modal-input">
+                    <label for="edit_marca">Descrição:</label>
+                    <textarea type="text" name="marca" id="edit_marca" placeholder="Descrição da corretiva de Máquina">                    </textarea>
+                </div>
+            </div>
+
+            <div class="modal-row">
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">
+                    Salvar <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Modal para Ações Preventivas  -->
+<div class="modal-fundo" id="preventiva" style="display: none">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Preventiva Máquina</h3>
+            <button class="" onclick="closeModal(&#39;preventiva&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/machines/update_machine.php" class="modal-form" method="POST">
+            <input type="hidden" name="id" id="edit_id">
+
+            <div class="modal-row">
+                <div class="table-container">
+                    <table class="custom-table" id="table-edit-inspection">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">N°</th>
+                                <th>Atividade ou item a verificar</th>
+                                <th style="width: 150px;">Freq.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-row">
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">
+                    Salvar <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Modal para Mostrar as informações da Maquina -->
+<div class="modal-fundo" id="preventiva" style="display: none">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Informação Maquina</h3>
+            <button class="" onclick="closeModal(&#39;preventiva&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/machines/update_machine.php" class="modal-form" method="POST">
+            <input type="hidden" name="id" id="edit_id">
+
+            <div class="modal-row">
+                <div class="table-container">
+                    <table class="custom-table" id="table-edit-inspection">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">N°</th>
+                                <th>Atividade ou item a verificar</th>
+                                <th style="width: 150px;">Freq.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-row">
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">
+                    Salvar <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Visualizar -->
+<div class="modal-fundo" id="view" style="display: none">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Nome da Máquina</h3>
+            <button type="button" class="" onclick="closeModal(&#39;view&#39;)">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/machines/update_machine.php" class="modal-form" method="POST">
+            <input type="hidden" name="id" id="edit_id">
+
+            <div class="modal-body-layout">
+                <div class="info-section">
+
+                    <div class="info-item">
+                        <label>Marca</label>
+                        <span class="info-value">Toyota</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label>Modelo</label>
+                        <span class="info-value">fb8-560</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label>N° Identificação</label>
+                        <span class="info-value">.546546116454</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label>N° Série</label>
+                        <span class="info-value">698879</span>
+                    </div>
+
+                </div>
+
+                <div class="image-section">
+                    <div class="img-placeholder">
+                        <!-- <i class="bi bi-camera-fill"></i> -->
+                        <img src="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/1013-200x300.jpg" alt="Imagem Aleatória">
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Anexos Img
+<div class="modal-fundo" id="anexos" style="display: none">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Anexos</h3>
+            <button type="button" class="" onclick="closeModal('anexos')">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <form action="../actions/machines/update_machine.php" class="modal-form" method="POST">
+            <input type="hidden" name="id" id="edit_id">
+
+            <div class="modal-body-layout">
+                <div class="info-section">
+                    
+                    <div class="info-item">
+                        <p>Anexos</p>
+                    </div>
+
+                </div>
+
+                <div class="image-section">
+                    <div class="img-placeholder" style="background:transparent; align-items:flex-start;">
+                        <button type="button" class="btn confirmar">Adicionar Anexo</button>
+
+                        </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                
+                </div>
+        </form>
+    </div>
+</div> -->
+
+<!-- Modal CUSTOMIZADA DE PREVENTIVA (Extraída e Adaptada) -->
+<div class="modal-fundo" id="modalPreventiva" style="display: none;">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Checklist de Manutenção</h3>
+            <button class="" onclick="closeModal(&#39;modalPreventiva&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="checklist-info-box">
+            <div class="checklist-actions-row">
+                <div class="checklist-col-equipment">
+                    <label class="section-label">Equipamento:</label>
+                    <div class="h5 font-weight-bold mb-0" id="nome_maquina_checklist" style="font-size: 1.25rem;">
+                        Carregando...</div>
+                    <input type="hidden" id="id_maquina_checklist">
+                </div>
+                <div class="checklist-col-filter">
+                    <label class="section-label text-primary" style="color: #007bff;">Ciclo de Manutenção:</label>
+                    <select class="form-control filter-select" id="selectCiclo" onchange="aplicarFiltrosChecklist()">
+                        <option value="TODOS">TODOS OS ITENS</option>
+                        <option value="mensal">MENSAL</option>
+                        <option value="trimestral">TRIMESTRAL</option>
+                        <option value="semestral">SEMESTRAL</option>
+                        <option value="anual">ANUAL</option>
+                    </select>
+                </div>
+                <div class="checklist-col-status-group">
+                    <div class="status-select-container">
+                        <label class="section-label text-danger" style="color: #dc3545;">Filtrar por Status:</label>
+                        <select class="form-control filter-select" id="selectStatus" onchange="aplicarFiltrosChecklist()">
+                            <option value="TODOS">MOSTRAR TODOS</option>
+                            <option value="VENCIDOS">ITENS VENCIDOS</option>
+                            <option value="PROXIMOS">ITENS PRÓXIMOS</option>
+                        </select>
+                    </div>
+                    <button class="btn-clear-inline" onclick="limparFiltros()">Limpar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+            <table class="checklist-table" id="tabelaChecklist">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">Nº</th>
+                        <th>Atividade ou item a verificar</th>
+                        <th style="width: 110px;">Freq.</th>
+                        <th style="width: 120px;">Última Data</th>
+                        <th style="width: 120px;">Próxima Data</th>
+                        <th style="width: 60px;">R</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Itens serão carregados via AJAX aqui -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal-footer p-0" style="margin-top: 20px;">
+            <div class="modal-input" style="margin-bottom: 10px;">
+                <label for="obs_preventiva">Observações Gerais:</label>
+                <textarea id="obs_preventiva" class="form-control" style="width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 10px;" rows="2" placeholder="Alguma observação sobre essa manutenção?"></textarea>
+            </div>
+            <button class="btn-save-preventiva" onclick="finalizarPreventiva()">
+                Salvar Manutenção <i class="bi bi-check-lg"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- MODAIS PARA DESCRIÇÃO DE MÁQUINA -->
+<div class="modal-fundo" id="adicaoTipoMaquina" style="display: none">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Registrar Descrição Máquina</h3>
+            <button onclick="closeModal(&#39;adicaoTipoMaquina&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/descricao_maquina/register_descricao_maquina.php" class="modal-form" method="POST">
+            <div class="modal-input">
+                <label for="tipomaquina_nome">Nome:</label>
+                <input type="text" name="tipomaquina_nome" id="tipomaquina_nome" placeholder="Ex: Torno Mecânico" required="">
+            </div>
+            <div class="modal-input">
+                <label for="tipomaquina_arquivo">Arquivo (PDF/Doc):</label>
+                <input type="text" name="tipomaquina_arquivo" id="tipomaquina_arquivo" placeholder="Ex: manual_torno.pdf">
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">Cadastrar <i class="bi bi-plus-lg"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-fundo" id="edicaoTipoMaquina" style="display: none">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Editar Descrição Máquina</h3>
+            <button onclick="closeModal(&#39;edicaoTipoMaquina&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form action="https://manutencao.senaivotuporanga.com.br/php/actions/descricao_maquina/update_descricao_maquina.php" class="modal-form" method="POST">
+            <input type="hidden" name="idtipomaquina" id="edit_idtipomaquina">
+            <div class="modal-input">
+                <label for="edit_tipomaquina_nome">Nome:</label>
+                <input type="text" name="tipomaquina_nome" id="edit_tipomaquina_nome" required="">
+            </div>
+            <div class="modal-input">
+                <label for="edit_tipomaquina_arquivo">Arquivo:</label>
+                <input type="text" name="tipomaquina_arquivo" id="edit_tipomaquina_arquivo">
+            </div>
+            <div class="modal-input">
+                <label for="edit_tipomaquina_status">Status:</label>
+                <select name="tipomaquina_status" id="edit_tipomaquina_status">
+                    <option value="Ativo">Ativo</option>
+                    <option value="Inativo">Inativo</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-confirmar-full confirmar">Salvar Alterações <i class="bi bi-check-lg"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-fundo" id="dellTipoMaquina" style="display: none;">
+    <div class="modal-box" style="width: 400px; padding: 20px;">
+        <div class="modal-header" style="margin-bottom: 20px;">
+            <h3>Deletar Descrição Máquina</h3>
+            <button onclick="closeModal(&#39;dellTipoMaquina&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div style="text-align: center; margin-bottom: 25px; color: var(--corTxt3);">
+            <p>Tem certeza que quer deletar esta descrição de máquina?</p>
+        </div>
+        <div style="width: 100%; display: flex; gap: 10px; justify-content: center;">
+            <input type="hidden" id="id_tipma_del">
+            <button onclick="excluirTipoMaquina(document.getElementById(&#39;id_tipma_del&#39;).value)" class="btn-confirmar-full confirmar">Sim</button>
+            <button onclick="closeModal(&#39;dellTipoMaquina&#39;)" type="button" class="btn-confirmar-full confirmar" style="background-color: var(--corBase);">Não</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Histórico de Manutenção -->
+<div class="modal-fundo" id="modalHistorico" style="display: none;">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <h3>Histórico de Manutenção</h3>
+            <button class="" onclick="closeModal(&#39;modalHistorico&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="checklist-info-box">
+            <h5 id="hist_maquina_nome" class="text-center font-weight-bold" style="color: #333;">Carregando...</h5>
+        </div>
+
+        <div class="table-container" style="max-height: 50vh; overflow-y: auto;">
+            <table class="custom-table" id="tabelaHistorico">
+                <thead>
+                    <tr>
+                        <th>Item Verificado</th>
+                        <th>Quem Verificou</th>
+                        <th style="width: 150px;">Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Linhas inseridas via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-confirmar-full" style="background-color: #6c757d;" onclick="closeModal(&#39;modalHistorico&#39;)">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal usuario senha 1 - Confirmação de Reset -->
+<div class="modal-fundo" id="resetPass" style="display: none;">
+    <div class="modal-box" style="width: 450px; padding: 20px;">
+        <div class="modal-header" style="margin-bottom: 20px;">
+            <h3>Resetar Senha</h3>
+            <button onclick="closeModal(&#39;resetPass&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div style="text-align: center; margin-bottom: 25px; color: var(--corTxt3);">
+            <p>Tem certeza que quer resetar a senha deste usuário para 'senaisp'?</p>
+        </div>
+        <div style="width: 100%; display: flex; gap: 10px; justify-content: center;">
+            <input type="number" name="id_usuario_reset_confirm" id="id_usuario_reset_confirm" style="display: none;">
+            <button onclick="resetarSenha(document.getElementById(&#39;id_usuario_reset_confirm&#39;).value)" class="btn-confirmar-full confirmar">Sim</button>
+            <button onclick="closeModal(&#39;resetPass&#39;)" type="button" class="btn-confirmar-full confirmar" style="background-color: var(--corBase);">Não</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Confirmação Customizadas (Estilo nr12rework) -->
+
+
+
+<!-- Tipos de Máquina -->
+<div class="modal-fundo" id="desativarTipMaModal" style="display: none;">
+    <div class="modal-box" style="width: 400px; padding: 20px;">
+        <div class="modal-header" style="margin-bottom: 20px;">
+            <h3>Desativar Descrição Máquina</h3>
+            <button onclick="closeModal(&#39;desativarTipMaModal&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div style="text-align: center; margin-bottom: 25px; color: var(--corTxt3);">
+            <p>Tem certeza que deseja realmente desativar esta descrição de máquina?</p>
+        </div>
+        <div style="width: 100%; display: flex; gap: 10px; justify-content: center;">
+            <input type="hidden" id="id_tipma_confirm">
+            <button onclick="excluirTipoMaquina(document.getElementById(&#39;id_tipma_confirm&#39;).value, &#39;desativar&#39;)" class="btn-confirmar-full confirmar">Sim</button>
+            <button onclick="closeModal(&#39;desativarTipMaModal&#39;)" type="button" class="btn-confirmar-full confirmar" style="background-color: var(--corBase);">Não</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-fundo" id="ativarTipMaModal" style="display: none;">
+    <div class="modal-box" style="width: 400px; padding: 20px;">
+        <div class="modal-header" style="margin-bottom: 20px;">
+            <h3>Ativar Descrição Máquina</h3>
+            <button onclick="closeModal(&#39;ativarTipMaModal&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div style="text-align: center; margin-bottom: 25px; color: var(--corTxt3);">
+            <p>Tem certeza que deseja realmente ativar esta descrição de máquina?</p>
+        </div>
+        <div style="width: 100%; display: flex; gap: 10px; justify-content: center;">
+            <input type="hidden" id="id_tipma_ativar_confirm">
+            <button onclick="excluirTipoMaquina(document.getElementById(&#39;id_tipma_ativar_confirm&#39;).value, &#39;ativar&#39;)" class="btn-confirmar-full confirmar">Sim</button>
+            <button onclick="closeModal(&#39;ativarTipMaModal&#39;)" type="button" class="btn-confirmar-full confirmar" style="background-color: var(--corBase);">Não</button>
+        </div>
+    </div>
+</div>
+
+<div class="" id="sucesso" style="display: none;">
+    <div class="modal-box" id="sucesso-box">
+        <div class="modal-header">
+            <h5 id="sucesso-txt">Sucesso</h5>
+            <button style="color: var(--txtClaro); font-size: var(--text-base)" onclick="closeModal(&#39;sucesso&#39;)"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-row">
+            <p id="sucesso-msg" style="font-size: var(--text-sm);">
+                A operação foi concluída com sucesso.            </p>
+        </div>
+    </div>
+</div>
+
+
+
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Máquinas - SENAI MANUTENÇÃO</title>
+
+    <link rel="stylesheet" href="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/style.css">
+    <link rel="stylesheet" href="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/nav.css">
+    <link rel="stylesheet" href="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/header.css">
+    <link rel="stylesheet" href="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/modal.css">
+    <link rel="stylesheet" href="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/global.css">
+    <link rel="stylesheet" href="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/ticket.css">
+    <link rel="stylesheet" href="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/bootstrap-icons.min.css">
+    <link rel="shortcut icon" href="https://manutencao.senaivotuporanga.com.br/assets/icons/favicon.ico" type="image/x-icon">
+    
+    <style>
+        /* Estilos específicos de Máquinas — apenas overrides da tabela e botões */
+        .tabela-main td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--corBordas);
+            color: var(--corTxt3);
+        }
+
+        .tabela-main th {
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 15px;
+        }
+
+        .btnAcao {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .btnAcao.editar { background: var(--editar); }
+        .btnAcao.editar:hover { background: var(--editarHover); }
+        .btnAcao.deletar { background: var(--corBase); }
+        .btnAcao.deletar:hover { background: var(--corDestaque); }
+        .btnAcao.ferramentas { background: var(--ferramentas); }
+        .btnAcao.ferramentas:hover { background: var(--ferramentasHover); }
+        .btnAcao.clipes { background: #64748b; }
+        .btnAcao.clipes:hover { background: #475569; }
+    </style>
+
+
+
+    
+<nav class="sidebar">
+    <div class="botao-fechar">
+        <button id="fechar-nav">
+            <i class="bi bi-arrow-left-circle-fill"></i>
+        </button>
+    </div>
+
+    <div class="div-img">
+        <img src="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/senailogo2.png" alt="Logo Senai" id="senai-logo2">
+    </div>
+
+    <div class="div-links">
+
+        <a href="https://manutencao.senaivotuporanga.com.br/php/views/home.php" class=" links">
+            <i class="bi bi-house-door-fill"></i> Home
+        </a>
+
+        <a href="https://manutencao.senaivotuporanga.com.br/php/views/dashboard.php" class=" links">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <div class="menu-manutencao">
+
+            <a href="javascript:void(0)" class="links manutencao-btn" id="btn-manutencao">
+                <div>
+                    <i class="bi bi-tools"></i>
+                    <span>Manutenção</span>
+                </div>
+                <i class="bi bi-caret-down-fill seta"></i>
+            </a>
+
+            <div class="submenu" id="submenu-manutencao">
+
+                <a href="https://manutencao.senaivotuporanga.com.br/php/views/preventiva.php" class=" links-sub">
+                    <i class="bi bi-clock-fill"></i> Preventiva
+                </a>
+
+                <a href="https://manutencao.senaivotuporanga.com.br/php/views/corretiva.php" style="display: none;" class=" links-sub">
+                    <i class="bi bi-wrench"></i> Corretiva
+                </a>
+
+            </div>
+        </div>
+
+        <div class="menu-maquinas aberto">
+
+            <a href="javascript:void(0)" class="links maquinas-btn ativo" id="btn-maquinas">
+                <div>
+                    <i class="bi bi-cpu"></i>
+                    <span>Máquinas</span>
+                </div>
+                <i class="bi bi-caret-down-fill seta"></i>
+            </a>
+
+            <div class="submenu aberto" id="submenu-maquinas">
+
+                <a href="https://manutencao.senaivotuporanga.com.br/php/views/descricao_maquina.php" class=" links-sub">
+                    <i class="bi bi-tags-fill"></i> Descrição Máquinas
+                </a>
+
+                <a href="https://manutencao.senaivotuporanga.com.br/php/views/maquinas.php" class="ativo links-sub">
+                    <i class="bi bi-gear-fill"></i> Máquinas
+                </a>
+
+            </div>
+        </div>
+
+        <a href="https://manutencao.senaivotuporanga.com.br/php/views/gerencias_os.php" class=" links">
+            <i class="bi bi-clipboard-data-fill"></i> Gerenciar O.S
+        </a>
+
+        
+            <a href="https://manutencao.senaivotuporanga.com.br/php/views/usuarios.php" class=" links">
+                <i class="bi bi-file-earmark-person-fill"></i> Painel de Usuários
+            </a>
+
+            <a href="https://manutencao.senaivotuporanga.com.br/php/views/log.php" class=" links">
+                <i class="bi bi-person-vcard"></i> Painel de Logs
+            </a>
+
+        
+    </div>
+
+    <div class="div-configs">
+        <div>
+            <button onclick="changeTheme()" id="tema"><i class="bi bi-brightness-high-fill"></i></button>
+
+            <button id="notificacao" onclick="showModal(&#39;notificacao-modal&#39;)">
+                <i class="bi bi-bell-fill"></i>
+                                <div class="div-noti" style="color: var(--corFundo2);">3</div>
+            </button>
+
+            <a href="https://manutencao.senaivotuporanga.com.br/php/views/perfil.php" class="configs dont-rotate" title="Perfil">
+                <i class="bi bi-person-fill"></i>
+            </a>
+        </div>
+
+        <button onclick="window.location.href=&#39;../actions/logout.php&#39;" class="btn sair" onmouseover="changeSairBtn(&#39;open&#39;)" onmouseleave="changeSairBtn(&#39;closed&#39;)">
+            <span>Sair</span> <i class="bi bi-door-closed-fill"></i>
+        </button>
+    </div>
+</nav>
+
+<style>
+    .submenu {
+        display: none;
+        margin-left: 28px;
+    }
+
+    .submenu.aberto {
+        display: block;
+    }
+
+    .links-sub {
+        margin-top: 4px;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const dropdowns = [
+            {
+                btnId: "btn-manutencao",
+                submenuId: "submenu-manutencao",
+                paginas: ["preventiva.php", "corretiva.php"]
+            },
+            {
+                btnId: "btn-maquinas",
+                submenuId: "submenu-maquinas",
+                paginas: ["descricao_maquina.php", "maquinas.php"]
+            }
+        ];
+
+        const paginaAtual = window.location.pathname;
+
+        dropdowns.forEach(({ btnId, submenuId, paginas }) => {
+            const btn = document.getElementById(btnId);
+            const submenu = document.getElementById(submenuId);
+            if (!btn || !submenu) return;
+
+            const menu = btn.parentElement;
+
+            function abrir() {
+                submenu.classList.add("aberto");
+                menu.classList.add("aberto");
+                btn.classList.add("ativo");
+            }
+
+            function fechar() {
+                submenu.classList.remove("aberto");
+                menu.classList.remove("aberto");
+                btn.classList.remove("ativo");
+            }
+
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                submenu.classList.contains("aberto") ? fechar() : abrir();
+            });
+
+            if (paginas.some(p => paginaAtual.includes(p))) {
+                abrir();
+            }
+        });
+
+    });
+</script>
+
+    <section class="sec-main">
+
+        <!-- Header -->
+        <div class="div-header">
+    <div class="div-img-header">
+        <div class="avatar">
+                            <i class="bi bi-person"></i>
+                    </div>
+        <h4 style="color: var(--corTxt3)">Olá, <span style="color: var(--corDestaque);">Matheus</span></h4>
+    </div>
+    <div class="div-txt-header">
+        <p>
+            <i class="bi bi-calendar3"></i>21/05/2026        </p>
+    </div>
+</div>
+        <!-- Barra de Ações — Padrão Unificado do Sistema -->
+        <div class="page-actions-bar">
+            <form action="https://manutencao.senaivotuporanga.com.br/php/views/maquinas.php" method="GET" class="page-search-form">
+                <div class="page-search-box">
+                        <input type="text" name="search" id="pesquisa" value="" placeholder="Pesquisar denominação, NI ou modelo...">
+                                    </div>
+                <button type="submit" class="btn-search">
+                    <i class="bi bi-search"></i>
+                </button>
+                                <div class="page-filter-box">
+                    <label>Marca:</label>
+                    <select name="filtro-marca" onchange="this.form.submit()">
+                        <option value="">Todos</option>
+                                                    <option value="3A-BK PRECISION">3A-BK PRECISION</option>
+                                                    <option value="53">53</option>
+                                                    <option value="AASTRA">AASTRA</option>
+                                                    <option value="AC-DC - FLUKE">AC-DC - FLUKE</option>
+                                                    <option value="ACESSÓ. 5-12kg">ACESSÓ. 5-12kg</option>
+                                                    <option value="ALFATEST">ALFATEST</option>
+                                                    <option value="ALTENDORF">ALTENDORF</option>
+                                                    <option value="AMPROBE">AMPROBE</option>
+                                                    <option value="ARMAZ. FERRAMENTAS">ARMAZ. FERRAMENTAS</option>
+                                                    <option value="ARPREX 25A">ARPREX 25A</option>
+                                                    <option value="ARTE">ARTE</option>
+                                                    <option value="ATESTADOS">ATESTADOS</option>
+                                                    <option value="ATLAS COPCO">ATLAS COPCO</option>
+                                                    <option value="AUTOMECH">AUTOMECH</option>
+                                                    <option value="B&amp;DECKER">B&amp;DECKER</option>
+                                                    <option value="BALDAN">BALDAN</option>
+                                                    <option value="BAMTECH">BAMTECH</option>
+                                                    <option value="BEHRINGER">BEHRINGER</option>
+                                                    <option value="BELZER">BELZER</option>
+                                                    <option value="BENQ">BENQ</option>
+                                                    <option value="BLACK &amp; DECKER">BLACK &amp; DECKER</option>
+                                                    <option value="BLACK&amp;DECKER">BLACK&amp;DECKER</option>
+                                                    <option value="BOARD NET">BOARD NET</option>
+                                                    <option value="BOSCH">BOSCH</option>
+                                                    <option value="BRAS-MOVEL">BRAS-MOVEL</option>
+                                                    <option value="BRASFIXO">BRASFIXO</option>
+                                                    <option value="BRIGHT">BRIGHT</option>
+                                                    <option value="CARBON">CARBON</option>
+                                                    <option value="CAVALETTI">CAVALETTI</option>
+                                                    <option value="CINEFLEX">CINEFLEX</option>
+                                                    <option value="CIRCUITOR">CIRCUITOR</option>
+                                                    <option value="CISCO">CISCO</option>
+                                                    <option value="CMB">CMB</option>
+                                                    <option value="COBERTURA">COBERTURA</option>
+                                                    <option value="CONDOR">CONDOR</option>
+                                                    <option value="COPERFLEX">COPERFLEX</option>
+                                                    <option value="CORTAG">CORTAG</option>
+                                                    <option value="COSA">COSA</option>
+                                                    <option value="CRACHÁ DUPLEX">CRACHÁ DUPLEX</option>
+                                                    <option value="CRS">CRS</option>
+                                                    <option value="DELL">DELL</option>
+                                                    <option value="DEWALT">DEWALT</option>
+                                                    <option value="DIGIMESS">DIGIMESS</option>
+                                                    <option value="DREMEL">DREMEL</option>
+                                                    <option value="DWT">DWT</option>
+                                                    <option value="EATON">EATON</option>
+                                                    <option value="EDUCARE">EDUCARE</option>
+                                                    <option value="EDUTEC">EDUTEC</option>
+                                                    <option value="ELETELE">ELETELE</option>
+                                                    <option value="ENSAIO">ENSAIO</option>
+                                                    <option value="EPSON">EPSON</option>
+                                                    <option value="ESAB">ESAB</option>
+                                                    <option value="FERDIMAT">FERDIMAT</option>
+                                                    <option value="FESTO">FESTO</option>
+                                                    <option value="FLUKE">FLUKE</option>
+                                                    <option value="FORTCH">FORTCH</option>
+                                                    <option value="FORTEQUIP">FORTEQUIP</option>
+                                                    <option value="FRISOCAR">FRISOCAR</option>
+                                                    <option value="FRISOKAR">FRISOKAR</option>
+                                                    <option value="FURAD. IMPACTO S/FIO 18V">FURAD. IMPACTO S/FIO 18V</option>
+                                                    <option value="FURADEIRA S/FIO 14,4V">FURADEIRA S/FIO 14,4V</option>
+                                                    <option value="FURIO">FURIO</option>
+                                                    <option value="FURIO-F32N">FURIO-F32N</option>
+                                                    <option value="FUTURE">FUTURE</option>
+                                                    <option value="GARTHEN">GARTHEN</option>
+                                                    <option value="GEDORE">GEDORE</option>
+                                                    <option value="GIBEN">GIBEN</option>
+                                                    <option value="GIN">GIN</option>
+                                                    <option value="HEARTSINE">HEARTSINE</option>
+                                                    <option value="HIDRAUMAK">HIDRAUMAK</option>
+                                                    <option value="HISPANIA">HISPANIA</option>
+                                                    <option value="HP">HP</option>
+                                                    <option value="HP A5120-24G">HP A5120-24G</option>
+                                                    <option value="HP DESIGNJET 510">HP DESIGNJET 510</option>
+                                                    <option value="HUSQVARNA">HUSQVARNA</option>
+                                                    <option value="HW LEITZ">HW LEITZ</option>
+                                                    <option value="ICEL">ICEL</option>
+                                                    <option value="IMEKO">IMEKO</option>
+                                                    <option value="IMPORT">IMPORT</option>
+                                                    <option value="INMES">INMES</option>
+                                                    <option value="INSIZE">INSIZE</option>
+                                                    <option value="INSTRUTHERM">INSTRUTHERM</option>
+                                                    <option value="ITAUTEC E2241V">ITAUTEC E2241V</option>
+                                                    <option value="JAGUARIBE">JAGUARIBE</option>
+                                                    <option value="JAMO">JAMO</option>
+                                                    <option value="JAPSEW">JAPSEW</option>
+                                                    <option value="JNG">JNG</option>
+                                                    <option value="JUNG">JUNG</option>
+                                                    <option value="KEW">KEW</option>
+                                                    <option value="KING TOOLS">KING TOOLS</option>
+                                                    <option value="KITEST">KITEST</option>
+                                                    <option value="KONE">KONE</option>
+                                                    <option value="KRATOS">KRATOS</option>
+                                                    <option value="KSTOOLS">KSTOOLS</option>
+                                                    <option value="LDM">LDM</option>
+                                                    <option value="LEGRAN">LEGRAN</option>
+                                                    <option value="LENOVO">LENOVO</option>
+                                                    <option value="LEXMARK">LEXMARK</option>
+                                                    <option value="LG">LG</option>
+                                                    <option value="LIBELL">LIBELL</option>
+                                                    <option value="LINCOOLN">LINCOOLN</option>
+                                                    <option value="LOGEN">LOGEN</option>
+                                                    <option value="LUFFE">LUFFE</option>
+                                                    <option value="MABI">MABI</option>
+                                                    <option value="MACLINEA">MACLINEA</option>
+                                                    <option value="MADIS">MADIS</option>
+                                                    <option value="MAHR">MAHR</option>
+                                                    <option value="MAKITA">MAKITA</option>
+                                                    <option value="MARCON">MARCON</option>
+                                                    <option value="MASTERSAN">MASTERSAN</option>
+                                                    <option value="MEASTECH">MEASTECH</option>
+                                                    <option value="MECAF">MECAF</option>
+                                                    <option value="MELLO">MELLO</option>
+                                                    <option value="METALPLAN">METALPLAN</option>
+                                                    <option value="METALSUL">METALSUL</option>
+                                                    <option value="MINIPA">MINIPA</option>
+                                                    <option value="MIT MEASTECH MS5201">MIT MEASTECH MS5201</option>
+                                                    <option value="MITUTOYO">MITUTOYO</option>
+                                                    <option value="MN">MN</option>
+                                                    <option value="MOTOMIL">MOTOMIL</option>
+                                                    <option value="MSD">MSD</option>
+                                                    <option value="MULTILASER">MULTILASER</option>
+                                                    <option value="NAPRO">NAPRO</option>
+                                                    <option value="NASSITEC">NASSITEC</option>
+                                                    <option value="NEDERMAN">NEDERMAN</option>
+                                                    <option value="NEOMATIC">NEOMATIC</option>
+                                                    <option value="OKEI">OKEI</option>
+                                                    <option value="OPTICON">OPTICON</option>
+                                                    <option value="OPTOMA">OPTOMA</option>
+                                                    <option value="PACAR">PACAR</option>
+                                                    <option value="PALETRANS">PALETRANS</option>
+                                                    <option value="PANASONIC">PANASONIC</option>
+                                                    <option value="PANTEC">PANTEC</option>
+                                                    <option value="PEMA">PEMA</option>
+                                                    <option value="PHILCO">PHILCO</option>
+                                                    <option value="PLANA">PLANA</option>
+                                                    <option value="PLANATC">PLANATC</option>
+                                                    <option value="POLITERM">POLITERM</option>
+                                                    <option value="POSITIVO">POSITIVO</option>
+                                                    <option value="POSITIVO P971WAL">POSITIVO P971WAL</option>
+                                                    <option value="POTENTE">POTENTE</option>
+                                                    <option value="PUMA">PUMA</option>
+                                                    <option value="PUTSCH">PUTSCH</option>
+                                                    <option value="RAMADA">RAMADA</option>
+                                                    <option value="RAVEN">RAVEN</option>
+                                                    <option value="REALBAT">REALBAT</option>
+                                                    <option value="REGAL BELOIT">REGAL BELOIT</option>
+                                                    <option value="RENAULT">RENAULT</option>
+                                                    <option value="RIBEIRO">RIBEIRO</option>
+                                                    <option value="ROBUST">ROBUST</option>
+                                                    <option value="ROCAST">ROCAST</option>
+                                                    <option value="ROMI">ROMI</option>
+                                                    <option value="RONEMAK">RONEMAK</option>
+                                                    <option value="ROTHENB.">ROTHENB.</option>
+                                                    <option value="SAMSUNG">SAMSUNG</option>
+                                                    <option value="SATURNO">SATURNO</option>
+                                                    <option value="SELCO">SELCO</option>
+                                                    <option value="SILVERSTAR">SILVERSTAR</option>
+                                                    <option value="SISTEMA">SISTEMA</option>
+                                                    <option value="SM-201">SM-201</option>
+                                                    <option value="SNAP ON">SNAP ON</option>
+                                                    <option value="SOMA">SOMA</option>
+                                                    <option value="SONY">SONY</option>
+                                                    <option value="STANER">STANER</option>
+                                                    <option value="STANLEY">STANLEY</option>
+                                                    <option value="STARRETT">STARRETT</option>
+                                                    <option value="STOKAIR">STOKAIR</option>
+                                                    <option value="SUN">SUN</option>
+                                                    <option value="SUN SPECIAL">SUN SPECIAL</option>
+                                                    <option value="SURYHA">SURYHA</option>
+                                                    <option value="TABLETS">TABLETS</option>
+                                                    <option value="TECNOMOTOR">TECNOMOTOR</option>
+                                                    <option value="TEKTRONIK">TEKTRONIK</option>
+                                                    <option value="TEMP - FLUKE">TEMP - FLUKE</option>
+                                                    <option value="TESA">TESA</option>
+                                                    <option value="TIRMIS">TIRMIS</option>
+                                                    <option value="TORK">TORK</option>
+                                                    <option value="TOYOTA">TOYOTA</option>
+                                                    <option value="TRAMONTINA">TRAMONTINA</option>
+                                                    <option value="TRAMOTINA">TRAMOTINA</option>
+                                                    <option value="TRANSCORTEC">TRANSCORTEC</option>
+                                                    <option value="TRANSMISSÃO">TRANSMISSÃO</option>
+                                                    <option value="TRI">TRI</option>
+                                                    <option value="USIKRAFT">USIKRAFT</option>
+                                                    <option value="VALCAR">VALCAR</option>
+                                                    <option value="VERNIZES">VERNIZES</option>
+                                                    <option value="VETOR ROUTER">VETOR ROUTER</option>
+                                                    <option value="VICEL">VICEL</option>
+                                                    <option value="VICTOR 1010-A">VICTOR 1010-A</option>
+                                                    <option value="VIMA">VIMA</option>
+                                                    <option value="VIVACITY">VIVACITY</option>
+                                                    <option value="VOGES">VOGES</option>
+                                                    <option value="VONDER">VONDER</option>
+                                                    <option value="W BERTOLO">W BERTOLO</option>
+                                                    <option value="W.BERTOLO">W.BERTOLO</option>
+                                                    <option value="WALCOM">WALCOM</option>
+                                                    <option value="WALSIWA">WALSIWA</option>
+                                                    <option value="WEG">WEG</option>
+                                                    <option value="YADOYA">YADOYA</option>
+                                            </select>
+                </div>
+                                                <div class="page-filter-box">
+                    <label>Setor:</label>
+                    <select name="filtro-setor" onchange="this.form.submit()">
+                        <option value="">Todos</option>
+                                                    <option value="20770001">20770001</option>
+                                                    <option value="20770002">20770002</option>
+                                                    <option value="20770003">20770003</option>
+                                                    <option value="20770004">20770004</option>
+                                                    <option value="20770005">20770005</option>
+                                                    <option value="20770006">20770006</option>
+                                                    <option value="20770007">20770007</option>
+                                                    <option value="20770008">20770008</option>
+                                                    <option value="20770009">20770009</option>
+                                                    <option value="20770010">20770010</option>
+                                                    <option value="20770012">20770012</option>
+                                                    <option value="20770013">20770013</option>
+                                                    <option value="20770014">20770014</option>
+                                                    <option value="20770015">20770015</option>
+                                                    <option value="20770016">20770016</option>
+                                                    <option value="20770017">20770017</option>
+                                                    <option value="20770018">20770018</option>
+                                                    <option value="20770019">20770019</option>
+                                                    <option value="20770020">20770020</option>
+                                                    <option value="20770021">20770021</option>
+                                                    <option value="20770022">20770022</option>
+                                                    <option value="20770023">20770023</option>
+                                                    <option value="20770024">20770024</option>
+                                                    <option value="20770025">20770025</option>
+                                                    <option value="20770026">20770026</option>
+                                                    <option value="20770027">20770027</option>
+                                                    <option value="20770028">20770028</option>
+                                                    <option value="20770029">20770029</option>
+                                                    <option value="20770030">20770030</option>
+                                                    <option value="20770031">20770031</option>
+                                                    <option value="20770032">20770032</option>
+                                                    <option value="20770033">20770033</option>
+                                                    <option value="20770034">20770034</option>
+                                                    <option value="20770035">20770035</option>
+                                                    <option value="20770036">20770036</option>
+                                                    <option value="20770037">20770037</option>
+                                                    <option value="20770038">20770038</option>
+                                                    <option value="20770039">20770039</option>
+                                                    <option value="20770040">20770040</option>
+                                                    <option value="20770042">20770042</option>
+                                                    <option value="20770043">20770043</option>
+                                                    <option value="20770044">20770044</option>
+                                                    <option value="20770045">20770045</option>
+                                                    <option value="20770046">20770046</option>
+                                                    <option value="20770047">20770047</option>
+                                                    <option value="20770048">20770048</option>
+                                                    <option value="20770049">20770049</option>
+                                                    <option value="20770050">20770050</option>
+                                                    <option value="20770051">20770051</option>
+                                                    <option value="20770052">20770052</option>
+                                                    <option value="20770053">20770053</option>
+                                                    <option value="20770054">20770054</option>
+                                                    <option value="20770055">20770055</option>
+                                                    <option value="20770056">20770056</option>
+                                                    <option value="20770057">20770057</option>
+                                                    <option value="20770058">20770058</option>
+                                                    <option value="20770059">20770059</option>
+                                                    <option value="20770060">20770060</option>
+                                                    <option value="20770061">20770061</option>
+                                                    <option value="20770062">20770062</option>
+                                                    <option value="20770063">20770063</option>
+                                                    <option value="20770064">20770064</option>
+                                                    <option value="20770065">20770065</option>
+                                                    <option value="20770066">20770066</option>
+                                                    <option value="20770068">20770068</option>
+                                                    <option value="20770071">20770071</option>
+                                                    <option value="20770073">20770073</option>
+                                                    <option value="20770074">20770074</option>
+                                                    <option value="20770075">20770075</option>
+                                                    <option value="20770078">20770078</option>
+                                                    <option value="20770079">20770079</option>
+                                                    <option value="20770080">20770080</option>
+                                                    <option value="20770081">20770081</option>
+                                                    <option value="20770086">20770086</option>
+                                                    <option value="20770095">20770095</option>
+                                                    <option value="20770096">20770096</option>
+                                                    <option value="20770099">20770099</option>
+                                                    <option value="20770100">20770100</option>
+                                                    <option value="20770101">20770101</option>
+                                                    <option value="20770102">20770102</option>
+                                                    <option value="20770104">20770104</option>
+                                                    <option value="20770105">20770105</option>
+                                                    <option value="20770106">20770106</option>
+                                                    <option value="CELULA 1">CELULA 1</option>
+                                            </select>
+                </div>
+                            </form>
+            <button class="btn-page-action" onclick="showModal(&#39;adicaoMachine&#39;)">
+                <i class="bi bi-gear"></i> Adicionar Máquinas
+            </button>
+        </div>
+
+        <div class="tabela-bg2" id="tabe">
+            <div class="tabela-titulo">
+                <i class="bi bi-gear"></i>
+                <h2>Máquinas</h2>
+            </div>
+            <div class="tabela-wrapper">
+                <table class="tabela-main">
+                    <thead>
+                        <tr><th>Denominação</th>
+                        <th>Marca</th>
+                        <th>N° Identificação</th>
+                        <th>Ano</th>
+                        <th>Setor</th>
+                        <th>Criado em</th>
+                        <th>Ações</th>
+                    </tr></thead>
+                    <tbody id="tabela-usuarios">
+                        <tr><td><strong>CADEIRA ESTRUTURA EM C - PRETO</strong><br><small style="color: var(--corTxt2); opacity: 0.7;">(N/A)</small></td><td>COPERFLEX</td><td>1180327</td><td>2017</td><td>20770003</td><td>23/04/2026 16:21</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4238)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4238)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4238)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong></strong></td><td></td><td></td><td>0</td><td></td><td>23/04/2026 16:21</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4237)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4237)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4237)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong>SERRA CIRCULAR 185MM PORT.</strong></td><td>BLACK&amp;DECKER</td><td>955941</td><td>2010</td><td>20770106</td><td>23/04/2026 15:20</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4236)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4236)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4236)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong>SERRA CIRCULAR 185MM PORT.</strong></td><td>B&amp;DECKER</td><td>954537</td><td>2010</td><td>20770106</td><td>23/04/2026 15:20</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4235)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4235)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4235)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong>FURADEIRA PORT.ELETR.6300L MAKITA</strong></td><td></td><td>595676</td><td>1994</td><td>20770106</td><td>23/04/2026 15:20</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4234)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4234)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4234)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong>ESMERILHADEIRA ANGULAR ELÉTRICA 5"</strong></td><td></td><td>1322542</td><td>2025</td><td>20770106</td><td>23/04/2026 15:20</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4233)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4233)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4233)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong>ESCADA DE ABRIR 1,50MTS 5 DEGR.</strong></td><td>W.BERTOLO</td><td>955932</td><td>2010</td><td>20770106</td><td>23/04/2026 15:20</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4232)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4232)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4232)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong>CASE TREINAMENTO P/MARCENARIA-OLIMPÍADA</strong></td><td></td><td>1030354</td><td>2012</td><td>20770106</td><td>23/04/2026 15:20</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4231)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4231)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4231)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong>FOTÔMETRO DIGITAL EXTERNO</strong></td><td></td><td>1364442</td><td>2025</td><td>20770105</td><td>23/04/2026 15:20</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4230)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4230)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4230)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr><tr><td><strong>ACCESS POINT PARA USO INDOOR</strong></td><td></td><td>1234957</td><td>2020</td><td>20770105</td><td>23/04/2026 15:20</td>                                <td>
+                                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btnAcao editar" type="button" title="Editar Máquina" onclick="editarMaquina(4229)"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btnAcao deletar" type="button" title="Excluir Máquina" onclick="showModal(&#39;dellMachine&#39;, 4229)"><i class="bi bi-trash"></i></button>
+                                        <button class="btnAcao ferramentas" type="button" title="Acessórios" onclick="showModal(&#39;modalAcessorios&#39;, 4229)"><i class="bi bi-tools"></i></button>
+                                        </div>
+                                    </td>                        </tr>                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação Unificada -->
+            <div class="page-pagination">
+                                                    <span class="pag-btn disabled"><i class="bi bi-chevron-left"></i> Anterior</span>
+                
+                <span class="pag-current">Página 1 de 424</span>
+
+                                    <a href="https://manutencao.senaivotuporanga.com.br/php/views/maquinas.php?&amp;page=2" class="pag-btn">Próxima <i class="bi bi-chevron-right"></i></a>
+                            </div>
+        </div>
+
+    </section>
+
+    <script src="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/scripts.js.download" defer=""></script>
+    <script src="./Gestão de Máquinas - SENAI MANUTENÇÃO_files/processa_lotes_maquinas.js.download" defer=""></script>
+
+
+
+</body></html>

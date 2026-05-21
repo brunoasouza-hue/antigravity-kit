@@ -1,0 +1,446 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * SENAI Manutenção Predial - Tela de Perfil e Alteração de Senha (PHP OOP)
+ */
+
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../src/Controllers/AuthController.php';
+require_once __DIR__ . '/../../src/Models/Usuario.php';
+
+// Exige autenticação básica
+AuthController::verificarAutenticacao();
+
+$usuarioId = (int)$_SESSION['usuario_id'];
+$usuarioModel = Usuario::buscarPorId($usuarioId);
+
+if ($usuarioModel === null) {
+    // Caso de redundância de segurança
+    $auth = new AuthController();
+    $auth->logout();
+    header("Location: " . BASE_URL . "/public/index.php");
+    exit;
+}
+
+// Roteamento de Logout local
+if (isset($_GET['logout'])) {
+    $auth = new AuthController();
+    $auth->logout();
+    header("Location: " . BASE_URL . "/public/index.php");
+    exit;
+}
+
+// Processamento do Formulário de Alteração de Senha
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao']) && $_POST['acao'] === 'alterar_senha') {
+    $isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || (isset($_POST['ajax']) && $_POST['ajax'] === '1');
+
+    $senhaAtual = $_POST['senha_atual'] ?? '';
+    $novaSenha = $_POST['nova_senha'] ?? '';
+    $confirmarSenha = $_POST['confirmar_senha'] ?? '';
+
+    $retornar = function(bool $sucesso, string $mensagem) use ($isAjax) {
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => $sucesso, 'message' => $mensagem], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        if ($sucesso) {
+            $_SESSION['alerta_sucesso'] = $mensagem;
+        } else {
+            $_SESSION['alerta_erro'] = $mensagem;
+        }
+        header("Location: perfil.php");
+        exit;
+    };
+
+    if (empty($senhaAtual) || empty($novaSenha) || empty($confirmarSenha)) {
+        $retornar(false, "Todos os campos de senha são obrigatórios.");
+    }
+
+    // Bloqueia a palavra 'VAZIO'
+    if (strcasecmp($senhaAtual, 'VAZIO') === 0 || strcasecmp($novaSenha, 'VAZIO') === 0 || strcasecmp($confirmarSenha, 'VAZIO') === 0) {
+        $retornar(false, "Erro: A senha não pode ser a palavra 'VAZIO'.");
+    }
+
+    if (strlen($novaSenha) < 6) {
+        $retornar(false, "Erro: A nova senha deve ter no mínimo 6 caracteres.");
+    }
+
+    if ($novaSenha !== $confirmarSenha) {
+        $retornar(false, "Erro: A nova senha e a confirmação de senha não coincidem.");
+    }
+
+    // Valida a senha atual autenticando o usuário
+    $authUsuario = Usuario::autenticar($usuarioModel->getEmail(), $senhaAtual);
+    if ($authUsuario === null) {
+        $retornar(false, "Erro: A senha atual informada está incorreta.");
+    }
+
+    // Altera a senha
+    if ($usuarioModel->alterarSenha($novaSenha)) {
+        $retornar(true, "Senha alterada com sucesso!");
+    } else {
+        $retornar(false, "Erro ao alterar a senha. Tente novamente.");
+    }
+}
+
+// Consome mensagens de status de sessão
+$alertaSucesso = $_SESSION['alerta_sucesso'] ?? '';
+$alertaErro = $_SESSION['alerta_erro'] ?? '';
+unset($_SESSION['alerta_sucesso'], $_SESSION['alerta_erro']);
+
+// Data atual formatada para exibição no cabeçalho
+$dataAtual = date('d/m/Y');
+?>
+<!DOCTYPE html>
+<html lang="pt-br" data-tema="claro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - SENAI MANUTENÇÃO</title>
+
+    <!-- Estilização Base, Sidebar, Header e Bootstrap Icons -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/nav.css">
+    <link rel="stylesheet" href="../assets/css/header.css">
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/bootstrap-icons.min.css">
+    <link rel="shortcut icon" href="../assets/img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+    <!-- SIDEBAR / PAINEL DE NAVEGAÇÃO -->
+    <nav class="sidebar">
+        <div class="botao-fechar">
+            <button id="fechar-nav">
+                <i class="bi bi-arrow-left-circle-fill"></i>
+            </button>
+        </div>
+
+        <div class="div-img">
+            <img src="../assets/img/senailogo2.png" alt="Logo Senai" id="senai-logo2" style="width: 80%;">
+        </div>
+
+        <div class="div-links">
+            <a href="./dashboard.php" class="links">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+
+            <!-- Menu Manutenção condicional: Apenas para Gestor e Executor -->
+            <?php if ($usuarioModel->getNivelAcesso() === 'Gestor' || $usuarioModel->getNivelAcesso() === 'Executor'): ?>
+                <div class="menu-manutencao">
+                    <a href="javascript:void(0)" class="links manutencao-btn" id="btn-manutencao">
+                        <div>
+                            <i class="bi bi-tools"></i>
+                            <span>Manutenção</span>
+                        </div>
+                        <i class="bi bi-caret-down-fill seta"></i>
+                    </a>
+                    <div class="submenu" id="submenu-manutencao">
+                        <a href="./preventivas.php" class="links-sub">
+                            <i class="bi bi-clock-fill"></i> Preventiva (Checklist)
+                        </a>
+                        <a href="./corretivas.php" class="links-sub">
+                            <i class="bi bi-wrench"></i> Corretiva (O.S)
+                        </a>
+                    </div>
+                </div>
+            <?php else: ?>
+                <!-- Solicitantes acessam apenas ordens corretivas diretamente -->
+                <a href="./corretivas.php" class="links">
+                    <i class="bi bi-wrench"></i> Solicitar Corretiva (O.S)
+                </a>
+            <?php endif; ?>
+
+            <!-- Painel de Ambientes: Apenas Gestor -->
+            <?php if ($usuarioModel->getNivelAcesso() === 'Gestor'): ?>
+                <a href="./ambientes.php" class="links">
+                    <i class="bi bi-building"></i> Painel de Ambientes
+                </a>
+
+                <a href="./dashboard_analise.php" class="links">
+                    <i class="bi bi-bar-chart-line-fill"></i> Análise de Dados
+                </a>
+
+                <a href="./usuarios.php" class="links">
+                    <i class="bi bi-file-earmark-person-fill"></i> Painel de Usuários
+                </a>
+
+                <a href="./log.php" class="links">
+                    <i class="bi bi-person-vcard"></i> Painel de Logs
+                </a>
+            <?php endif; ?>
+        </div>
+
+        <div class="div-configs">
+            <div>
+                <!-- Tonalidade de temas claro/escuro -->
+                <button onclick="changeTheme()" id="tema"><i class="bi bi-brightness-high-fill"></i></button>
+                
+                <a href="./perfil.php" class="ativo configs dont-rotate" title="Perfil">
+                    <i class="bi bi-person-fill"></i>
+                </a>
+            </div>
+
+            <!-- Botão Sair com redirecionamento de Logout local seguro -->
+            <a href="?logout=1" class="btn sair" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>Sair</span> <i class="bi bi-door-closed-fill"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <section class="sec-main">
+        
+        <!-- CABEÇALHO (HEADER) -->
+        <div class="div-header">
+            <div class="div-img-header">
+                <div class="avatar">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <h4 style="color: var(--corTxt3)">Olá, <span style="color: var(--corDestaque);"><?php echo htmlspecialchars($usuarioModel->getNome()); ?></span> <small style="font-size: 12px; color: var(--corTxt2);"> (<?php echo htmlspecialchars($usuarioModel->getNivelAcesso()); ?>)</small></h4>
+            </div>
+            <div class="div-txt-header">
+                <p>
+                    <i class="bi bi-calendar3"></i> <?php echo $dataAtual; ?>
+                </p>
+            </div>
+        </div>
+
+        <!-- BANNERS DE ALERTA TRADICIONAIS (Caso falhe o AJAX) -->
+        <?php if (!empty($alertaSucesso)): ?>
+            <div class="alerta-sucesso" style="background-color: rgba(40, 167, 69, 0.12); border: 1px solid #28a745; padding: 15px; border-radius: 12px; margin-bottom: 20px; color: #28a745; font-family: 'TASA Orbiter', sans-serif; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-check-circle-fill" style="font-size: 1.2rem;"></i>
+                <span><?php echo htmlspecialchars($alertaSucesso); ?></span>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($alertaErro)): ?>
+            <div class="alerta-erro" style="background-color: rgba(252, 35, 35, 0.12); border: 1px solid #fc2323; padding: 15px; border-radius: 12px; margin-bottom: 20px; color: #ca2525; font-family: 'TASA Orbiter', sans-serif; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.2rem;"></i>
+                <span><?php echo htmlspecialchars($alertaErro); ?></span>
+            </div>
+        <?php endif; ?>
+
+        <!-- CONTEÚDO DE PERFIL -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 30px;">
+            
+            <!-- CARD 1: INFORMAÇÕES DE CADASTRO -->
+            <div class="tabela-bg2" style="padding: 30px; background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px; border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
+                    <i class="bi bi-person-circle" style="font-size: 1.8rem; color: var(--corBase);"></i>
+                    <h3 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Dados Cadastrais</h3>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <label style="font-weight: bold; color: var(--corTxt3); display: block; margin-bottom: 8px;">Nome Completo:</label>
+                        <input type="text" value="<?php echo htmlspecialchars($usuarioModel->getNome()); ?>" disabled readonly style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); background: rgba(0,0,0,0.02); color: var(--corTxt2); cursor: not-allowed; outline: none;">
+                    </div>
+
+                    <div>
+                        <label style="font-weight: bold; color: var(--corTxt3); display: block; margin-bottom: 8px;">E-mail do Usuário:</label>
+                        <input type="email" value="<?php echo htmlspecialchars($usuarioModel->getEmail()); ?>" disabled readonly style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); background: rgba(0,0,0,0.02); color: var(--corTxt2); cursor: not-allowed; outline: none;">
+                    </div>
+
+                    <div>
+                        <label style="font-weight: bold; color: var(--corTxt3); display: block; margin-bottom: 8px;">Cargo / Nível de Acesso:</label>
+                        <input type="text" value="<?php echo htmlspecialchars($usuarioModel->getNivelAcesso()); ?>" disabled readonly style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); background: rgba(0,0,0,0.02); color: var(--corTxt2); cursor: not-allowed; outline: none;">
+                    </div>
+
+                    <div>
+                        <label style="font-weight: bold; color: var(--corTxt3); display: block; margin-bottom: 8px;">Data de Criação da Conta:</label>
+                        <input type="text" value="<?php echo date('d/m/Y H:i', strtotime($usuarioModel->getDataCriacao() ?? 'now')); ?>" disabled readonly style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); background: rgba(0,0,0,0.02); color: var(--corTxt2); cursor: not-allowed; outline: none;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 2: FORMULÁRIO DE ALTERAÇÃO DE SENHA (AJAX) -->
+            <div class="tabela-bg2" style="padding: 30px; background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px; border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
+                    <i class="bi bi-shield-lock-fill" style="font-size: 1.8rem; color: var(--corBase);"></i>
+                    <h3 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Alterar Minha Senha</h3>
+                </div>
+
+                <form action="" method="POST" id="form-alterar-senha" onsubmit="submeterAlteracaoSenha(event)">
+                    <input type="hidden" name="acao" value="alterar_senha">
+
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <div>
+                            <label for="senha_atual" style="font-weight: bold; color: var(--corTxt3); display: block; margin-bottom: 8px;">Senha Atual:</label>
+                            <input type="password" name="senha_atual" id="senha_atual" required placeholder="Digite sua senha atual..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                        </div>
+
+                        <div>
+                            <label for="nova_senha" style="font-weight: bold; color: var(--corTxt3); display: block; margin-bottom: 8px;">Nova Senha:</label>
+                            <input type="password" name="nova_senha" id="nova_senha" required placeholder="Mínimo 6 caracteres..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                            <span id="erro_nova_senha" style="color: #fc2323; font-size: 11px; font-weight: bold; display: none; margin-top: 5px;"></span>
+                        </div>
+
+                        <div>
+                            <label for="confirmar_senha" style="font-weight: bold; color: var(--corTxt3); display: block; margin-bottom: 8px;">Confirmar Nova Senha:</label>
+                            <input type="password" name="confirmar_senha" id="confirmar_senha" required placeholder="Confirme sua nova senha..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                            <span id="erro_confirmar_senha" style="color: #fc2323; font-size: 11px; font-weight: bold; display: none; margin-top: 5px;"></span>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <button type="submit" style="width: 100%; background: var(--corBase); color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                Salvar Nova Senha <i class="bi bi-check-circle-fill"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CONTAINER DE TOASTS GLASSMORPHIC -->
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
+    <script>
+        // Sistema Premium de Toast
+        function showToast(mensagem, tipo = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                pointer-events: auto;
+                background: ${tipo === 'success' ? 'rgba(40, 167, 69, 0.9)' : 'rgba(252, 35, 35, 0.9)'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+                font-family: 'TASA Orbiter', sans-serif;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transform: translateY(-20px);
+                opacity: 0;
+                transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            `;
+
+            const icon = document.createElement('i');
+            icon.className = tipo === 'success' ? 'bi bi-check-circle-fill' : 'bi bi-exclamation-triangle-fill';
+            icon.style.fontSize = '1.2rem';
+            toast.appendChild(icon);
+
+            const text = document.createElement('span');
+            text.innerText = mensagem;
+            toast.appendChild(text);
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(0)';
+                toast.style.opacity = '1';
+            }, 50);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-20px)';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Submissão AJAX do formulário de senha
+        function submeterAlteracaoSenha(event) {
+            event.preventDefault();
+
+            const senhaAtualEl = document.getElementById('senha_atual');
+            const novaSenhaEl = document.getElementById('nova_senha');
+            const confirmarSenhaEl = document.getElementById('confirmar_senha');
+
+            const erroNova = document.getElementById('erro_nova_senha');
+            const erroConfirmar = document.getElementById('erro_confirmar_senha');
+
+            // Resetar estados
+            erroNova.style.display = 'none';
+            erroConfirmar.style.display = 'none';
+            novaSenhaEl.style.borderColor = '';
+            confirmarSenhaEl.style.borderColor = '';
+
+            const senhaAtual = senhaAtualEl.value.trim();
+            const novaSenha = novaSenhaEl.value.trim();
+            const confirmarSenha = confirmarSenhaEl.value.trim();
+
+            // Validação local de banimento do termo "VAZIO" (case-insensitive)
+            if (senhaAtual.toUpperCase() === 'VAZIO' || novaSenha.toUpperCase() === 'VAZIO' || confirmarSenha.toUpperCase() === 'VAZIO') {
+                showToast('Erro: A senha não pode ser a palavra literal "VAZIO".', 'danger');
+                return false;
+            }
+
+            // Validação de comprimento mínimo (6 caracteres)
+            if (novaSenha.length < 6) {
+                erroNova.innerText = "✖ A nova senha deve ter pelo menos 6 caracteres.";
+                erroNova.style.display = 'block';
+                novaSenhaEl.style.borderColor = '#fc2323';
+                novaSenhaEl.focus();
+                return false;
+            }
+
+            // Validação de correspondência
+            if (novaSenha !== confirmarSenha) {
+                erroConfirmar.innerText = "✖ A confirmação de senha não coincide com a nova senha.";
+                erroConfirmar.style.display = 'block';
+                confirmarSenhaEl.style.borderColor = '#fc2323';
+                confirmarSenhaEl.focus();
+                return false;
+            }
+
+            const form = document.getElementById('form-alterar-senha');
+            const formData = new FormData(form);
+            formData.append('ajax', '1');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    
+                    // Limpar formulário de senhas
+                    senhaAtualEl.value = '';
+                    novaSenhaEl.value = '';
+                    confirmarSenhaEl.value = '';
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro interno na conexão com o servidor.', 'danger');
+            });
+        }
+
+        // Listeners em tempo real para verificar VAZIO e limpezas
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = ['senha_atual', 'nova_senha', 'confirmar_senha'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', () => {
+                        if (el.value.trim().toUpperCase() === 'VAZIO') {
+                            el.style.borderColor = '#fc2323';
+                        } else {
+                            el.style.borderColor = '';
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <!-- JS Globais -->
+    <script src="../assets/js/scripts.js" defer></script>
+</body>
+</html>

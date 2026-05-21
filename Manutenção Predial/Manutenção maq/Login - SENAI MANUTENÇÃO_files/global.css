@@ -1,0 +1,307 @@
+@import url('https://fonts.googleapis.com/css2?family=TASA+Orbiter:wght@400..800&display=swap');
+
+* {
+    padding: 0;
+    margin: 0;
+
+    box-sizing: border-box;
+    font-family: "TASA Orbiter", sans-serif;
+    outline: none;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    min-height: 100vh;
+    background: var(--corFundo);
+    animation: animacaoCoringa 0.4s forwards ease-in-out;
+    overflow-x: hidden;
+}
+
+.sec-main {
+    transition: padding-left 0.3s ease;
+    padding-left: 310px;
+    padding-right: 20px;
+    padding-top: 20px;
+    padding-bottom: 40px;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+body.sidebar-collapsed .sec-main {
+    padding-left: 45px; /* Espaço para a aba do botão */
+}
+
+
+
+
+
+@media (max-width: 900px) {
+    .sec-main {
+        padding-left: 100px;
+        padding-right: 15px;
+    }
+    body.sidebar-collapsed .sec-main {
+        padding-left: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sec-main {
+        padding-left: 85px; /* Espaço para o sidebar compacto de ícones */
+        padding-right: 10px;
+        padding-top: 15px;
+        gap: 20px;
+    }
+    body.sidebar-collapsed .sec-main {
+        padding-left: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sec-main {
+        padding-left: 70px;
+        padding-right: 10px;
+    }
+}
+
+
+@keyframes animacaoCoringa {
+    0% {
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    75% {
+        opacity: 0.75;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+:root {
+    --text-4xl: 48px;
+    --text-2xl: 24px;
+    --text-xl: 20px;
+    --text-lg: 18px;
+    --text-base: 16px;
+    --text-sm: 14px;
+
+    --corBase: #fc2323;
+    --corDestaque: #ca2525;
+    --corEscura: #646464;
+    --corBranca: #FFFFFF;
+
+    /* Esses aqui peguei do Tailwind é Emerald e Sky */
+    --confirmar: oklch(76.5% 0.177 163.223);
+    /* --confirmar: oklch(79.2% 0.209 151.711); */
+    --confirmarHover: oklch(69.6% 0.17 162.48);
+    /* --confirmarHover: oklch(69.6% 0.17 162.48); */
+
+    --editar: oklch(74.6% 0.16 232.661);
+    --editarHover: oklch(58.8% 0.158 241.966);
+
+    --ferramentas: oklch(62.476% 0.25289 28.919);
+    --ferramentasHover: oklch(59.123% 0.23572 27.395);
+
+    --clipes: oklch(75% 0.183 55.934);
+    --clipesHover: oklch(76.9% 0.188 70.08);
+
+    --hoverTr: #cecccc34;
+    --cinzafundo: #a1a1a1b6;
+    --txtClaro: #FFF;
+    --txtEscuro: #000000;
+
+    --corLogin: rgb(219, 219, 219);
+
+    /* cores do da pagina corretiva */
+    --status-ok: rgb(38, 240, 65);
+    --status-warning: rgb(233, 206, 54);
+    --status-danger: red;
+    --status-pereira: rgb(79, 79, 207);
+}
+
+html[data-tema='escuro'] {
+    --corFundo: #1e1f26;
+    --corFundo2: #2a2c36;
+    --sombra: 0 2px 10px rgba(255, 255, 255, .05);
+    --sombra2: 0 2px 10px rgba(255, 255, 255, .05);
+
+    --corTxt: #FFFFFF;
+    --corTxt2: #e0e0e0;   /* Antes era #000000 — texto claro para tema escuro */
+    --corTxt3: #FFF;
+
+    --corBordas: #75757586;
+    --corBarra: #2a2c36;
+}
+
+html[data-tema='claro'] {
+    --corFundo: #eef2f6;
+    --corFundo2: #f8fafc;
+    --sombra: 0 12px 30px rgba(15, 23, 42, .08);
+    --sombra2: 0 8px 20px rgba(15, 23, 42, .08);
+
+    --corTxt2: #111827;
+    --corTxt: #FFFFFF;  /* Mantido — usado em fundos coloridos (botões vermelhos, etc.) */
+    --corTxt3: #172033; /* Antes era #000 — levemente suavizado */
+
+    --corBordas: #d3dce7;
+    --corBarra: #b91c1c;
+    --hoverTr: rgba(185, 28, 28, .08);
+    --cinzafundo: #e7edf4;
+}
+
+html[data-tema='claro'] body {
+    background: var(--corFundo);
+    color: var(--corTxt3);
+}
+
+html[data-tema='claro'] .sidebar {
+    background: linear-gradient(180deg, #c82323 0%, #a31717 100%);
+    border-color: rgba(255, 255, 255, .22);
+    box-shadow: 0 16px 36px rgba(185, 28, 28, .18);
+}
+
+html[data-tema='claro'] .links,
+html[data-tema='claro'] .links-sub {
+    color: #fff;
+}
+
+html[data-tema='claro'] .links:hover,
+html[data-tema='claro'] .links-sub:hover,
+html[data-tema='claro'] .links.ativo,
+html[data-tema='claro'] .links-sub.ativo,
+html[data-tema='claro'] .sidebar .ativo {
+    background: rgba(255, 255, 255, .16);
+    color: #fff;
+}
+
+html[data-tema='claro'] input,
+html[data-tema='claro'] select,
+html[data-tema='claro'] textarea {
+    background-color: #f9fbfd;
+    border-color: var(--corBordas);
+    color: var(--corTxt3);
+}
+
+html[data-tema='claro'] input::placeholder,
+html[data-tema='claro'] textarea::placeholder {
+    color: rgba(23, 32, 51, .48);
+}
+
+html[data-tema='claro'] input:focus,
+html[data-tema='claro'] select:focus,
+html[data-tema='claro'] textarea:focus {
+    border-color: var(--corBase);
+    box-shadow: 0 0 0 3px rgba(252, 35, 35, .12);
+    outline: none;
+}
+
+html[data-tema='claro'] .div-header,
+html[data-tema='claro'] .tabela-bg,
+html[data-tema='claro'] .tabela-bg2,
+html[data-tema='claro'] .doc-card,
+html[data-tema='claro'] .doc-hero,
+html[data-tema='claro'] .welcome-box,
+html[data-tema='claro'] .modal-box,
+html[data-tema='claro'] .card-box-filho {
+    border-color: var(--corBordas);
+    box-shadow: var(--sombra);
+}
+
+html[data-tema='claro'] table thead,
+html[data-tema='claro'] .tabela-titulo {
+    background: #f1f5f9;
+}
+
+html[data-tema='claro'] table tbody tr:hover {
+    background: var(--hoverTr);
+    box-shadow: none;
+}
+
+html[data-tema='claro'] .modal-box {
+    border: 1px solid var(--corBordas);
+}
+
+html[data-tema='claro'] .modal-input input,
+html[data-tema='claro'] .modal-input textarea,
+html[data-tema='claro'] .modal-input select {
+    background: #f9fbfd;
+}
+
+@keyframes showBody {
+    0% {
+        left: -15%;
+    }
+
+    10% {
+        left: 1%;
+    }
+
+    20% {
+        left: 11%;
+    }
+
+    30% {
+        left: 21%;
+    }
+
+    40% {
+        left: 31%;
+    }
+
+    50% {
+        left: 41%;
+    }
+
+    60% {
+        left: 51%;
+    }
+
+    70% {
+        left: 61%;
+    }
+
+    80% {
+        left: 71%;
+    }
+
+    90% {
+        left: 81%;
+    }
+
+    100% {
+        left: 91%;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--corFundo);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--corBordas);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--corDestaque);
+}

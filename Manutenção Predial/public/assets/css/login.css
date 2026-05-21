@@ -1,0 +1,293 @@
+
+:root {
+    /* MODO DIA (LIMPO & ELEGANTE) */
+    --bg-bg: linear-gradient(135deg, #eef2f6 0%, #e4eaf1 100%);
+    --bg-dark: #eef2f6;
+    --senai-red: #ff2b2b;
+    --senai-red-dark: #cc0000;
+    --glass-bg: #f8fafc;
+    --glass-bg-rgba: rgba(248, 250, 252, 0.94);
+    /* Mais opaco para leitura */
+    --glass-border: rgba(185, 28, 28, 0.14);
+    --text-primary: #172033;
+    --text-secondary: #526070;
+    --sombra-glow: 0 24px 60px rgba(15, 23, 42, 0.12);
+    --particle-color: #b91c1c;
+    --transition-theme: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-tema="escuro"] {
+    /* MODO NOITE (DEEP BLACK & GLOW) */
+    --bg-bg: radial-gradient(circle at 50% 50%, #121214 0%, #000000 100%);
+    --bg-dark: #000000;
+    --senai-red-dark: #800000;
+    --glass-bg: #0f0f12;
+    --glass-bg-rgba: rgba(10, 10, 12, 0.92);
+    --glass-border: rgba(255, 43, 43, 0.2);
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b5;
+    --sombra-glow: 0 25px 70px rgba(0, 0, 0, 0.9);
+    --particle-color: #ff2b2b;
+}
+
+* {
+    transition: background 0.6s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+
+/* Background Shapes */
+.login-bg {
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+#particles-js {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.login-bg::before {
+    content: "";
+    position: absolute;
+    top: -10%;
+    left: -5%;
+    width: 45%;
+    height: 45%;
+    background: linear-gradient(135deg, var(--senai-red-dark), transparent);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    opacity: 0.15;
+    filter: blur(40px);
+    z-index: 0;
+}
+
+.login-bg::after {
+    content: "";
+    position: absolute;
+    bottom: -5%;
+    right: -5%;
+    width: 50%;
+    height: 50%;
+    background: linear-gradient(315deg, var(--senai-red-dark), transparent);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    opacity: 0.15;
+    filter: blur(40px);
+    z-index: 0;
+}
+
+/* Login Container */
+.login-box {
+    position: relative;
+    z-index: 100;
+    /* Sempre no topo */
+    width: 90%;
+    max-width: 440px;
+    padding: 40px;
+    background: var(--glass-bg);
+    background: var(--glass-bg-rgba);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: var(--sombra-glow);
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.div-img {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+#senai-logo {
+    max-width: 250px;
+    filter: drop-shadow(0 0 10px rgba(255, 43, 43, 0.2));
+    /* Em modo claro, o logo do SENAI se destaca naturalmente, em modo escuro o glow ajuda */
+    transition: var(--transition-smooth);
+}
+
+#senai-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Inputs Section */
+.div-inputs-chefe {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.div-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--glass-bg-rgba);
+    /* Usar a variável do tema */
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0 16px;
+    height: 56px;
+    transition: var(--transition-smooth);
+}
+
+.div-input:focus-within {
+    background: var(--glass-bg);
+    border-color: var(--senai-red);
+    box-shadow: 0 0 15px rgba(255, 43, 43, 0.2);
+}
+
+.div-input i {
+    color: var(--senai-red);
+    /* Ícones agora em vermelho para destaque */
+    font-size: 1.2rem;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.div-input:focus-within i {
+    color: var(--senai-red);
+}
+
+.input {
+    flex: 1;
+    /* Ocupa o espaço disponível sem empurrar os outros */
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 10px 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+/* Eye and Scan Buttons */
+.btnEsp {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 8px;
+    margin-left: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+}
+
+.btnEsp:hover {
+    color: var(--senai-red);
+}
+
+/* Action Buttons */
+.div-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn {
+    width: 100%;
+    height: 52px;
+    background: linear-gradient(135deg, var(--senai-red), var(--senai-red-dark));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 8px 20px rgba(255, 43, 43, 0.3);
+    transition: var(--transition-smooth);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(255, 43, 43, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+#trocarForm {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    align-self: center;
+    text-align: center;
+}
+
+#trocarForm:hover {
+    color: var(--senai-red);
+    text-decoration: underline;
+}
+
+/* Error Messages (if any) */
+.div-msg-erro {
+    background: rgba(255, 43, 43, 0.15);
+    border: 1px solid var(--senai-red);
+    color: var(--corDestaque);
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+/* Media Queries */
+@media (max-width: 480px) {
+    .login-box {
+        width: 95%;
+        padding: 30px 20px;
+    }
+
+    .login-bg::before,
+    .login-bg::after {
+        display: none;
+    }
+}
