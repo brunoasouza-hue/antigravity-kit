@@ -140,7 +140,8 @@ window.onload = () => {
 
     // Inserção Dinâmica do Botão Hamburger (Mobile/Tablet)
     const divHeader = document.querySelector('.div-header');
-    if (divHeader && !document.getElementById('mobile-sidebar-toggle')) {
+    const isHomePage = window.location.pathname.endsWith('home.php') || document.querySelector('.home-cards-grid');
+    if (divHeader && !document.getElementById('mobile-sidebar-toggle') && !isHomePage) {
         const toggleBtn = document.createElement('button');
         toggleBtn.id = 'mobile-sidebar-toggle';
         toggleBtn.className = 'mobile-toggle-btn';
