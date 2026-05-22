@@ -445,6 +445,30 @@ img {
 /* RESPONSIVO */
 /* ===================== */
 
+/* ===================== */
+/* RESPONSIVO */
+/* ===================== */
+
+/* Backdrop overlay para o menu mobile slided */
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1400;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.sidebar-open .sidebar-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 @media screen and (min-resolution: 1.75dppx) {
     .links {
         font-size: var(--text-sm);
@@ -452,151 +476,128 @@ img {
 }
 
 @media (max-width: 768px) {
+    /* Mobile overlay drawer style */
     .sidebar {
-        width: 70px;
-        /* Reduzi para focar nos ícones */
+        width: 280px;
+        height: 100vh;
+        top: 0;
+        left: -300px; /* Off-canvas por padrão */
         margin: 0;
-        height: 100%;
-        /* Ocupa a altura toda sem margem */
         border-radius: 0;
-        padding: 10px 0;
-        gap: 20px;
+        z-index: 1500;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+        display: flex !important; /* Mostra tudo de volta no mobile drawer */
+        border: none;
     }
 
-    /* Esconde a logo no mobile para ganhar espaço */
-    .div-img {
-        display: none;
+    /* Revela elementos ocultos no mobile sidebar expandido */
+    .sidebar .div-img,
+    .sidebar .div-links span,
+    .sidebar .div-links .seta,
+    .sidebar .sair span {
+        display: block !important;
     }
 
-    .div-links {
+    .sidebar .div-links {
         height: auto;
         flex-grow: 1;
-        justify-content: center;
-        /* Faz a lista de links ocupar o espaço central */
-        overflow-x: hidden;
+        justify-content: flex-start;
+        padding: 20px 0;
+        overflow-y: auto;
     }
 
-    /* Ajuste dos links: Centraliza o ícone e esconde o texto */
-    .links {
-        width: 100%;
-        justify-content: center;
-        padding: 12px 0;
-        font-size: 0;
-        /* Esconde o texto */
+    .sidebar .links {
+        width: 90%;
+        justify-content: flex-start;
+        padding: 12px 15px;
+        font-size: var(--text-base) !important;
     }
 
-    .links i {
-        margin-right: 0;
-        font-size: var(--text-xl);
-        /* Ícones maiores para facilitar o toque */
+    .sidebar .links i {
+        margin-right: 10px !important;
+        font-size: 1.3rem !important;
     }
 
-    /* Submenu no mobile (opcional: pode esconder ou mostrar apenas ícones) */
-    .submenu {
-        display: flex;
-        width: 100%;
-        margin-left: 0;
-        padding-left: 0;
-        border-left: none;
+    .sidebar .sair {
+        width: 240px;
+        height: 45px;
+        justify-content: space-between;
+        padding: 6px 15px;
+        border-radius: 5px;
     }
 
-    .links-sub {
-        justify-content: center;
-        font-size: 0;
+    .sidebar .sair span {
+        display: inline !important;
     }
 
-    .links-sub i {
-        margin-right: 0;
-        font-size: 1.2rem;
+    .sidebar .sair i {
+        margin: 0 !important;
+        font-size: 1.2rem !important;
     }
 
-    /* Botão Sair - Vira um ícone centralizado */
-    .sair {
-        width: 50px;
-        height: 50px;
-        justify-content: center;
-        padding: 0;
-        border-radius: 50%;
-    }
-
-    .sair span {
+    /* Submenu no drawer mobile */
+    .sidebar .submenu {
         display: none;
-        /* Esconde o texto "Sair" */
+        width: 85%;
+        margin-left: 10px;
+        padding-left: 10px;
+        border-left: 2px solid rgba(255, 255, 255, 0.2);
     }
 
-    .sair i {
-        margin: 0;
-        font-size: 1.2rem;
+    .sidebar .submenu.aberto {
+        display: flex;
     }
 
-    /* Ajuste das configurações */
-    .div-configs {
-        gap: 15px;
-        width: 100%;
-    }
-
-    .div-configs a,
-    .div-configs #tema {
+    .sidebar .links-sub {
+        justify-content: flex-start;
         font-size: var(--text-sm);
+        padding: 10px;
     }
 
-    .div-configs div {
-        flex-direction: row;
+    .sidebar .links-sub i {
+        margin-right: 8px !important;
+        font-size: 1.1rem !important;
     }
 
-    /* Botão de fechar - Reposicionado para não sumir */
+    .sidebar .manutencao-btn,
+    .sidebar .maquinas-btn {
+        justify-content: space-between;
+        padding: 15px;
+    }
+
+    /* Quando a sidebar mobile está ativada */
+    body.sidebar-open .sidebar {
+        left: 0;
+        box-shadow: 10px 0 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Botão fechar original de desktop ocultado no mobile drawer */
     .botao-fechar button {
-        left: 80%;
-        font-size: var(--text-2xl);
-        width: 35px;
-        height: 35px;
+        display: none !important;
+    }
+
+    /* Botão flutuante hamburger no mobile */
+    .mobile-toggle-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-    }
-
-    /* Submenu no mobile — mantém ícones centralizados */
-    .submenu.aberto .links-sub {
-        justify-content: center;
-        font-size: 0;
-    }
-
-    .submenu.aberto .links-sub i {
-        margin-right: 0;
-        font-size: 1.1rem;
-    }
-
-    /* Botão menu accordion — ícone centralizado */
-    .manutencao-btn,
-    .maquinas-btn {
-        justify-content: center;
-        padding: 12px 0;
-    }
-
-    .manutencao-btn .seta,
-    .maquinas-btn .seta {
-        display: none;
-        /* Esconde seta no mobile */
-    }
-}
-
-@media (max-width: 480px) {
-    .sidebar {
-        width: 56px;
-        margin: 0;
-    }
-
-    .links {
-        padding: 10px 0;
-    }
-
-    .links i {
-        font-size: var(--text-lg);
-    }
-
-    .sair {
+        background: var(--corFundo2);
+        border: 1px solid var(--corBordas);
+        border-radius: 8px;
         width: 42px;
         height: 42px;
+        font-size: 1.6rem;
+        color: var(--corTxt3);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--sombra2);
+    }
+
+    .mobile-toggle-btn:hover {
+        background: var(--hoverTr);
+        color: var(--corBase);
+        transform: scale(1.05);
     }
 }
 

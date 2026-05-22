@@ -680,7 +680,7 @@ const server = http.createServer((req, res) => {
                     session.usuario_nome = user.nome;
                     session.usuario_email = user.email;
                     session.usuario_nivel = user.nivel_acesso;
-                    redirect('/public/views/dashboard.php');
+                    redirect('/public/views/home.php');
                 } else {
                     session.erro = "E-mail ou senha incorretos.";
                     redirect('/public/index.php');
@@ -1058,7 +1058,7 @@ const server = http.createServer((req, res) => {
         // Restringe a tela de análise apenas para perfil "Gestor"
         if (pathname.includes('dashboard_analise.php') && session.usuario_nivel !== 'Gestor') {
             session.alerta_erro = "Acesso negado: Seu perfil não possui permissão para acessar esta área.";
-            redirect('/public/views/dashboard.php');
+            redirect('/public/views/home.php');
             return;
         }
 

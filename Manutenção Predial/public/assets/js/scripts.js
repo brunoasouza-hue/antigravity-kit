@@ -1,3 +1,38 @@
+// Interceptor global do Fetch API para lidar com expiração de sessão e redirecionamento (Opção B)
+const originalFetch = window.fetch;
+window.fetch = async function(...args) {
+    try {
+        const response = await originalFetch(...args);
+        
+        // Se a resposta foi redirecionada para a tela de login (index.php ou AuthController)
+        if (response.redirected && (response.url.includes('index.php') || response.url.includes('login') || response.url.includes('AuthController'))) {
+            window.location.reload();
+            return response;
+        }
+
+        // Se o status da resposta for 401 (Não Autorizado) ou 403 (Proibido)
+        if (response.status === 401 || response.status === 403) {
+            window.location.reload();
+            return response;
+        }
+
+        // Caso a resposta retorne HTML contendo a tela de login (expiração silenciosa)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+            const clone = response.clone();
+            const text = await clone.text();
+            if (text.includes('login-form') || text.includes('index.php') || text.includes('<!DOCTYPE') || text.includes('verificarAutenticacao')) {
+                window.location.reload();
+            }
+        }
+
+        return response;
+    } catch (error) {
+        console.error('Fetch global interceptor error:', error);
+        throw error;
+    }
+};
+
 // Carrega o Ultimo tema salvo no LocalStorage e define uma saudação de acordo com a hora do dia.
 window.onload = () => {
     // Se tiver tema no LocalStorage eu pego ele se não coloca "claro" mesmo
@@ -81,6 +116,16 @@ window.onload = () => {
     const arrow = document.getElementById("fechar-nav");
     const body = document.body;
 
+    // Opção B: Colapsa a barra lateral por padrão no desktop para maximizar a área de trabalho
+    if (window.innerWidth > 768) {
+        if (!body.classList.contains('sidebar-collapsed')) {
+            body.classList.add('sidebar-collapsed');
+            if (arrow) {
+                arrow.innerHTML = '<i class="bi bi-arrow-right-circle-fill"></i>';
+            }
+        }
+    }
+
     if (arrow) {
         arrow.addEventListener('click', () => {
             body.classList.toggle('sidebar-collapsed');
@@ -92,6 +137,59 @@ window.onload = () => {
             }
         });
     }
+
+    // Inserção Dinâmica do Botão Hamburger (Mobile/Tablet)
+    const divHeader = document.querySelector('.div-header');
+    if (divHeader && !document.getElementById('mobile-sidebar-toggle')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.id = 'mobile-sidebar-toggle';
+        toggleBtn.className = 'mobile-toggle-btn';
+        toggleBtn.setAttribute('aria-label', 'Menu de Navegação');
+        toggleBtn.innerHTML = '<i class="bi bi-list"></i>';
+        
+        // Insere o botão de toggle como primeiro elemento no cabeçalho
+        divHeader.insertBefore(toggleBtn, divHeader.firstChild);
+        
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            body.classList.toggle('sidebar-open');
+        });
+    }
+
+    // Backdrop/Scrim dinâmico para a sidebar no mobile
+    if (!document.querySelector('.sidebar-backdrop')) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'sidebar-backdrop';
+        document.body.appendChild(backdrop);
+        
+        backdrop.addEventListener('click', () => {
+            body.classList.remove('sidebar-open');
+        });
+    }
+
+    // Fechar a sidebar mobile se clicar fora dela
+    document.addEventListener('click', (e) => {
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.getElementById('mobile-sidebar-toggle');
+        if (body.classList.contains('sidebar-open') && sidebar && !sidebar.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
+            body.classList.remove('sidebar-open');
+        }
+    });
+
+    // Gestos de Deslize (Swipe) para fechar a sidebar mobile facilmente
+    let touchStartX = 0;
+    let touchEndX = 0;
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
+    document.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        // Deslizar para a esquerda (mínimo de 60px) fecha o menu
+        if (body.classList.contains('sidebar-open') && (touchStartX - touchEndX > 60)) {
+            body.classList.remove('sidebar-open');
+        }
+    }, { passive: true });
 }
 
 // Garante que a data apareça mesmo com defer

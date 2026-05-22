@@ -64,6 +64,11 @@ $dataAtual = date('d/m/Y');
         </div>
 
         <div class="div-links">
+            <!-- Início -->
+            <a href="./home.php" class="links">
+                <i class="bi bi-house-door-fill"></i> Início
+            </a>
+
             <!-- Dashboard Link (Ativo) -->
             <a href="./dashboard.php" class="ativo links">
                 <i class="bi bi-speedometer2"></i> Dashboard
@@ -154,7 +159,7 @@ $dataAtual = date('d/m/Y');
         <div class="dashboard-container" style="margin-top: 30px;">
             <div style="margin-bottom: 25px;">
                 <h2 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Painel de Controle Predial</h2>
-                <p style="color: var(--corTxt2); margin-top: 5px;">Selecione uma das opções rápidas ou acompanhe os indicadores do sistema.</p>
+                <p style="color: var(--corTxt2); margin-top: 5px;">Acompanhe os principais indicadores e métricas do sistema predial.</p>
             </div>
 
             <!-- CARDS DE MÉTRICAS RÁPIDAS -->
@@ -205,54 +210,7 @@ $dataAtual = date('d/m/Y');
                 </div>
             </div>
 
-            <!-- MENU DE ATALHOS GRÁFICOS PREMIUM -->
-            <div style="margin-bottom: 25px;">
-                <h3 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Navegação Rápida</h3>
-            </div>
-            
-            <div class="menu-rapido-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-                
-                <!-- Atalho 1: Checklist Preventiva (Apenas Gestores/Executores) -->
-                <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
-                    <a href="./preventivas.php" style="text-decoration: none; display: flex; flex-direction: column; background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 16px; padding: 30px; color: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: all 0.25s ease;" class="card-atalho">
-                        <i class="bi bi-clock-fill" style="font-size: 2rem; color: var(--corBase); margin-bottom: 15px;"></i>
-                        <h4 style="font-weight: 800; color: var(--corTxt3); font-family: 'TASA Orbiter', sans-serif; margin-bottom: 8px;">Checklist Preventiva</h4>
-                        <p style="color: var(--corTxt2); font-size: 13px; line-height: 1.4;">Realizar inspeções regulares de tomadas, lousas, projetores, paredes e forros prediais.</p>
-                    </a>
-                <?php endif; ?>
 
-                <!-- Atalho 2: Corretiva (Todos) -->
-                <a href="./corretivas.php" style="text-decoration: none; display: flex; flex-direction: column; background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 16px; padding: 30px; color: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: all 0.25s ease;" class="card-atalho">
-                    <i class="bi bi-wrench" style="font-size: 2rem; color: #ca2525; margin-bottom: 15px;"></i>
-                    <h4 style="font-weight: 800; color: var(--corTxt3); font-family: 'TASA Orbiter', sans-serif; margin-bottom: 8px;">Ordem de Serviço (O.S)</h4>
-                    <p style="color: var(--corTxt2); font-size: 13px; line-height: 1.4;">
-                        <?php echo $usuarioNivel === 'Solicitante' ? 'Solicitar reparos imediatos de manutenção corretiva para salas do Senai.' : 'Gerenciar e executar chamados de manutenção corretiva em tempo real.'; ?>
-                    </p>
-                </a>
-
-                <!-- Atalho 3: Ambientes (Apenas Gestor) -->
-                <?php if ($usuarioNivel === 'Gestor'): ?>
-                    <a href="./ambientes.php" style="text-decoration: none; display: flex; flex-direction: column; background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 16px; padding: 30px; color: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: all 0.25s ease;" class="card-atalho">
-                        <i class="bi bi-building" style="font-size: 2rem; color: #007bff; margin-bottom: 15px;"></i>
-                        <h4 style="font-weight: 800; color: var(--corTxt3); font-family: 'TASA Orbiter', sans-serif; margin-bottom: 8px;">Gestão de Ambientes</h4>
-                        <p style="color: var(--corTxt2); font-size: 13px; line-height: 1.4;">Cadastrar novas salas e blocos, inativar salas obsoletas e gerenciar a infraestrutura física.</p>
-                    </a>
-
-                    <!-- Atalho 4: Usuários (Apenas Gestor) -->
-                    <a href="./usuarios.php" style="text-decoration: none; display: flex; flex-direction: column; background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 16px; padding: 30px; color: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: all 0.25s ease;" class="card-atalho">
-                        <i class="bi bi-file-earmark-person-fill" style="font-size: 2rem; color: #28a745; margin-bottom: 15px;"></i>
-                        <h4 style="font-weight: 800; color: var(--corTxt3); font-family: 'TASA Orbiter', sans-serif; margin-bottom: 8px;">Gestão de Usuários</h4>
-                        <p style="color: var(--corTxt2); font-size: 13px; line-height: 1.4;">Cadastrar e gerenciar perfis de acesso dos solicitantes, gestores e executores de manutenção.</p>
-                    </a>
-                <?php endif; ?>
-
-                <!-- Atalho 5: Configurações do Perfil (Todos) -->
-                <a href="./perfil.php" style="text-decoration: none; display: flex; flex-direction: column; background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 16px; padding: 30px; color: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: all 0.25s ease;" class="card-atalho">
-                    <i class="bi bi-person-fill" style="font-size: 2rem; color: #6c757d; margin-bottom: 15px;"></i>
-                    <h4 style="font-weight: 800; color: var(--corTxt3); font-family: 'TASA Orbiter', sans-serif; margin-bottom: 8px;">Meu Perfil</h4>
-                    <p style="color: var(--corTxt2); font-size: 13px; line-height: 1.4;">Visualizar suas informações cadastrais de cargo e alterar sua senha com segurança via AJAX.</p>
-                </a>
-            </div>
         </div>
     </section>
 

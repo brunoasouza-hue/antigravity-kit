@@ -103,9 +103,9 @@ class AuthController {
         $nivelUsuario = $_SESSION['usuario_nivel'] ?? '';
 
         if (!in_array($nivelUsuario, $niveisPermitidos, true)) {
-            // Acesso negado - Redireciona para o dashboard com mensagem de erro de permissão
+            // Acesso negado - Redireciona para a tela inicial Home com mensagem de erro de permissão
             $_SESSION['alerta_erro'] = "Acesso negado: Seu perfil (" . $nivelUsuario . ") não possui permissão para acessar esta área.";
-            header("Location: " . BASE_URL . "/public/views/dashboard.php");
+            header("Location: " . BASE_URL . "/public/views/home.php");
             exit;
         }
     }

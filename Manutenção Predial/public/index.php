@@ -8,9 +8,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../src/Controllers/AuthController.php';
 
-// Se já estiver logado, redireciona diretamente para o dashboard
+// Se já estiver logado, redireciona diretamente para a tela inicial Home
 if (isset($_SESSION['usuario_id'])) {
-    header("Location: " . BASE_URL . "/public/views/dashboard.php");
+    header("Location: " . BASE_URL . "/public/views/home.php");
     exit;
 }
 
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $senha = $_POST['senha'] ?? '';
     
     if ($auth->login($email, $senha)) {
-        header("Location: " . BASE_URL . "/public/views/dashboard.php");
+        header("Location: " . BASE_URL . "/public/views/home.php");
         exit;
     } else {
         $erro = $_SESSION['auth_error'] ?? 'Erro de login.';

@@ -90,6 +90,11 @@ $dataAtual = date('d/m/Y');
         </div>
 
         <div class="div-links">
+            <!-- Início -->
+            <a href="./home.php" class="links">
+                <i class="bi bi-house-door-fill"></i> Início
+            </a>
+
             <a href="./dashboard.php" class="links">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
