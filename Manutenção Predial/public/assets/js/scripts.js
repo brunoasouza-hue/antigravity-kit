@@ -191,6 +191,96 @@ window.onload = () => {
             body.classList.remove('sidebar-open');
         }
     }, { passive: true });
+
+    // ==========================================
+    // LÓGICA DE SUBMENUS EXPANSÍVEIS (ACCORDION)
+    // ==========================================
+    const btnManutencao = document.getElementById("btn-manutencao");
+    const btnInspecoes = document.getElementById("btn-inspecoes");
+    const menuManutencao = document.querySelector(".menu-manutencao");
+    const menuInspecoes = document.querySelector(".menu-inspecoes");
+    const submenuManutencao = document.getElementById("submenu-manutencao");
+    const submenuInspecoes = document.getElementById("submenu-inspecoes");
+
+    // Função auxiliar para fechar Manutenção
+    function fecharManutencao() {
+        if (menuManutencao) menuManutencao.classList.remove("aberto");
+        if (submenuManutencao) {
+            submenuManutencao.classList.remove("aberto");
+            submenuManutencao.style.display = "none";
+        }
+    }
+
+    // Função auxiliar para fechar Inspeções
+    function fecharInspecoes() {
+        if (menuInspecoes) menuInspecoes.classList.remove("aberto");
+        if (submenuInspecoes) {
+            submenuInspecoes.classList.remove("aberto");
+            submenuInspecoes.style.display = "none";
+        }
+    }
+
+    if (btnManutencao) {
+        btnManutencao.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (body.classList.contains('sidebar-collapsed')) {
+                body.classList.remove('sidebar-collapsed');
+                if (arrow) arrow.innerHTML = '<i class="bi bi-arrow-left-circle-fill"></i>';
+            }
+
+            const estaAberto = menuManutencao.classList.contains("aberto");
+            if (estaAberto) {
+                fecharManutencao();
+            } else {
+                fecharInspecoes(); // Accordion: fecha o outro
+                menuManutencao.classList.add("aberto");
+                if (submenuManutencao) {
+                    submenuManutencao.classList.add("aberto");
+                    submenuManutencao.style.display = "flex";
+                }
+            }
+        });
+    }
+
+    if (btnInspecoes) {
+        btnInspecoes.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (body.classList.contains('sidebar-collapsed')) {
+                body.classList.remove('sidebar-collapsed');
+                if (arrow) arrow.innerHTML = '<i class="bi bi-arrow-left-circle-fill"></i>';
+            }
+
+            const estaAberto = menuInspecoes.classList.contains("aberto");
+            if (estaAberto) {
+                fecharInspecoes();
+            } else {
+                fecharManutencao(); // Accordion: fecha o outro
+                menuInspecoes.classList.add("aberto");
+                if (submenuInspecoes) {
+                    submenuInspecoes.classList.add("aberto");
+                    submenuInspecoes.style.display = "flex";
+                }
+            }
+        });
+    }
+
+    // Auto-expande o menu correspondente baseado na URL da página atual ao carregar
+    const path = window.location.pathname;
+    if (path.includes("preventivas.php") || path.includes("corretivas.php")) {
+        fecharInspecoes();
+        if (menuManutencao) menuManutencao.classList.add("aberto");
+        if (submenuManutencao) {
+            submenuManutencao.classList.add("aberto");
+            submenuManutencao.style.display = "flex";
+        }
+    } else if (path.includes("inspecoes_seguranca.php")) {
+        fecharManutencao();
+        if (menuInspecoes) menuInspecoes.classList.add("aberto");
+        if (submenuInspecoes) {
+            submenuInspecoes.classList.add("aberto");
+            submenuInspecoes.style.display = "flex";
+        }
+    }
 }
 
 // Garante que a data apareça mesmo com defer

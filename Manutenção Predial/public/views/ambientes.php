@@ -94,11 +94,30 @@ $dataAtual = date('d/m/Y');
                     <i class="bi bi-caret-down-fill seta"></i>
                 </a>
                 <div class="submenu" id="submenu-manutencao">
+                    <a href="./corretivas.php" class="links-sub">
+                        <i class="bi bi-wrench"></i> Corretiva (O.S)
+                    </a>
                     <a href="./preventivas.php" class="links-sub">
                         <i class="bi bi-clock-fill"></i> Preventiva (Checklist)
                     </a>
-                    <a href="./corretivas.php" class="links-sub">
-                        <i class="bi bi-wrench"></i> Corretiva (O.S)
+                </div>
+            </div>
+
+            <!-- Inspeções de segurança (Todos os usuários) -->
+            <div class="menu-inspecoes">
+                <a href="javascript:void(0)" class="links inspecoes-btn" id="btn-inspecoes">
+                    <div>
+                        <i class="bi bi-shield-fill-check"></i>
+                        <span>Inspeções</span>
+                    </div>
+                    <i class="bi bi-caret-down-fill seta"></i>
+                </a>
+                <div class="submenu" id="submenu-inspecoes">
+                    <a href="./inspecoes_seguranca.php" class="links-sub">
+                        <i class="bi bi-plus-circle-fill"></i> Nova Inspeção
+                    </a>
+                    <a href="./inspecoes_seguranca.php" class="links-sub">
+                        <i class="bi bi-clock-history"></i> Histórico
                     </a>
                 </div>
             </div>

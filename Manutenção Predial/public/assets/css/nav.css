@@ -148,7 +148,8 @@ body.sidebar-collapsed .submenu {
 /* ========================= */
 
 .menu-manutencao,
-.menu-maquinas {
+.menu-maquinas,
+.menu-inspecoes {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -159,7 +160,8 @@ body.sidebar-collapsed .submenu {
 
 /* Botão Manutenção */
 .manutencao-btn,
-.maquinas-btn {
+.maquinas-btn,
+.inspecoes-btn {
     width: 90%;
     display: flex;
     justify-content: space-between;
@@ -169,7 +171,8 @@ body.sidebar-collapsed .submenu {
 
 /* Setinha */
 .manutencao-btn .seta,
-.maquinas-btn .seta {
+.maquinas-btn .seta,
+.inspecoes-btn .seta {
     font-size: 0.8rem;
     transition: transform 0.3s ease;
 }
@@ -192,7 +195,8 @@ body.sidebar-collapsed .submenu {
 
 /* Girar seta quando aberto */
 .menu-manutencao.aberto .seta,
-.menu-maquinas.aberto .seta {
+.menu-maquinas.aberto .seta,
+.menu-inspecoes.aberto .seta {
     transform: rotate(180deg);
 }
 
