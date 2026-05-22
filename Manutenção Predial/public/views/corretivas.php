@@ -237,7 +237,8 @@ $dataAtual = date('d/m/Y');
                                 <td colspan="10" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhuma ordem de serviço registrada.</td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($ordensServico as $os): 
+                            <?php foreach ($ordensServico as $os): ?>
+                            <?php 
                                 $status = $os->getStatus();
                                 $podeClicarLinha = ($usuarioNivel === 'Gestor' && $status === 'Pendente') || ($usuarioNivel === 'Executor' && $status === 'Em Execução');
                                 $rowStyle = $podeClicarLinha ? 'cursor: pointer; border-bottom: 1px solid var(--corBorda); transition: 0.2s;' : 'border-bottom: 1px solid var(--corBorda); transition: 0.2s;';
