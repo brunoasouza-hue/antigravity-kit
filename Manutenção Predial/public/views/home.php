@@ -93,6 +93,7 @@ $dataAtual = date('d/m/Y');
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 24px;
             margin-top: 20px;
+            counter-reset: card-counter;
         }
 
         .home-card {
@@ -138,6 +139,11 @@ $dataAtual = date('d/m/Y');
             margin-bottom: 12px;
             padding-bottom: 12px;
             border-bottom: 1px solid var(--corBordas);
+        }
+
+        .home-card-title::before {
+            counter-increment: card-counter;
+            content: counter(card-counter) ". ";
         }
 
         .home-card-desc {
@@ -291,8 +297,6 @@ $dataAtual = date('d/m/Y');
 
             <!-- GRID DE CARD DE ATALHOS PREMIUM -->
             <div class="home-cards-grid">
-                
-                <?php $cardCounter = 1; ?>
 
                 <!-- 1. Checklist Preventiva (Apenas Gestor e Executor) -->
                 <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
@@ -300,7 +304,7 @@ $dataAtual = date('d/m/Y');
                         <div class="home-card-icon-box">
                             <i class="bi bi-clock-fill"></i>
                         </div>
-                        <h4 class="home-card-title"><?php echo $cardCounter++; ?>. Checklist Preventiva</h4>
+                        <h4 class="home-card-title">Checklist Preventiva</h4>
                         <p class="home-card-desc">Realizar inspeções regulares de tomadas, lousas, projetores, paredes e forros prediais.</p>
                     </a>
                 <?php endif; ?>
@@ -310,15 +314,14 @@ $dataAtual = date('d/m/Y');
                     <div class="home-card-icon-box">
                         <i class="bi bi-wrench"></i>
                     </div>
-                    <h4 class="home-card-title"><?php echo $cardCounter++; ?>. Ordem de Serviço (O.S)</h4>
+                    <h4 class="home-card-title">Ordem de Serviço (O.S)</h4>
                     <p class="home-card-desc">
-                        <?php 
-                        if ($usuarioNivel === 'Solicitante') {
-                            echo 'Solicitar reparos imediatos de manutenção corretiva para salas do Senai.';
-                        } else {
-                            echo 'Gerenciar e executar chamados de manutenção corretiva em tempo real.';
-                        }
-                        ?>
+                        <?php if ($usuarioNivel === 'Solicitante'): ?>
+                            Solicitar reparos imediatos de manutenção corretiva para salas do Senai.
+                        <?php endif; ?>
+                        <?php if ($usuarioNivel !== 'Solicitante'): ?>
+                            Gerenciar e executar chamados de manutenção corretiva em tempo real.
+                        <?php endif; ?>
                     </p>
                 </a>
 
@@ -328,7 +331,7 @@ $dataAtual = date('d/m/Y');
                         <div class="home-card-icon-box">
                             <i class="bi bi-building"></i>
                         </div>
-                        <h4 class="home-card-title"><?php echo $cardCounter++; ?>. Gestão de Ambientes</h4>
+                        <h4 class="home-card-title">Gestão de Ambientes</h4>
                         <p class="home-card-desc">Cadastrar novas salas e blocos, inativar salas obsoletas e gerenciar a infraestrutura física.</p>
                     </a>
 
@@ -337,7 +340,7 @@ $dataAtual = date('d/m/Y');
                         <div class="home-card-icon-box">
                             <i class="bi bi-file-earmark-person-fill"></i>
                         </div>
-                        <h4 class="home-card-title"><?php echo $cardCounter++; ?>. Gestão de Usuários</h4>
+                        <h4 class="home-card-title">Gestão de Usuários</h4>
                         <p class="home-card-desc">Cadastrar e gerenciar perfis de acesso dos solicitantes, gestores e executores de manutenção.</p>
                     </a>
                 <?php endif; ?>
@@ -347,7 +350,7 @@ $dataAtual = date('d/m/Y');
                     <div class="home-card-icon-box">
                         <i class="bi bi-person-fill"></i>
                     </div>
-                    <h4 class="home-card-title"><?php echo $cardCounter++; ?>. Meu Perfil</h4>
+                    <h4 class="home-card-title">Meu Perfil</h4>
                     <p class="home-card-desc">Visualizar suas informações cadastrais de cargo e alterar sua senha com segurança via AJAX.</p>
                 </a>
                 
