@@ -41,7 +41,7 @@ class Usuario {
     public function setEmail(string $email): void { $this->email = strtolower(trim($email)); }
     public function getNivelAcesso(): string { return $this->nivel_acesso; }
     public function setNivelAcesso(string $nivel_acesso): void { 
-        $niveisValidos = ['Solicitante', 'Gestor', 'Executor'];
+        $niveisValidos = ['Solicitante', 'Gestor', 'Executor', 'Administrador'];
         if (in_array($nivel_acesso, $niveisValidos, true)) {
             $this->nivel_acesso = $nivel_acesso;
         }

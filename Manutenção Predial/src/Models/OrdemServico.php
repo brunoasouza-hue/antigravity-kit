@@ -11,7 +11,7 @@ class OrdemServico {
     private ?int $id = null;
     private int $solicitante_id;
     private ?int $gestor_id = null;
-    private ?int $executor_id = null;
+    private ?int $executor_atual_id = null;
     private int $ambiente_id;
     private string $descricao_problema;
     private string $tipo_execucao;
@@ -34,7 +34,7 @@ class OrdemServico {
         string $tipo_execucao = 'Interna',
         string $status = 'Pendente',
         ?int $gestor_id = null,
-        ?int $executor_id = null,
+        ?int $executor_atual_id = null,
         ?int $id = null,
         ?string $data_abertura = null,
         ?string $data_fechamento = null
@@ -45,7 +45,7 @@ class OrdemServico {
         $this->tipo_execucao = $tipo_execucao;
         $this->status = $status;
         $this->gestor_id = $gestor_id;
-        $this->executor_id = $executor_id;
+        $this->executor_atual_id = $executor_atual_id;
         $this->id = $id;
         $this->data_abertura = $data_abertura;
         $this->data_fechamento = $data_fechamento;
@@ -61,8 +61,8 @@ class OrdemServico {
     public function getGestorId(): ?int { return $this->gestor_id; }
     public function setGestorId(?int $id): void { $this->gestor_id = $id; }
     
-    public function getExecutorId(): ?int { return $this->executor_id; }
-    public function setExecutorId(?int $id): void { $this->executor_id = $id; }
+    public function getExecutorId(): ?int { return $this->executor_atual_id; }
+    public function setExecutorId(?int $id): void { $this->executor_atual_id = $id; }
     
     public function getAmbienteId(): int { return $this->ambiente_id; }
     public function setAmbienteId(int $id): void { $this->ambiente_id = $id; }
@@ -178,20 +178,20 @@ class OrdemServico {
         }
 
         $sql = "UPDATE ordens_servico 
-                SET gestor_id = :gestor_id, executor_id = :executor_id, tipo_execucao = :tipo_execucao, status = 'Em Execução' 
+                SET gestor_id = :gestor_id, executor_atual_id = :executor_atual_id, tipo_execucao = :tipo_execucao, status = 'Em Execução' 
                 WHERE id = :id";
         
         $stmt = $this->db->prepare($sql);
         $success = $stmt->execute([
             'gestor_id' => $gestorId,
-            'executor_id' => $executorId,
+            'executor_atual_id' => $executorId,
             'tipo_execucao' => $tipoExecucao,
             'id' => $this->id
         ]);
 
         if ($success) {
             $this->gestor_id = $gestorId;
-            $this->executor_id = $executorId;
+            $this->executor_atual_id = $executorId;
             $this->tipo_execucao = $tipoExecucao;
             $this->status = 'Em Execução';
             return true;
@@ -298,7 +298,7 @@ class OrdemServico {
     public static function buscarPorId(int $id): ?self {
         $db = Database::getConnection();
         $sql = "SELECT os.*, 
-                       a.nome_bloco_sala AS ambiente_nome,
+                       a.nome_ambiente AS ambiente_nome,
                        us.nome AS solicitante_nome,
                        ug.nome AS gestor_nome,
                        ue.nome AS executor_nome
@@ -306,7 +306,7 @@ class OrdemServico {
                 INNER JOIN ambientes a ON os.ambiente_id = a.id
                 INNER JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
-                LEFT JOIN usuarios ue ON os.executor_id = ue.id
+                LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
                 WHERE os.id = :id 
                 LIMIT 1";
         
@@ -322,7 +322,7 @@ class OrdemServico {
                 $row['tipo_execucao'],
                 $row['status'],
                 $row['gestor_id'] !== null ? (int)$row['gestor_id'] : null,
-                $row['executor_id'] !== null ? (int)$row['executor_id'] : null,
+                $row['executor_atual_id'] !== null ? (int)$row['executor_atual_id'] : null,
                 (int)$row['id'],
                 $row['data_abertura'],
                 $row['data_fechamento']
@@ -346,7 +346,7 @@ class OrdemServico {
     public static function listarPorSolicitante(int $solicitanteId): array {
         $db = Database::getConnection();
         $sql = "SELECT os.*, 
-                       a.nome_bloco_sala AS ambiente_nome,
+                       a.nome_ambiente AS ambiente_nome,
                        us.nome AS solicitante_nome,
                        ug.nome AS gestor_nome,
                        ue.nome AS executor_nome
@@ -354,7 +354,7 @@ class OrdemServico {
                 INNER JOIN ambientes a ON os.ambiente_id = a.id
                 INNER JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
-                LEFT JOIN usuarios ue ON os.executor_id = ue.id
+                LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
                 WHERE os.solicitante_id = :solicitante_id
                 ORDER BY os.id DESC";
         
@@ -370,7 +370,7 @@ class OrdemServico {
                 $row['tipo_execucao'],
                 $row['status'],
                 $row['gestor_id'] !== null ? (int)$row['gestor_id'] : null,
-                $row['executor_id'] !== null ? (int)$row['executor_id'] : null,
+                $row['executor_atual_id'] !== null ? (int)$row['executor_atual_id'] : null,
                 (int)$row['id'],
                 $row['data_abertura'],
                 $row['data_fechamento']
@@ -393,7 +393,7 @@ class OrdemServico {
     public static function listarTodosComRelacionamentos(): array {
         $db = Database::getConnection();
         $sql = "SELECT os.*, 
-                       a.nome_bloco_sala AS ambiente_nome,
+                       a.nome_ambiente AS ambiente_nome,
                        us.nome AS solicitante_nome,
                        ug.nome AS gestor_nome,
                        ue.nome AS executor_nome
@@ -401,7 +401,7 @@ class OrdemServico {
                 INNER JOIN ambientes a ON os.ambiente_id = a.id
                 INNER JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
-                LEFT JOIN usuarios ue ON os.executor_id = ue.id
+                LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
                 ORDER BY os.id DESC";
         
         $stmt = $db->query($sql);
@@ -415,7 +415,7 @@ class OrdemServico {
                 $row['tipo_execucao'],
                 $row['status'],
                 $row['gestor_id'] !== null ? (int)$row['gestor_id'] : null,
-                $row['executor_id'] !== null ? (int)$row['executor_id'] : null,
+                $row['executor_atual_id'] !== null ? (int)$row['executor_atual_id'] : null,
                 (int)$row['id'],
                 $row['data_abertura'],
                 $row['data_fechamento']
@@ -439,7 +439,7 @@ class OrdemServico {
     public static function listarPorExecutor(int $executorId): array {
         $db = Database::getConnection();
         $sql = "SELECT os.*, 
-                       a.nome_bloco_sala AS ambiente_nome,
+                       a.nome_ambiente AS ambiente_nome,
                        us.nome AS solicitante_nome,
                        ug.nome AS gestor_nome,
                        ue.nome AS executor_nome
@@ -447,12 +447,12 @@ class OrdemServico {
                 INNER JOIN ambientes a ON os.ambiente_id = a.id
                 INNER JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
-                LEFT JOIN usuarios ue ON os.executor_id = ue.id
-                WHERE os.executor_id = :executor_id
+                LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
+                WHERE os.executor_atual_id = :executor_atual_id
                 ORDER BY os.id DESC";
         
         $stmt = $db->prepare($sql);
-        $stmt->execute(['executor_id' => $executorId]);
+        $stmt->execute(['executor_atual_id' => $executorId]);
         $lista = [];
 
         while ($row = $stmt->fetch()) {
@@ -463,7 +463,7 @@ class OrdemServico {
                 $row['tipo_execucao'],
                 $row['status'],
                 $row['gestor_id'] !== null ? (int)$row['gestor_id'] : null,
-                $row['executor_id'] !== null ? (int)$row['executor_id'] : null,
+                $row['executor_atual_id'] !== null ? (int)$row['executor_atual_id'] : null,
                 (int)$row['id'],
                 $row['data_abertura'],
                 $row['data_fechamento']

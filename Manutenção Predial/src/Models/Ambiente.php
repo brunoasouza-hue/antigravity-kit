@@ -9,16 +9,16 @@ require_once __DIR__ . '/../../config/Database.php';
 
 class Ambiente {
     private ?int $id = null;
-    private string $nome_bloco_sala;
+    private string $nome_ambiente;
     private string $status;
     private PDO $db;
 
     public function __construct(
-        string $nome_bloco_sala = '',
+        string $nome_ambiente = '',
         string $status = 'Ativo',
         ?int $id = null
     ) {
-        $this->nome_bloco_sala = trim($nome_bloco_sala);
+        $this->nome_ambiente = trim($nome_ambiente);
         $this->status = $status;
         $this->id = $id;
         $this->db = Database::getConnection();
@@ -27,10 +27,14 @@ class Ambiente {
     // Getters e Setters
     public function getId(): ?int { return $this->id; }
     
-    public function getNomeBlocoSala(): string { return $this->nome_bloco_sala; }
+    public function setId(int $id): void {
+        $this->id = $id;
+    }
     
-    public function setNomeBlocoSala(string $nome_bloco_sala): void { 
-        $this->nome_bloco_sala = trim($nome_bloco_sala); 
+    public function getNomeAmbiente(): string { return $this->nome_ambiente; }
+    
+    public function setNomeAmbiente(string $nome_ambiente): void { 
+        $this->nome_ambiente = trim($nome_ambiente); 
     }
     
     public function getStatus(): string { return $this->status; }
@@ -50,14 +54,14 @@ class Ambiente {
      * @throws InvalidArgumentException
      */
     public function validar(): bool {
-        $nomeLimpo = strtoupper(trim($this->nome_bloco_sala));
+        $nomeLimpo = strtoupper(trim($this->nome_ambiente));
         
         if ($nomeLimpo === '') {
-            throw new InvalidArgumentException("O nome do bloco/sala não pode ser vazio.");
+            throw new InvalidArgumentException("O nome do ambiente não pode ser vazio.");
         }
         
         if ($nomeLimpo === 'VAZIO') {
-            throw new InvalidArgumentException("O nome do bloco/sala não pode ser 'VAZIO'.");
+            throw new InvalidArgumentException("O nome do ambiente não pode ser 'VAZIO'.");
         }
         
         return true;
@@ -74,28 +78,31 @@ class Ambiente {
         $this->validar();
 
         if ($this->id === null) {
+            throw new InvalidArgumentException("O ID do ambiente é obrigatório.");
+        }
+
+        // Verifica se já existe um registro com este ID no banco
+        $existe = self::buscarPorId($this->id) !== null;
+
+        if (!$existe) {
             // Inserção
-            $sql = "INSERT INTO ambientes (nome_bloco_sala, status) VALUES (:nome_bloco_sala, :status)";
-            $stmt = $this->db->prepare($sql);
-            $success = $stmt->execute([
-                'nome_bloco_sala' => $this->nome_bloco_sala,
-                'status' => $this->status
-            ]);
-            if ($success) {
-                $this->id = (int)$this->db->lastInsertId();
-                return true;
-            }
-        } else {
-            // Atualização
-            $sql = "UPDATE ambientes SET nome_bloco_sala = :nome_bloco_sala, status = :status WHERE id = :id";
+            $sql = "INSERT INTO ambientes (id, nome_ambiente, status) VALUES (:id, :nome_ambiente, :status)";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
-                'nome_bloco_sala' => $this->nome_bloco_sala,
+                'id' => $this->id,
+                'nome_ambiente' => $this->nome_ambiente,
+                'status' => $this->status
+            ]);
+        } else {
+            // Atualização
+            $sql = "UPDATE ambientes SET nome_ambiente = :nome_ambiente, status = :status WHERE id = :id";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                'nome_ambiente' => $this->nome_ambiente,
                 'status' => $this->status,
                 'id' => $this->id
             ]);
         }
-        return false;
     }
 
     /**
@@ -151,7 +158,7 @@ class Ambiente {
 
         if ($row) {
             return new self(
-                $row['nome_bloco_sala'],
+                $row['nome_ambiente'],
                 $row['status'],
                 (int)$row['id']
             );
@@ -166,11 +173,11 @@ class Ambiente {
      */
     public static function listarTodos(): array {
         $db = Database::getConnection();
-        $stmt = $db->query("SELECT * FROM ambientes ORDER BY nome_bloco_sala ASC");
+        $stmt = $db->query("SELECT * FROM ambientes ORDER BY id ASC");
         $ambientes = [];
         while ($row = $stmt->fetch()) {
             $ambientes[] = new self(
-                $row['nome_bloco_sala'],
+                $row['nome_ambiente'],
                 $row['status'],
                 (int)$row['id']
             );
@@ -185,11 +192,11 @@ class Ambiente {
      */
     public static function listarAtivos(): array {
         $db = Database::getConnection();
-        $stmt = $db->query("SELECT * FROM ambientes WHERE status = 'Ativo' ORDER BY nome_bloco_sala ASC");
+        $stmt = $db->query("SELECT * FROM ambientes WHERE status = 'Ativo' ORDER BY id ASC");
         $ambientes = [];
         while ($row = $stmt->fetch()) {
             $ambientes[] = new self(
-                $row['nome_bloco_sala'],
+                $row['nome_ambiente'],
                 $row['status'],
                 (int)$row['id']
             );

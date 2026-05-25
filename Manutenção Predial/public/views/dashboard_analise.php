@@ -136,10 +136,10 @@ while ($row = $execQuery->fetch()) {
 // 4. RANKING DE AMBIENTES CRÍTICOS (Maior volume de OS Corretivas)
 // =========================================================================
 $rankingQuery = $db->query("
-    SELECT a.nome_bloco_sala, COUNT(os.id) as total_corretivas
+    SELECT a.nome_ambiente, COUNT(os.id) as total_corretivas
     FROM ambientes a
     INNER JOIN ordens_servico os ON a.id = os.ambiente_id
-    GROUP BY a.id, a.nome_bloco_sala
+    GROUP BY a.id, a.nome_ambiente
     ORDER BY total_corretivas DESC
     LIMIT 5
 ");

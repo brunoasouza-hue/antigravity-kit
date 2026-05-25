@@ -145,7 +145,7 @@ class Checklist {
      */
     public static function buscarPorId(int $id): ?self {
         $db = Database::getConnection();
-        $sql = "SELECT c.*, a.nome_bloco_sala AS ambiente_nome, u.nome AS responsavel_nome 
+        $sql = "SELECT c.*, a.nome_ambiente AS ambiente_nome, u.nome AS responsavel_nome 
                 FROM checklists c
                 INNER JOIN ambientes a ON c.ambiente_id = a.id
                 INNER JOIN usuarios u ON c.responsavel_id = u.id
@@ -185,7 +185,7 @@ class Checklist {
      */
     public static function listarTodos(): array {
         $db = Database::getConnection();
-        $sql = "SELECT c.*, a.nome_bloco_sala AS ambiente_nome, u.nome AS responsavel_nome 
+        $sql = "SELECT c.*, a.nome_ambiente AS ambiente_nome, u.nome AS responsavel_nome 
                 FROM checklists c
                 INNER JOIN ambientes a ON c.ambiente_id = a.id
                 INNER JOIN usuarios u ON c.responsavel_id = u.id

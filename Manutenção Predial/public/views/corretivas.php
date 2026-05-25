@@ -235,127 +235,68 @@ $dataAtual = date('d/m/Y');
             </div>
             
             <div class="tabela-wrapper" style="overflow-x: auto; background: var(--corFundo); border-radius: 12px; border: 1px solid var(--corBorda);">
-                <table class="tabela-main" style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                        <tr style="border-bottom: 2px solid var(--corBorda); background: rgba(0,0,0,0.02);">
-                            <th style="padding: 15px; width: 8%;">ID</th>
-                            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
-                                <th style="padding: 15px; width: 15%;">Solicitante</th>
-                            <?php endif; ?>
-                            <th style="padding: 15px; width: 15%;">Ambiente</th>
-                            <th style="padding: 15px;">Descrição do Problema</th>
-                            <?php if ($usuarioNivel === 'Gestor'): ?>
-                                <th style="padding: 15px; width: 10%;">Tipo</th>
-                            <?php endif; ?>
-                            <?php if ($usuarioNivel === 'Solicitante' || $usuarioNivel === 'Gestor'): ?>
-                                <th style="padding: 15px; width: 15%;">Executor</th>
-                            <?php endif; ?>
-                            <th style="padding: 15px; width: 12%;">Abertura</th>
-                            <th style="padding: 15px; text-align: center; width: 15%;">Status</th>
-                            <th style="padding: 15px; text-align: center; width: 10%;">Ações</th>
+                <table class="tabela-main" style="width: 100%; border-collapse: collapse;">
+                    <thead style="position: sticky; top: 0; z-index: 10; background: #B91C1C; color: #fff;">
+                        <tr>
+                            <th style="padding: 15px; width: 8%; white-space: nowrap;">ID</th>
+                            <th style="padding: 15px; width: 15%; white-space: nowrap;">Solicitante</th>
+                            <th style="padding: 15px; width: 15%; white-space: nowrap;">Ambiente</th>
+                            <th style="padding: 15px; white-space: nowrap;">Descrição do Problema</th>
+                            <th style="padding: 15px; width: 10%; white-space: nowrap;">Tipo</th>
+                            <th style="padding: 15px; width: 15%; white-space: nowrap;">Executor Atual</th>
+                            <th style="padding: 15px; width: 12%; white-space: nowrap;">Abertura</th>
+                            <th style="padding: 15px; text-align: center; width: 10%; white-space: nowrap;">Status</th>
+                            <th style="padding: 15px; text-align: center; width: 10%; white-space: nowrap;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-os-body">
                         <?php if (empty($ordensServico)): ?>
                             <tr id="linha-vazia">
-                                <td colspan="10" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhuma ordem de serviço registrada.</td>
+                                <td colspan="9" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhuma ordem de serviço registrada.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($ordensServico as $os): ?>
-                            <?php 
-                                $status = $os->getStatus();
-                                $podeClicarLinha = ($usuarioNivel === 'Gestor' && $status === 'Pendente') || ($usuarioNivel === 'Executor' && $status === 'Em Execução');
-                                $rowStyle = $podeClicarLinha ? 'cursor: pointer; border-bottom: 1px solid var(--corBorda); transition: 0.2s;' : 'border-bottom: 1px solid var(--corBorda); transition: 0.2s;';
-                                $onClick = '';
-                                if ($usuarioNivel === 'Gestor' && $status === 'Pendente') {
-                                    $onClick = 'onclick="abrirModalDespacho(' . $os->getId() . ')"';
-                                } elseif ($usuarioNivel === 'Executor' && $status === 'Em Execução') {
-                                    $onClick = 'onclick="abrirModalFinalizacao(' . $os->getId() . ')"';
-                                }
-                            ?>
-                                <tr id="row-<?php echo $os->getId(); ?>" <?php echo $onClick; ?> style="<?php echo $rowStyle; ?>" class="linha-tabela-os">
-                                    <!-- ID -->
-                                    <td style="padding: 15px; font-weight: bold; color: var(--corTxt2);">#<?php echo $os->getId(); ?></td>
+                                <?php $status = $os->getStatus(); ?>
+                                <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo htmlspecialchars($status); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s;" class="linha-tabela-os">
+                                    <td style="padding: 15px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#<?php echo $os->getId(); ?></td>
                                     
-                                    <!-- Solicitante (para Gestor/Executor) -->
-                                    <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
-                                        <td style="padding: 15px; font-weight: 500; color: var(--corTxt3);"><?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?></td>
-                                    <?php endif; ?>
+                                    <td style="padding: 15px; font-weight: bold; color: #B91C1C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?></td>
                                     
-                                    <!-- Ambiente -->
-                                    <td style="padding: 15px; font-weight: bold; color: var(--corDestaque);"><?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?></td>
+                                    <td style="padding: 15px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?></td>
                                     
-                                    <!-- Descrição do Problema -->
-                                    <td style="padding: 15px; font-size: 14px; color: var(--corTxt3); white-space: pre-line;"><?php echo htmlspecialchars($os->getDescricaoProblema()); ?></td>
+                                    <td style="padding: 15px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="<?php echo htmlspecialchars($os->getDescricaoProblema()); ?>"><?php echo htmlspecialchars($os->getDescricaoProblema()); ?></td>
                                     
-                                    <!-- Tipo Execução (Gestor) -->
-                                    <?php if ($usuarioNivel === 'Gestor'): ?>
-                                        <td style="padding: 15px; font-weight: 500; color: var(--corTxt2);"><?php echo htmlspecialchars($os->getTipoExecucao()); ?></td>
-                                    <?php endif; ?>
+                                    <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap;"><span class="badge-tipo"><?php echo htmlspecialchars($os->getTipoExecucao()); ?></span></td>
                                     
-                                    <!-- Executor (para Solicitante/Gestor) -->
-                                    <?php if ($usuarioNivel === 'Solicitante' || $usuarioNivel === 'Gestor'): ?>
-                                        <td style="padding: 15px; font-weight: 500; color: var(--corTxt3);">
-                                            <?php if ($os->getExecutorNome()): ?>
-                                                <i class="bi bi-person-fill" style="margin-right: 4px;"></i> <?php echo htmlspecialchars($os->getExecutorNome()); ?>
-                                            <?php else: ?>
-                                                <span style="opacity: 0.6; font-style: italic;">A definir</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    <?php endif; ?>
-                                    
-                                    <!-- Abertura -->
-                                    <td style="padding: 15px; font-size: 13px; color: var(--corTxt2);"><?php echo date('d/m/Y H:i', strtotime($os->getDataAbertura() ?? '')); ?></td>
-                                    
-                                    <!-- Status Badge -->
-                                    <td style="padding: 15px; text-align: center;">
-                                        <?php if ($status === 'Pendente'): ?>
-                                            <span style="background-color: rgba(255, 193, 7, 0.12); color: #ffc107; border: 1px solid #ffc107; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">
-                                                <i class="bi bi-hourglass-split"></i> Pendente
-                                            </span>
-                                        <?php elseif ($status === 'Em Execução'): ?>
-                                            <span style="background-color: rgba(0, 123, 255, 0.12); color: #007bff; border: 1px solid #007bff; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">
-                                                <i class="bi bi-gear-fill"></i> Em Execução
-                                            </span>
-                                        <?php elseif ($status === 'Aguardando Validação'): ?>
-                                            <span style="background-color: rgba(23, 162, 184, 0.12); color: #17a2b8; border: 1px solid #17a2b8; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">
-                                                <i class="bi bi-clock-fill"></i> Aguardando Validação
-                                            </span>
-                                        <?php elseif ($status === 'Concluída'): ?>
-                                            <span style="background-color: rgba(40, 167, 69, 0.12); color: #28a745; border: 1px solid #28a745; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">
-                                                <i class="bi bi-check2-all"></i> Concluída
-                                            </span>
+                                    <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getExecutorNome() ?? 'Não Atribuído'); ?>">
+                                        <?php if ($os->getExecutorNome()): ?>
+                                            <?php echo htmlspecialchars($os->getExecutorNome()); ?>
+                                        <?php else: ?>
+                                            <span style="color: #999; font-style: italic;">Não Atribuído</span>
                                         <?php endif; ?>
                                     </td>
                                     
-                                    <!-- Ações Individuais -->
-                                    <td style="padding: 15px; text-align: center;" onclick="event.stopPropagation()">
-                                        <div style="display: flex; gap: 8px; justify-content: center;">
-                                            <?php if ($usuarioNivel === 'Solicitante' && $status === 'Aguardando Validação'): ?>
-                                                <button class="btnAcao editar" type="button" title="Validar O.S." 
-                                                        onclick="abrirModalValidacao(<?php echo $os->getId(); ?>)"
-                                                        style="background: #28a745; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                                    <i class="bi bi-patch-check-fill"></i>
-                                                </button>
-                                            <?php elseif ($usuarioNivel === 'Gestor' && $status === 'Pendente'): ?>
-                                                <button class="btnAcao editar" type="button" title="Despachar O.S." 
-                                                        onclick="abrirModalDespacho(<?php echo $os->getId(); ?>)"
-                                                        style="background: #007bff; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                                    <i class="bi bi-send-fill"></i>
-                                                </button>
-                                            <?php elseif ($usuarioNivel === 'Executor' && $status === 'Em Execução'): ?>
-                                                <button class="btnAcao status-toggle" type="button" title="Finalizar Serviço" 
-                                                        onclick="abrirModalFinalizacao(<?php echo $os->getId(); ?>)"
-                                                        style="background: #28a745; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                                    <i class="bi bi-check-circle-fill"></i>
-                                                </button>
-                                            <?php else: ?>
-                                                <button class="btnAcao" type="button" title="Visualizar Detalhes" 
-                                                        onclick="visualizarOS(<?php echo $os->getId(); ?>)"
-                                                        style="background: #6c757d; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                                    <i class="bi bi-eye-fill"></i>
-                                                </button>
-                                            <?php endif; ?>
+                                    <td style="padding: 15px; font-size: 14px; color: var(--corTxt2); white-space: nowrap;">
+                                        <?php echo date('d/m/Y H:i', strtotime($os->getDataAbertura() ?? '')); ?>
+                                    </td>
+                                    
+                                    <td style="padding: 15px; text-align: center; white-space: nowrap;">
+                                        <?php if ($status === 'Pendente'): ?>
+                                            <span style="background-color: rgba(255, 193, 7, 0.12); color: #ffc107; border: 1px solid #ffc107; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">Pendente</span>
+                                        <?php elseif ($status === 'Em Execução'): ?>
+                                            <span style="background-color: rgba(0, 123, 255, 0.12); color: #007bff; border: 1px solid #007bff; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">Em Execução</span>
+                                        <?php elseif ($status === 'Aguardando Validação'): ?>
+                                            <span style="background-color: rgba(23, 162, 184, 0.12); color: #17a2b8; border: 1px solid #17a2b8; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">Aguardando Validação</span>
+                                        <?php elseif ($status === 'Concluída'): ?>
+                                            <span style="background-color: rgba(40, 167, 69, 0.12); color: #28a745; border: 1px solid #28a745; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">Concluída</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    
+                                    <td style="padding: 15px; text-align: center; white-space: nowrap;" onclick="event.stopPropagation()">
+                                        <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
+                                            <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="abrirModalTramitacao(<?php echo $os->getId(); ?>)" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
+                                            <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="abrirModalTramitacao(<?php echo $os->getId(); ?>)" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
+                                            <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -387,8 +328,23 @@ $dataAtual = date('d/m/Y');
                             <select name="ambiente_id" id="abrir_ambiente_id" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
                                 <option value="" disabled selected>Selecione o ambiente com problema...</option>
                                 <?php foreach ($ambientesAtivos as $amb): ?>
-                                    <option value="<?php echo $amb->getId(); ?>"><?php echo htmlspecialchars($amb->getNomeBlocoSala()); ?></option>
+                                    <option value="<?php echo $amb->getId(); ?>">
+                                        #<?php echo $amb->getId(); ?> - <?php echo htmlspecialchars($amb->getNomeBlocoSala()); ?>
+                                    </option>
                                 <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-input" style="margin-bottom: 15px;">
+                        <label for="abrir_prioridade" style="font-weight: bold; display: block; margin-bottom: 8px;">Nível de Prioridade:</label>
+                        <div class="input-wrapper">
+                            <select name="prioridade" id="abrir_prioridade" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                                <option value="" disabled selected>Defina a urgência deste chamado...</option>
+                                <option value="Baixa">Baixa</option>
+                                <option value="Média">Média</option>
+                                <option value="Alta">Alta</option>
+                                <option value="Urgente">Urgente</option>
                             </select>
                         </div>
                     </div>
@@ -678,41 +634,28 @@ $dataAtual = date('d/m/Y');
 
         // Constrói HTML das ações dinamicamente de acordo com o nível de acesso e status
         function renderActionsHtml(id, status) {
-            const nivel = '<?php echo $usuarioNivel; ?>';
-            if (nivel === 'Solicitante' && status === 'Aguardando Validação') {
-                return `<button class="btnAcao editar" type="button" title="Validar O.S." onclick="abrirModalValidacao(${id})" style="background: #28a745; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;"><i class="bi bi-patch-check-fill"></i></button>`;
-            } else if (nivel === 'Gestor' && status === 'Pendente') {
-                return `<button class="btnAcao editar" type="button" title="Despachar O.S." onclick="abrirModalDespacho(${id})" style="background: #007bff; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;"><i class="bi bi-send-fill"></i></button>`;
-            } else if (nivel === 'Executor' && status === 'Em Execução') {
-                return `<button class="btnAcao status-toggle" type="button" title="Finalizar Serviço" onclick="abrirModalFinalizacao(${id})" style="background: #28a745; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;"><i class="bi bi-check-circle-fill"></i></button>`;
-            } else {
-                return `<button class="btnAcao" type="button" title="Visualizar Detalhes" onclick="visualizarOS(${id})" style="background: #6c757d; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;"><i class="bi bi-eye-fill"></i></button>`;
-            }
+            return `
+                <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="abrirModalTramitacao(${id})" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
+                <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="abrirModalTramitacao(${id})" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
+                <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>
+            `;
         }
 
         // Re-renderiza de forma inteligente e reativa as linhas da tabela
         function renderRowHtml(data) {
-            const nivel = '<?php echo $usuarioNivel; ?>';
-            const solicitanteTd = (nivel === 'Gestor' || nivel === 'Executor') ? `<td style="padding: 15px; font-weight: 500; color: var(--corTxt3);">${data.solicitante_nome}</td>` : '';
-            const gestorTd = (nivel === 'Gestor') ? `<td style="padding: 15px; font-weight: 500; color: var(--corTxt2);">${data.tipo_execucao}</td>` : '';
-            
-            let executorTd = '';
-            if (nivel === 'Solicitante' || nivel === 'Gestor') {
-                const execNome = data.executor_nome ? `<i class="bi bi-person-fill" style="margin-right: 4px;"></i> ${data.executor_nome}` : '<span style="opacity: 0.6; font-style: italic;">A definir</span>';
-                executorTd = `<td style="padding: 15px; font-weight: 500; color: var(--corTxt3);">${execNome}</td>`;
-            }
+            const execNome = data.executor_nome ? data.executor_nome : '<span style="color: #999; font-style: italic;">Não Atribuído</span>';
 
             return `
-                <td style="padding: 15px; font-weight: bold; color: var(--corTxt2);">#${data.id}</td>
-                ${solicitanteTd}
-                <td style="padding: 15px; font-weight: bold; color: var(--corDestaque);">${data.ambiente_nome}</td>
-                <td style="padding: 15px; font-size: 14px; color: var(--corTxt3); white-space: pre-line;">${data.descricao_problema}</td>
-                ${gestorTd}
-                ${executorTd}
-                <td style="padding: 15px; font-size: 13px; color: var(--corTxt2);">${data.data_abertura}</td>
-                <td style="padding: 15px; text-align: center;">${renderStatusBadge(data.status)}</td>
-                <td style="padding: 15px; text-align: center;" onclick="event.stopPropagation()">
-                    <div style="display: flex; gap: 8px; justify-content: center;">
+                <td style="padding: 15px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#${data.id}</td>
+                <td style="padding: 15px; font-weight: bold; color: #B91C1C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.solicitante_nome || 'N/D'}">${data.solicitante_nome || 'N/D'}</td>
+                <td style="padding: 15px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.ambiente_nome || 'N/D'}">${data.ambiente_nome || 'N/D'}</td>
+                <td style="padding: 15px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="${data.descricao_problema}">${data.descricao_problema}</td>
+                <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap;"><span class="badge-tipo">${data.tipo_execucao}</span></td>
+                <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.executor_nome || 'Não Atribuído'}">${execNome}</td>
+                <td style="padding: 15px; font-size: 13px; color: var(--corTxt2); white-space: nowrap;">${data.data_abertura}</td>
+                <td style="padding: 15px; text-align: center; white-space: nowrap;">${renderStatusBadge(data.status)}</td>
+                <td style="padding: 15px; text-align: center; white-space: nowrap;" onclick="event.stopPropagation()">
+                    <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
                         ${renderActionsHtml(data.id, data.status)}
                     </div>
                 </td>
@@ -1099,6 +1042,113 @@ $dataAtual = date('d/m/Y');
         }
 
         // =========================================================================
+        // MODAL DE TRAMITAÇÃO (Unificado com Histórico)
+        // =========================================================================
+        function abrirModalTramitacao(osId) {
+            document.getElementById('lbl_tram_historico').innerHTML = 'Carregando histórico...';
+            document.getElementById('modalTramitacao').style.display = 'flex';
+
+            fetch(`/public/api/os_historico.php?os_id=${osId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const os = data.os;
+                        document.getElementById('tramitacao_os_id').value = os.id;
+                        document.getElementById('lbl_tram_id').innerText = '#' + os.id;
+                        document.getElementById('lbl_tram_ambiente').innerText = os.ambiente;
+                        document.getElementById('lbl_tram_abertura').innerText = os.data_abertura;
+                        document.getElementById('lbl_tram_status').innerText = os.status;
+                        document.getElementById('lbl_tram_desc').innerText = os.descricao;
+                        
+                        // Renderiza o histórico
+                        let histHtml = '';
+                        if (data.historico && data.historico.length > 0) {
+                            data.historico.forEach(h => {
+                                histHtml += `<div style="border-bottom: 1px solid #ddd; padding: 8px 0;">
+                                    <div style="font-size: 11px; color: #888;">${h.data_formatada} - ${h.origem_nome} &rarr; ${h.status_etapa}</div>
+                                    <div style="font-size: 13px; color: #444; margin-top: 4px;">${h.observacao_etapa}</div>
+                                </div>`;
+                            });
+                        } else {
+                            histHtml = 'Nenhum histórico registrado.';
+                        }
+                        document.getElementById('lbl_tram_historico').innerHTML = histHtml;
+
+                        document.getElementById('nova_observacao').value = '';
+
+                        // Lógica de exibição dos botões baseada no status e nível
+                        const nivel = '<?php echo $usuarioNivel; ?>';
+                        const btnTramitar = document.getElementById('btnTramitarAcao');
+                        const selectExecutor = document.getElementById('div_select_executor');
+                        
+                        btnTramitar.style.display = 'none';
+                        selectExecutor.style.display = 'none';
+                        document.getElementById('nova_observacao').disabled = false;
+
+                        if (nivel === 'Gestor' && os.status === 'Pendente') {
+                            selectExecutor.style.display = 'block';
+                            btnTramitar.innerText = 'Atribuir a Executor';
+                            btnTramitar.style.background = '#007bff';
+                            btnTramitar.style.display = 'block';
+                        } else if (nivel === 'Executor' && os.status === 'Em Execução') {
+                            btnTramitar.innerText = 'Relatar e Concluir Serviço';
+                            btnTramitar.style.background = '#28a745';
+                            btnTramitar.style.display = 'block';
+                        } else if (nivel === 'Solicitante' && os.status === 'Aguardando Validação') {
+                            btnTramitar.innerText = 'Aprovar Serviço (Concluir)';
+                            btnTramitar.style.background = '#17a2b8';
+                            btnTramitar.style.display = 'block';
+                        } else {
+                            document.getElementById('nova_observacao').disabled = true;
+                            document.getElementById('nova_observacao').placeholder = 'Apenas leitura para este status.';
+                        }
+                    } else {
+                        alert(data.message || 'Erro ao carregar dados da OS.');
+                        fecharModalTramitacao();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Erro de comunicação com o servidor.');
+                    fecharModalTramitacao();
+                });
+        }
+
+        function fecharModalTramitacao() {
+            document.getElementById('modalTramitacao').style.display = 'none';
+        }
+
+        function submeterTramitacao(event) {
+            event.preventDefault();
+            const form = document.getElementById('form-tramitacao');
+            const formData = new URLSearchParams(new FormData(form));
+            const searchParams = new URLSearchParams();
+            for (const [key, value] of formData.entries()) {
+                searchParams.append(key, value);
+            }
+            searchParams.append('acao', 'tramitar_os');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: searchParams.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Erro interno de conexão.');
+            });
+        }
+
+        // =========================================================================
         // VALIDADDORES EM TEMPO REAL CONTRA PALAVRA 'VAZIO' E NOME DO CAMPO
         // =========================================================================
         document.addEventListener('DOMContentLoaded', () => {
@@ -1164,6 +1214,59 @@ $dataAtual = date('d/m/Y');
             }
         });
     </script>
+
+    <!-- MODAL DE TRAMITAÇÃO / HISTÓRICO -->
+    <div class="modal-fundo" id="modalTramitacao" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+        <div class="modal-box" style="background: #fff; border-radius: 12px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--corBorda); padding-bottom: 15px; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #333;">Tramitação da O.S. <span id="lbl_tram_id" style="color:var(--corBase);"></span></h3>
+                <button type="button" onclick="fecharModalTramitacao()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #888;"><i class="bi bi-x-lg"></i></button>
+            </div>
+            
+            <form id="form-tramitacao" onsubmit="submeterTramitacao(event)" class="modal-form">
+                <input type="hidden" name="os_id" id="tramitacao_os_id">
+                
+                <div style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--corBorda); margin-bottom: 20px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong>Ambiente:</strong> <span id="lbl_tram_ambiente" style="color:var(--corTxt3);"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong>Status Atual:</strong> <span id="lbl_tram_status" style="font-weight:bold; color:#007bff;"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong>Abertura:</strong> <span id="lbl_tram_abertura" style="color:var(--corTxt2);"></span>
+                    </div>
+                    <hr style="border:0; border-top:1px solid var(--corBorda); margin: 15px 0;">
+                    <strong style="display:block; margin-bottom:5px;">Descrição do Problema:</strong>
+                    <p id="lbl_tram_desc" style="color:var(--corTxt3); font-size:14px; line-height:1.5;"></p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <strong style="display:block; margin-bottom:8px; color:var(--corTxt3);">Histórico da OS:</strong>
+                    <div id="lbl_tram_historico" style="background:var(--corFundo); border:1px solid var(--corBorda); padding:12px; border-radius:8px; font-size:13px; color:var(--corTxt2); min-height:60px; max-height:200px; overflow-y:auto; line-height:1.5;"></div>
+                </div>
+
+                <div class="modal-input" style="margin-bottom: 15px;">
+                    <label for="nova_observacao" style="display:block; margin-bottom: 8px; font-weight: 500;">Adicionar Observação (Registro no Histórico):</label>
+                    <textarea name="nova_observacao" id="nova_observacao" rows="3" placeholder="Digite uma nova observação ou relatório de serviço..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+
+                <div class="modal-input" id="div_select_executor" style="display: none; margin-bottom: 15px;">
+                    <label for="executor_atual_id" style="display:block; margin-bottom: 8px; font-weight: 500;">Atribuir a um Executor (Gestores):</label>
+                    <select name="executor_atual_id" id="executor_atual_id" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                        <option value="" disabled selected>Selecione o funcionário...</option>
+                        <?php foreach($executores as $exe): ?>
+                            <option value="<?php echo $exe->getId(); ?>"><?php echo htmlspecialchars($exe->getNome()); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 25px; display:flex; justify-content:flex-end;">
+                    <button type="submit" id="btnTramitarAcao" style="color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;"></button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Scripts de utilidades globais e relógio em tempo real -->
     <script src="../assets/js/scripts.js" defer></script>

@@ -75,23 +75,28 @@ class AmbienteController {
      * Cadastra um novo ambiente no banco.
      */
     private function cadastrar(): void {
-        $nome = trim($_POST['nome_bloco_sala'] ?? '');
+        $id = (int)($_POST['id'] ?? 0);
+        $nome = trim($_POST['nome_ambiente'] ?? '');
         $status = trim($_POST['status'] ?? 'Ativo');
 
+        if ($id <= 0) {
+            $this->retornarResposta(false, "O código (ID) do ambiente é obrigatório e deve ser numérico.");
+        }
+
         if (empty($nome)) {
-            $this->retornarResposta(false, "O nome do bloco/sala é obrigatório.");
+            $this->retornarResposta(false, "O nome do ambiente é obrigatório.");
         }
 
         if (strcasecmp($nome, 'VAZIO') === 0) {
-            $this->retornarResposta(false, "Erro: O nome do bloco/sala não pode ser 'VAZIO'.");
+            $this->retornarResposta(false, "Erro: O nome do ambiente não pode ser 'VAZIO'.");
         }
 
         try {
-            $ambiente = new Ambiente($nome, $status);
+            $ambiente = new Ambiente($nome, $status, $id);
             if ($ambiente->salvar()) {
                 $this->retornarResposta(true, "Ambiente '{$nome}' cadastrado com sucesso!", [
                     'id' => $ambiente->getId(),
-                    'nome_bloco_sala' => $ambiente->getNomeBlocoSala(),
+                    'nome_ambiente' => $ambiente->getNomeAmbiente(),
                     'status' => $ambiente->getStatus()
                 ]);
             } else {
@@ -101,7 +106,7 @@ class AmbienteController {
             $this->retornarResposta(false, $e->getMessage());
         } catch (PDOException $e) {
             if ($e->getCode() === '23000' || strpos($e->getMessage(), '1062') !== false) {
-                $this->retornarResposta(false, "Erro: Já existe um ambiente cadastrado com o nome '{$nome}'.");
+                $this->retornarResposta(false, "Erro: Já existe um ambiente cadastrado com o ID ou nome especificado.");
             } else {
                 $this->retornarResposta(false, "Erro de banco de dados ao salvar: " . $e->getMessage());
             }
@@ -113,7 +118,7 @@ class AmbienteController {
      */
     private function editar(): void {
         $id = (int)($_POST['id'] ?? 0);
-        $nome = trim($_POST['nome_bloco_sala'] ?? '');
+        $nome = trim($_POST['nome_ambiente'] ?? '');
         $status = trim($_POST['status'] ?? 'Ativo');
 
         if ($id <= 0 || empty($nome)) {
@@ -121,7 +126,7 @@ class AmbienteController {
         }
 
         if (strcasecmp($nome, 'VAZIO') === 0) {
-            $this->retornarResposta(false, "Erro: O nome do bloco/sala não pode ser 'VAZIO'.");
+            $this->retornarResposta(false, "Erro: O nome do ambiente não pode ser 'VAZIO'.");
         }
 
         $ambiente = Ambiente::buscarPorId($id);
@@ -130,13 +135,13 @@ class AmbienteController {
         }
 
         try {
-            $ambiente->setNomeBlocoSala($nome);
+            $ambiente->setNomeAmbiente($nome);
             $ambiente->setStatus($status);
             
             if ($ambiente->salvar()) {
                 $this->retornarResposta(true, "Ambiente atualizado com sucesso!", [
                     'id' => $ambiente->getId(),
-                    'nome_bloco_sala' => $ambiente->getNomeBlocoSala(),
+                    'nome_ambiente' => $ambiente->getNomeAmbiente(),
                     'status' => $ambiente->getStatus()
                 ]);
             } else {
@@ -172,9 +177,9 @@ class AmbienteController {
 
         if ($ambiente->alterarStatus($novoStatus)) {
             $statusMsg = $novoStatus === 'Ativo' ? 'ativado' : 'inativado';
-            $this->retornarResposta(true, "Ambiente '{$ambiente->getNomeBlocoSala()}' {$statusMsg} com sucesso!", [
+            $this->retornarResposta(true, "Ambiente '{$ambiente->getNomeAmbiente()}' {$statusMsg} com sucesso!", [
                 'id' => $ambiente->getId(),
-                'nome_bloco_sala' => $ambiente->getNomeBlocoSala(),
+                'nome_ambiente' => $ambiente->getNomeAmbiente(),
                 'status' => $ambiente->getStatus()
             ]);
         } else {
@@ -197,7 +202,7 @@ class AmbienteController {
             $this->retornarResposta(false, "Ambiente não encontrado.");
         }
 
-        $nome = $ambiente->getNomeBlocoSala();
+        $nome = $ambiente->getNomeAmbiente();
         
         if ($ambiente->excluir()) {
             $this->retornarResposta(true, "Ambiente '{$nome}' e todo seu histórico excluídos permanentemente!", [

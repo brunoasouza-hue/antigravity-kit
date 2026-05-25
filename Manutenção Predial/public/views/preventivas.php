@@ -103,21 +103,27 @@ $dataAtual = date('d/m/Y');
 
         /* Botão OK Ativo (Verde Premium) */
         .seg-btn.btn-ok.active {
-            background-color: #28a745 !important;
+            background-color: rgba(40, 167, 69, 0.15) !important;
+            color: #28a745 !important;
+            box-shadow: none;
             color: white !important;
             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
         }
 
         /* Botão Defeito Ativo (Vermelho Premium / Cor Base) */
         .seg-btn.btn-defeito.active {
-            background-color: #fc2323 !important;
+            background-color: rgba(252, 35, 35, 0.15) !important;
+            color: #fc2323 !important;
+            box-shadow: none;
             color: white !important;
             box-shadow: 0 4px 12px rgba(252, 35, 35, 0.3);
         }
 
         /* Botão Não se Aplica Ativo (Cinza/Neutro) */
         .seg-btn.btn-nsa.active {
-            background-color: var(--corBorda) !important;
+            background-color: rgba(108, 117, 125, 0.15) !important;
+            color: #6c757d !important;
+            box-shadow: none;
             color: var(--corTxt3) !important;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
@@ -293,70 +299,43 @@ $dataAtual = date('d/m/Y');
         <!-- BARRA DE AÇÕES UNIFICADA -->
         <div class="page-actions-bar" style="margin-top: 30px;">
             <div style="flex-grow: 1;">
-                <h2 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Manutenção Preventiva (Checklist)</h2>
-                <p style="color: var(--corTxt2); font-size: 13px; margin-top: 5px;">Acompanhe o histórico de vistorias prediais ou registre uma nova inspeção.</p>
+                <h2 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Manutenção Preventiva (Mensal)</h2>
+                <p style="color: var(--corTxt2); font-size: 13px; margin-top: 5px;">Acompanhe o ciclo de vistorias mensais e inspecione os ambientes.</p>
             </div>
-            <button class="btn-page-action" onclick="abrirModalChecklist()" style="background: var(--corBase); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; font-family: 'TASA Orbiter', sans-serif;">
-                <i class="bi bi-plus-lg"></i> Novo Checklist
-            </button>
         </div>
 
-        <!-- HISTÓRICO DE CHECKLISTS PREVENTIVAS -->
+        <!-- INJETAR_INSPECAO_ATIVA -->
+
+        <!-- HISTÓRICO DE INSPEÇÕES MENSAIS -->
         <div class="tabela-bg2" style="margin-top: 25px;">
             <div class="tabela-titulo" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                 <i class="bi bi-clock-history" style="font-size: 1.5rem; color: var(--corBase);"></i>
-                <h2>Histórico de Inspeções Prediais</h2>
+                <h2>Histórico de Inspeções Finalizadas</h2>
             </div>
             
             <div class="tabela-wrapper" style="overflow-x: auto; background: var(--corFundo); border-radius: 12px; border: 1px solid var(--corBorda);">
                 <table class="tabela-main" style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
                         <tr style="border-bottom: 2px solid var(--corBorda); background: rgba(0,0,0,0.02);">
-                            <th style="padding: 15px; width: 80px;">ID</th>
-                            <th style="padding: 15px;">Bloco / Sala</th>
-                            <th style="padding: 15px;">Responsável</th>
-                            <th style="padding: 15px; text-align: center; width: 150px;">Data Inspeção</th>
-                            <th style="padding: 15px; text-align: center; width: 180px;">Ações</th>
+                            <th style="padding: 15px; width: 80px;">Ciclo #</th>
+                            <th style="padding: 15px;">Início</th>
+                            <th style="padding: 15px;">Fim</th>
+                            <th style="padding: 15px; text-align: center; width: 180px;">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="tabela-checklists">
-                        <?php if (empty($checklists)): ?>
+                    <tbody id="tabela-historico">
+                        <?php if (empty($historicoInspecoes)): ?>
                             <tr id="linha-vazia">
-                                <td colspan="5" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum checklist de vistoria registrado no histórico.</td>
+                                <td colspan="4" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum ciclo finalizado no histórico.</td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($checklists as $c): ?>
-                                <tr id="row-<?php echo $c->getId(); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s;">
-                                    <td style="padding: 15px; font-weight: bold; color: var(--corTxt2);">#<?php echo $c->getId(); ?></td>
-                                    <td style="padding: 15px; font-size: 15px; font-weight: 500; color: var(--corTxt3);"><?php echo htmlspecialchars($c->getAmbienteNome() ?? 'Desconhecido'); ?></td>
-                                    <td style="padding: 15px; font-size: 14px; color: var(--corTxt2);"><?php echo htmlspecialchars($c->getResponsavelNome() ?? 'N/A'); ?></td>
-                                    <td style="padding: 15px; text-align: center; font-size: 14px; color: var(--corTxt3);"><?php echo date('d/m/Y', strtotime($c->getDataInspecao())); ?></td>
+                            <?php foreach ($historicoInspecoes as $h): ?>
+                                <tr style="border-bottom: 1px solid var(--corBorda); transition: 0.2s;">
+                                    <td style="padding: 15px; font-weight: bold; color: var(--corTxt2);">#<?php echo $h['id']; ?></td>
+                                    <td style="padding: 15px; font-size: 14px; color: var(--corTxt3);"><?php echo date('d/m/Y', strtotime($h['data_inicio'])); ?></td>
+                                    <td style="padding: 15px; font-size: 14px; color: var(--corTxt3);"><?php echo $h['data_fim'] ? date('d/m/Y', strtotime($h['data_fim'])) : '-'; ?></td>
                                     <td style="padding: 15px; text-align: center;">
-                                        <div style="display: flex; gap: 8px; justify-content: center;">
-                                            <button class="btnAcao editar" type="button" title="Visualizar Detalhes"
-                                                    onclick="visualizarDetalhes(<?php echo htmlspecialchars(json_encode([
-                                                        'id' => $c->getId(),
-                                                        'ambiente_nome' => $c->getAmbienteNome(),
-                                                        'responsavel_nome' => $c->getResponsavelNome(),
-                                                        'data_inspecao' => date('d/m/Y', strtotime($c->getDataInspecao())),
-                                                        'status_tomadas' => $c->getStatusTomadas(),
-                                                        'status_forros' => $c->getStatusForros(),
-                                                        'status_paredes' => $c->getStatusParedes(),
-                                                        'status_projetor' => $c->getStatusProjetor(),
-                                                        'status_tela' => $c->getStatusTela(),
-                                                        'status_lousa' => $c->getStatusLousa(),
-                                                        'observacoes' => $c->getObservacoes()
-                                                    ])); ?>)"
-                                                    style="background: #007bff; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                                <i class="bi bi-eye"></i> Detalhes
-                                            </button>
-                                            
-                                            <button class="btnAcao deletar" type="button" title="Excluir Registro"
-                                                    onclick="excluirChecklist(<?php echo $c->getId(); ?>)"
-                                                    style="background: var(--corBase); color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
+                                        <span class="badge" style="background: rgba(40,167,69,0.1); color: #28a745; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;"><i class="bi bi-check2-circle"></i> Finalizada</span>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -388,7 +367,7 @@ $dataAtual = date('d/m/Y');
                             <select name="ambiente_id" id="ambiente_id" required style="width: 100%;">
                                 <option value="" disabled selected>Selecione um ambiente...</option>
                                 <?php foreach ($ambientesAtivos as $a): ?>
-                                    <option value="<?php echo $a->getId(); ?>"><?php echo htmlspecialchars($a->getNomeBlocoSala()); ?></option>
+                                    <option value="<?php echo $a->getId(); ?>"><?php echo $a->getId(); ?> - <?php echo htmlspecialchars($a->getNomeAmbiente()); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -413,14 +392,15 @@ $dataAtual = date('d/m/Y');
                     <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
                         <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Tomadas:</span>
                         <div class="segmented-control-wrapper" data-field="status_tomadas">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok">
-                                <svg class="check-svg" viewBox="0 0 24 24" width="16" height="16" style="display: none;">
-                                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                </svg>
-                                Ok
+                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
+                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
                             </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito">Defeito</button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica">Não se aplica</button>
+                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
+                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
+                            </button>
+                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
+                                N/A
+                            </button>
                         </div>
                         <input type="hidden" name="status_tomadas" id="status_tomadas" value="Não se aplica">
                     </div>
@@ -429,14 +409,15 @@ $dataAtual = date('d/m/Y');
                     <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
                         <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Forros:</span>
                         <div class="segmented-control-wrapper" data-field="status_forros">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok">
-                                <svg class="check-svg" viewBox="0 0 24 24" width="16" height="16" style="display: none;">
-                                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                </svg>
-                                Ok
+                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
+                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
                             </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito">Defeito</button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica">Não se aplica</button>
+                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
+                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
+                            </button>
+                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
+                                N/A
+                            </button>
                         </div>
                         <input type="hidden" name="status_forros" id="status_forros" value="Não se aplica">
                     </div>
@@ -445,14 +426,15 @@ $dataAtual = date('d/m/Y');
                     <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
                         <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Paredes:</span>
                         <div class="segmented-control-wrapper" data-field="status_paredes">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok">
-                                <svg class="check-svg" viewBox="0 0 24 24" width="16" height="16" style="display: none;">
-                                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                </svg>
-                                Ok
+                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
+                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
                             </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito">Defeito</button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica">Não se aplica</button>
+                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
+                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
+                            </button>
+                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
+                                N/A
+                            </button>
                         </div>
                         <input type="hidden" name="status_paredes" id="status_paredes" value="Não se aplica">
                     </div>
@@ -461,14 +443,15 @@ $dataAtual = date('d/m/Y');
                     <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
                         <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Projetor:</span>
                         <div class="segmented-control-wrapper" data-field="status_projetor">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok">
-                                <svg class="check-svg" viewBox="0 0 24 24" width="16" height="16" style="display: none;">
-                                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                </svg>
-                                Ok
+                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
+                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
                             </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito">Defeito</button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica">Não se aplica</button>
+                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
+                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
+                            </button>
+                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
+                                N/A
+                            </button>
                         </div>
                         <input type="hidden" name="status_projetor" id="status_projetor" value="Não se aplica">
                     </div>
@@ -477,14 +460,15 @@ $dataAtual = date('d/m/Y');
                     <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
                         <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Tela:</span>
                         <div class="segmented-control-wrapper" data-field="status_tela">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok">
-                                <svg class="check-svg" viewBox="0 0 24 24" width="16" height="16" style="display: none;">
-                                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                </svg>
-                                Ok
+                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
+                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
                             </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito">Defeito</button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica">Não se aplica</button>
+                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
+                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
+                            </button>
+                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
+                                N/A
+                            </button>
                         </div>
                         <input type="hidden" name="status_tela" id="status_tela" value="Não se aplica">
                     </div>
@@ -493,14 +477,15 @@ $dataAtual = date('d/m/Y');
                     <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
                         <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Lousa:</span>
                         <div class="segmented-control-wrapper" data-field="status_lousa">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok">
-                                <svg class="check-svg" viewBox="0 0 24 24" width="16" height="16" style="display: none;">
-                                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                </svg>
-                                Ok
+                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
+                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
                             </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito">Defeito</button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica">Não se aplica</button>
+                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
+                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
+                            </button>
+                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
+                                N/A
+                            </button>
                         </div>
                         <input type="hidden" name="status_lousa" id="status_lousa" value="Não se aplica">
                     </div>
@@ -760,72 +745,34 @@ $dataAtual = date('d/m/Y');
             if (!validarCamposChecklist()) return false;
 
             const form = document.getElementById('form-checklist');
-            const formData = new FormData(form);
-            formData.append('ajax', '1');
+            const formDataObj = new FormData(form);
+            const searchParams = new URLSearchParams();
+            
+            for (const [key, value] of formDataObj.entries()) {
+                searchParams.append(key, value);
+            }
+            searchParams.append('ajax', '1');
+            // Forçamos a nova acao
+            searchParams.set('acao', 'salvar_checklist');
+            
+            if (inspecaoAtualId) {
+                searchParams.append('inspecao_id', inspecaoAtualId);
+            }
 
             fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: formData
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
+                body: searchParams.toString()
             })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     showToast(data.message, 'success');
                     fecharModal('modalNovoChecklist');
-
-                    // Adiciona dinamicamente à tabela de histórico
-                    const tbody = document.getElementById('tabela-checklists');
-                    const linhaVazia = document.getElementById('linha-vazia');
-                    if (linhaVazia) {
-                        linhaVazia.remove();
-                    }
-
-                    // Prepara informações para botão de visualizar detalhes
-                    const rawInfo = {
-                        id: data.data.id,
-                        ambiente_nome: data.data.ambiente_nome,
-                        responsavel_nome: data.data.responsavel_nome,
-                        data_inspecao: formatarData(data.data.data_inspecao),
-                        status_tomadas: data.data.status_tomadas,
-                        status_forros: data.data.status_forros,
-                        status_paredes: data.data.status_paredes,
-                        status_projetor: data.data.status_projetor,
-                        status_tela: data.data.status_tela,
-                        status_lousa: data.data.status_lousa,
-                        observacoes: data.data.observacoes
-                    };
-
-                    const novaLinha = document.createElement('tr');
-                    novaLinha.id = `row-${data.data.id}`;
-                    novaLinha.style.cssText = 'border-bottom: 1px solid var(--corBorda); transition: 0.2s; background-color: rgba(40, 167, 69, 0.08);';
-                    
-                    novaLinha.innerHTML = `
-                        <td style="padding: 15px; font-weight: bold; color: var(--corTxt2);">#${data.data.id}</td>
-                        <td style="padding: 15px; font-size: 15px; font-weight: 500; color: var(--corTxt3);">${escapeHtml(data.data.ambiente_nome)}</td>
-                        <td style="padding: 15px; font-size: 14px; color: var(--corTxt2);">${escapeHtml(data.data.responsavel_nome)}</td>
-                        <td style="padding: 15px; text-align: center; font-size: 14px; color: var(--corTxt3);">${formatarData(data.data.data_inspecao)}</td>
-                        <td style="padding: 15px; text-align: center;">
-                            <div style="display: flex; gap: 8px; justify-content: center;">
-                                <button class="btnAcao editar" type="button" title="Visualizar Detalhes"
-                                        onclick='visualizarDetalhes(${JSON.stringify(rawInfo)})'
-                                        style="background: #007bff; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                    <i class="bi bi-eye"></i> Detalhes
-                                </button>
-                                
-                                <button class="btnAcao deletar" type="button" title="Excluir Registro"
-                                        onclick="excluirChecklist(${data.data.id})"
-                                        style="background: var(--corBase); color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    `;
-
-                    tbody.prepend(novaLinha);
-                    setTimeout(() => {
-                        novaLinha.style.backgroundColor = '';
-                    }, 1000);
+                    setTimeout(() => window.location.reload(), 1500);
                 } else {
                     showToast(data.message, 'danger');
                 }
@@ -833,6 +780,103 @@ $dataAtual = date('d/m/Y');
             .catch(err => {
                 console.error(err);
                 showToast('Erro interno de conexão ao salvar checklist.', 'danger');
+            });
+        }
+
+        // NOVAS FUNÇÕES: Motor de Inspeção Mensal
+
+        function iniciarInspecaoMensal() {
+            if (!confirm('Deseja iniciar um novo ciclo de Inspeção Mensal?')) return;
+            
+            const formData = new URLSearchParams();
+            formData.append('acao', 'iniciar_inspecao');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro interno de conexão.', 'danger');
+            });
+        }
+
+        let inspecaoAtualId = null;
+
+        function abrirModalChecklistRapido(inspecaoId, ambId, ambNome) {
+            inspecaoAtualId = inspecaoId;
+            document.getElementById('form-checklist').reset();
+            
+            // Set hidden ids
+            let inpHiddenAmb = document.getElementById('ambiente_id');
+            if(inpHiddenAmb) {
+                // Se for um select visível, forçamos o valor
+                if (inpHiddenAmb.tagName === 'SELECT') {
+                    inpHiddenAmb.value = ambId;
+                    // opcional: desabilitar para o usuário não trocar
+                    inpHiddenAmb.style.pointerEvents = 'none';
+                    inpHiddenAmb.style.opacity = '0.7';
+                } else {
+                    inpHiddenAmb.value = ambId;
+                }
+            } else {
+                inpHiddenAmb = document.createElement('input');
+                inpHiddenAmb.type = 'hidden';
+                inpHiddenAmb.name = 'ambiente_id';
+                inpHiddenAmb.id = 'ambiente_id';
+                document.getElementById('form-checklist').appendChild(inpHiddenAmb);
+                inpHiddenAmb.value = ambId;
+            }
+
+            // Limpa seletores segmentados (Ok, Defeito, Nsa)
+            document.querySelectorAll('.segmented-control-wrapper').forEach(wrapper => {
+                const btns = wrapper.querySelectorAll('.seg-btn');
+                btns.forEach(b => b.classList.remove('active'));
+                const nsaBtn = wrapper.querySelector('.btn-nsa');
+                if(nsaBtn) nsaBtn.classList.add('active');
+                
+                const hiddenInput = document.getElementById(wrapper.dataset.field);
+                if (hiddenInput) hiddenInput.value = 'Não se aplica';
+            });
+
+            // Open modal
+            document.getElementById('modalNovoChecklist').style.display = 'flex';
+        }
+
+        function finalizarInspecao(inspecaoId) {
+            if (!confirm('Tem certeza que deseja finalizar esta Inspeção Mensal? Não será possível adicionar mais ambientes.')) return;
+            
+            const formData = new URLSearchParams();
+            formData.append('acao', 'finalizar_inspecao');
+            formData.append('inspecao_id', inspecaoId);
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro interno de conexão.', 'danger');
             });
         }
 

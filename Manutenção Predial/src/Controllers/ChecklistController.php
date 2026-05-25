@@ -147,6 +147,35 @@ class ChecklistController {
         } catch (PDOException $e) {
             $this->retornarResposta(false, "Erro no banco de dados: " . $e->getMessage());
         }
+
+        // TRIGGER DE AUTOMAÇÃO (Gerar O.S. Corretiva se houver defeito)
+        try {
+            $defeitos = [];
+            if ($statusTomadas === 'Defeito') $defeitos[] = 'Tomadas';
+            if ($statusForros === 'Defeito') $defeitos[] = 'Forros';
+            if ($statusParedes === 'Defeito') $defeitos[] = 'Paredes';
+            if ($statusProjetor === 'Defeito') $defeitos[] = 'Projetor';
+            if ($statusTela === 'Defeito') $defeitos[] = 'Tela';
+            if ($statusLousa === 'Defeito') $defeitos[] = 'Lousa';
+
+            if (!empty($defeitos) && isset($checklist) && $checklist->getId() !== null) {
+                // Instanciar model OrdemServico
+                require_once __DIR__ . '/../Models/OrdemServico.php';
+                $descricaoAutomatica = "Correção gerada automaticamente: Defeito(s) encontrado(s) em " . implode(', ', $defeitos) . ".\n\nObservações do checklist:\n" . ($observacoes ? $observacoes : "Sem observações adicionais.");
+                
+                $osCorretiva = new OrdemServico(
+                    $responsavelId, // Solicitante será o mesmo responsável pelo checklist
+                    $ambienteId,
+                    $descricaoAutomatica,
+                    'Interna',
+                    'Pendente'
+                );
+                $osCorretiva->salvar();
+            }
+        } catch (Exception $e) {
+            // Log do erro de trigger (não impede o fluxo principal)
+            error_log("Erro ao gerar O.S corretiva automatizada: " . $e->getMessage());
+        }
     }
 
     /**

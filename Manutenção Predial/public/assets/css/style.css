@@ -404,8 +404,8 @@ img {
 
 .tabela-bg table tbody tr td,
 .tabela-bg2 table tbody tr td {
-    max-width: 180px;
-    overflow: auto;
+    /* max-width removido: não limitar largura de célula para não quebrar layout de tabela */
+    overflow: visible;
 }
 
 .custom-table tbody td,

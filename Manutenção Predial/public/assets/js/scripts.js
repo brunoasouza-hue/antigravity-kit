@@ -112,16 +112,23 @@ window.onload = () => {
 
     startRealTimeClock();
 
-    // Lógica da Sidebar (Refatorada)
+    // Lógica da Sidebar (Refatorada com Persistência em LocalStorage)
     const arrow = document.getElementById("fechar-nav");
     const body = document.body;
 
-    // Opção B: Colapsa a barra lateral por padrão no desktop para maximizar a área de trabalho
+    // Recupera o estado persistido da sidebar (se não existir, por padrão desktop fica aberto/não colapsado)
+    const sidebarCollapsed = localStorage.getItem('sidebar-collapsed');
+    
     if (window.innerWidth > 768) {
-        if (!body.classList.contains('sidebar-collapsed')) {
+        if (sidebarCollapsed === 'true') {
             body.classList.add('sidebar-collapsed');
             if (arrow) {
                 arrow.innerHTML = '<i class="bi bi-arrow-right-circle-fill"></i>';
+            }
+        } else {
+            body.classList.remove('sidebar-collapsed');
+            if (arrow) {
+                arrow.innerHTML = '<i class="bi bi-arrow-left-circle-fill"></i>';
             }
         }
     }
@@ -130,7 +137,10 @@ window.onload = () => {
         arrow.addEventListener('click', () => {
             body.classList.toggle('sidebar-collapsed');
             
-            if (body.classList.contains('sidebar-collapsed')) {
+            const isCollapsed = body.classList.contains('sidebar-collapsed');
+            localStorage.setItem('sidebar-collapsed', isCollapsed ? 'true' : 'false');
+            
+            if (isCollapsed) {
                 arrow.innerHTML = '<i class="bi bi-arrow-right-circle-fill"></i>';
             } else {
                 arrow.innerHTML = '<i class="bi bi-arrow-left-circle-fill"></i>';
@@ -225,6 +235,7 @@ window.onload = () => {
             e.preventDefault();
             if (body.classList.contains('sidebar-collapsed')) {
                 body.classList.remove('sidebar-collapsed');
+                localStorage.setItem('sidebar-collapsed', 'false');
                 if (arrow) arrow.innerHTML = '<i class="bi bi-arrow-left-circle-fill"></i>';
             }
 
@@ -247,6 +258,7 @@ window.onload = () => {
             e.preventDefault();
             if (body.classList.contains('sidebar-collapsed')) {
                 body.classList.remove('sidebar-collapsed');
+                localStorage.setItem('sidebar-collapsed', 'false');
                 if (arrow) arrow.innerHTML = '<i class="bi bi-arrow-left-circle-fill"></i>';
             }
 
