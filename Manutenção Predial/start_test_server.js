@@ -1045,6 +1045,12 @@ function compileLoops(html, session, dbContext) {
 }
 
 function compileVariables(html, context) {
+    if (context.executores) {
+        const rawExecutoresRegex = /<\?php\s+if\s*\(empty\(\$executores\)\)[\s\S]*?json_encode\([\s\S]*?\?>/gs;
+        const jsonStr = JSON.stringify(context.executores.map(e => ({ id: e.id, nome: e.nome }))).replace(/'/g, "\\'");
+        html = html.replace(rawExecutoresRegex, jsonStr);
+    }
+
     const echos = [
         { regex: /<\?=\s*isset\(\$_SESSION\['usuario_id'\]\).*?:\s*['\"]?null['\"]?\s*\?>/g, val: context.usuarioId || '1' },
         { regex: /<\?php\s+echo\s+\$_SESSION\['usuario_id'\]\s*\?\?\s*['\"]?null['\"]?\s*;?\s*\?>/g, val: context.usuarioId || '1' },
@@ -1287,7 +1293,7 @@ function compilePhp(filePath, session, getParams = {}) {
     // Compilação em cascata (Loops -> Condicionais em múltiplas rodadas para resolver aninhamento -> Variáveis)
     html = compileLoops(html, session, dbContext);
     html = compileConditionals(html, session, dbContext);
-    html = compileVariables(html, { ...context, dashboard_analise });
+    html = compileVariables(html, { ...context, dashboard_analise, executores: dbContext.executores });
 
     // ── Gerador Direto da Tabela de Ambientes ──────────────────────────────
     if (filePath.endsWith('ambientes.php')) {

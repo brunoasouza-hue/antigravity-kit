@@ -1086,6 +1086,9 @@ $dataAtual = date('d/m/Y');
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                     <div>
                                         <label for="vis_executor_select" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 13px;">Técnico Executor:</label>
+                                        <div style="margin-bottom: 8px;">
+                                            <input type="text" id="vis_pesquisar_executor" placeholder="🔍 Pesquisar executor..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3); font-size: 13px; outline: none;">
+                                        </div>
                                         <select id="vis_executor_select" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3); font-size: 13px;">
                                             <option value="" disabled selected>Escolha o profissional...</option>
                                             ${executoresDisponiveis.map(e => `<option value="${e.id}">${e.nome}</option>`).join('')}
@@ -1173,6 +1176,39 @@ $dataAtual = date('d/m/Y');
 
                     // 5. Instanciação e Event Listeners dinâmicos pós-injeção
                     
+                    // Pesquisa dinâmica para o executor do modal de visualização (Gestor)
+                    const selectVisExecutor = document.getElementById('vis_executor_select');
+                    const inputVisPesquisaExecutor = document.getElementById('vis_pesquisar_executor');
+                    if (selectVisExecutor && inputVisPesquisaExecutor) {
+                        const visOptionsOriginais = Array.from(selectVisExecutor.options)
+                            .slice(1)
+                            .map(opt => ({
+                                value: opt.value,
+                                text: opt.text
+                            }));
+                        
+                        inputVisPesquisaExecutor.addEventListener('input', function() {
+                            const termo = this.value.toLowerCase().trim();
+                            selectVisExecutor.innerHTML = '<option value="" disabled selected>Escolha o profissional...</option>';
+                            const filtrados = visOptionsOriginais.filter(opt => opt.text.toLowerCase().includes(termo));
+                            
+                            if (filtrados.length > 0) {
+                                filtrados.forEach(opt => {
+                                    const newOpt = document.createElement('option');
+                                    newOpt.value = opt.value;
+                                    newOpt.textContent = opt.text;
+                                    selectVisExecutor.appendChild(newOpt);
+                                });
+                            } else {
+                                const newOpt = document.createElement('option');
+                                newOpt.value = "";
+                                newOpt.disabled = true;
+                                newOpt.textContent = "Nenhum executor correspondente";
+                                selectVisExecutor.appendChild(newOpt);
+                            }
+                        });
+                    }
+
                     // Ação de Despachar (Gestor)
                     const btnAtribuir = document.getElementById('btn-atribuir-os');
                     if (btnAtribuir) {
