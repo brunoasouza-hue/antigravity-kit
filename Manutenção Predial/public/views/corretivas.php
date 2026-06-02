@@ -562,14 +562,15 @@ $dataAtual = date('d/m/Y');
         // Variáveis de Sessão globais blindadas contra SyntaxError
         const usuarioLogadoId = parseInt('<?php echo $_SESSION['usuario_id'] ?? 0; ?>') || 0;
         const nivelUsuarioAtual = '<?php echo $_SESSION['usuario_nivel'] ?? ''; ?>';
-        const executoresDisponiveis = <?php 
+        const rawExecutores = '<?php 
             if (empty($executores)) {
                 $executores = Usuario::listarPorNivel('Executor');
             }
             echo json_encode(array_map(function($e) {
                 return ['id' => $e->getId(), 'nome' => $e->getNome()];
-            }, $executores));
-        ?>;
+            }, $executores), JSON_HEX_APOS);
+        ?>';
+        const executoresDisponiveis = rawExecutores.trim() !== '' ? JSON.parse(rawExecutores) : [];
 
         // Transições Suaves - Fecha Modais clicando fora no fundo do dialog
         window.onclick = function(event) {
