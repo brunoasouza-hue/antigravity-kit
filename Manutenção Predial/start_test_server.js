@@ -840,10 +840,13 @@ function evaluatePhpCondition(condStr, session, localContext = {}) {
         .replace(/\$alertaSucesso/g, 'session.alerta_sucesso')
         .replace(/\$alertaErro/g, 'session.alerta_erro')
         .replace(/\$erro/g, 'localContext.erro')
+        .replace(/\$ordensServico/g, 'localContext.currentOS')
+        .replace(/\$ambientesAtivos/g, '(localContext.ambientes ? localContext.ambientes.filter(a => a.status === "Ativo") : [])')
+        .replace(/\$executores/g, 'localContext.executores')
         .replace(/empty\((.*?)\)/g, '( !$1 || (Array.isArray($1) && $1.length === 0) )')
         .replace(/!empty\((.*?)\)/g, '( $1 && (!Array.isArray($1) || $1.length > 0) )')
         .replace(/isset\((.*?)\)/g, '( typeof $1 !== "undefined" && $1 !== null )')
-        .replace(/\$os->getExecutorNome\(\)/g, '(localContext.item && localContext.item.executor_nome)');
+        .replace(/\$os->getExecutorNome\(\)/g, '(localContext.item && localContext.item.executor_nome && localContext.item.executor_nome !== "Não Atribuído")');
     
     try {
         const fn = new Function('session', 'localContext', `return (${js});`);
@@ -854,21 +857,48 @@ function evaluatePhpCondition(condStr, session, localContext = {}) {
     }
 }
 
+function parseAndEvaluateInnermost(blockHtml, session, localContext) {
+    const ifMatch = blockHtml.match(/^<\?php\s+if\s*\(((?:(?!<\?php|<\?>).)*?)\)\s*:\s*\?>([\s\S]*?)(?=<\?php\s+elseif|<\?php\s+else|<\?php\s+endif)/);
+    if (!ifMatch) return '';
+
+    const firstCond = ifMatch[1];
+    const firstBody = ifMatch[2];
+
+    if (evaluatePhpCondition(firstCond, session, localContext)) {
+        return firstBody;
+    }
+
+    const elseifRegex = /<\?php\s+elseif\s*\(((?:(?!<\?php|<\?>).)*?)\)\s*:\s*\?>([\s\S]*?)(?=<\?php\s+elseif|<\?php\s+else|<\?php\s+endif)/g;
+    let match;
+    while ((match = elseifRegex.exec(blockHtml)) !== null) {
+        const cond = match[1];
+        const body = match[2];
+        if (evaluatePhpCondition(cond, session, localContext)) {
+            return body;
+        }
+    }
+
+    const elseMatch = blockHtml.match(/<\?php\s+else\s*:\s*\?>([\s\S]*?)<\?php\s+endif/);
+    if (elseMatch) {
+        return elseMatch[1];
+    }
+
+    return '';
+}
+
 function compileConditionals(html, session, localContext = {}) {
-    // Resolve if/else/endif
-    const ifElseRegex = /<\?php\s+if\s*\((.*?)\)\s*:\s*\?>(.*?)<\?php\s+else\s*:\s*\?>(.*?)<\?php\s+endif\s*;\s*\?>/gs;
-    html = html.replace(ifElseRegex, (match, condStr, ifBody, elseBody) => {
-        const isTrue = evaluatePhpCondition(condStr, session, localContext);
-        return isTrue ? ifBody : elseBody;
-    });
+    const innermostBlockRegex = /<\?php\s+if\s*\(((?:(?!<\?php|<\?>).)*?)\)\s*:\s*\?>((?:(?!<\?php\s+if).)*?)<\?php\s+endif\s*;\s*\?>/gs;
 
-    // Resolve if/endif
-    const ifRegex = /<\?php\s+if\s*\((.*?)\)\s*:\s*\?>(.*?)<\?php\s+endif\s*;\s*\?>/gs;
-    html = html.replace(ifRegex, (match, condStr, body) => {
-        const isTrue = evaluatePhpCondition(condStr, session, localContext);
-        return isTrue ? body : '';
-    });
-
+    let changed = true;
+    let iterations = 0;
+    while (changed && iterations < 15) {
+        changed = false;
+        html = html.replace(innermostBlockRegex, (match) => {
+            changed = true;
+            return parseAndEvaluateInnermost(match, session, localContext);
+        });
+        iterations++;
+    }
     return html;
 }
 
@@ -1256,9 +1286,7 @@ function compilePhp(filePath, session, getParams = {}) {
 
     // Compilação em cascata (Loops -> Condicionais em múltiplas rodadas para resolver aninhamento -> Variáveis)
     html = compileLoops(html, session, dbContext);
-    for (let i = 0; i < 3; i++) {
-        html = compileConditionals(html, session);
-    }
+    html = compileConditionals(html, session, dbContext);
     html = compileVariables(html, { ...context, dashboard_analise });
 
     // ── Gerador Direto da Tabela de Ambientes ──────────────────────────────

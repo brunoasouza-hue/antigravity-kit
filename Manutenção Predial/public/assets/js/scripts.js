@@ -928,7 +928,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "tabela-maquinas",
         "tabela-logs",
         "tabela-preventiva",
-        "tabela-corretiva",
+        "tabela-os-body",
         "tabela-descricao_maquinas"
     ];
 

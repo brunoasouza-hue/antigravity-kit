@@ -403,6 +403,10 @@ $dataAtual = date('d/m/Y');
 
                     <div class="modal-input" style="margin-bottom: 20px;">
                         <label for="despacho_executor_id" style="font-weight: bold; display: block; margin-bottom: 8px;">Atribuir Executor de Manutenção:</label>
+                        <!-- Campo de Pesquisa Rápida para o Executor -->
+                        <div class="input-wrapper" style="margin-bottom: 10px;">
+                            <input type="text" id="pesquisar_executor" placeholder="🔍 Pesquisar executor pelo nome..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3); font-size: 14px;">
+                        </div>
                         <div class="input-wrapper">
                             <select name="executor_id" id="despacho_executor_id" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
                                 <option value="" disabled selected>Escolha o profissional designado...</option>
@@ -721,6 +725,7 @@ $dataAtual = date('d/m/Y');
             })
             .then(res => res.json())
             .then(data => {
+                console.log("Payload recebido do servidor (Abertura):", data);
                 if (data.success) {
                     showToast(data.message, 'success');
                     fecharModal('modalAbertura');
@@ -777,12 +782,20 @@ $dataAtual = date('d/m/Y');
             const form = document.getElementById('form-despacho');
             if (form) form.reset();
 
+            // Reseta a pesquisa de executores
+            const inputPesquisaExecutor = document.getElementById('pesquisar_executor');
+            if (inputPesquisaExecutor) {
+                inputPesquisaExecutor.value = '';
+                inputPesquisaExecutor.dispatchEvent(new Event('input'));
+            }
+
             // Carrega dinamicamente os detalhes do banco via AJAX (buscar)
             fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(res => res.json())
             .then(res => {
+                console.log("Payload recebido do servidor (Busca Despacho):", res);
                 if (res.success) {
                     document.getElementById('despacho_id').value = res.data.id;
                     document.getElementById('despacho_id_display').innerText = res.data.id;
@@ -812,6 +825,7 @@ $dataAtual = date('d/m/Y');
             })
             .then(res => res.json())
             .then(data => {
+                console.log("Payload recebido do servidor (Despacho):", data);
                 if (data.success) {
                     showToast(data.message, 'success');
                     fecharModal('modalDespacho');
@@ -1416,6 +1430,7 @@ $dataAtual = date('d/m/Y');
             })
             .then(res => res.json())
             .then(data => {
+                console.log("Payload recebido do servidor (Tramitação):", data);
                 if (data.success) {
                     alert(data.message);
                     window.location.reload();
@@ -1457,6 +1472,44 @@ $dataAtual = date('d/m/Y');
                     });
                 }
             });
+
+            // Pesquisa dinâmica em tempo real para atribuir executor de manutenção
+            const selectExecutor = document.getElementById('despacho_executor_id');
+            const inputPesquisaExecutor = document.getElementById('pesquisar_executor');
+            
+            if (selectExecutor && inputPesquisaExecutor) {
+                // Guarda uma cópia original das opções do select (exceto a primeira que é o placeholder)
+                const optionsOriginais = Array.from(selectExecutor.options)
+                    .slice(1)
+                    .map(opt => ({
+                        value: opt.value,
+                        text: opt.text
+                    }));
+                
+                inputPesquisaExecutor.addEventListener('input', function() {
+                    const termo = this.value.toLowerCase().trim();
+                    
+                    // Mantém a opção padrão/placeholder
+                    selectExecutor.innerHTML = '<option value="" disabled selected>Escolha o profissional designado...</option>';
+                    
+                    const filtrados = optionsOriginais.filter(opt => opt.text.toLowerCase().includes(termo));
+                    
+                    if (filtrados.length > 0) {
+                        filtrados.forEach(opt => {
+                            const newOpt = document.createElement('option');
+                            newOpt.value = opt.value;
+                            newOpt.textContent = opt.text;
+                            selectExecutor.appendChild(newOpt);
+                        });
+                    } else {
+                        const newOpt = document.createElement('option');
+                        newOpt.value = "";
+                        newOpt.disabled = true;
+                        newOpt.textContent = "Nenhum executor correspondente";
+                        selectExecutor.appendChild(newOpt);
+                    }
+                });
+            }
 
             // Filtro visual rápido na tabela utilizando o input de pesquisa principal
             const inputPesquisa = document.getElementById('pesquisa');
