@@ -1,0 +1,26 @@
+Created At: 2026-06-02T13:32:41Z
+Completed At: 2026-06-02T13:32:41Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1314
+Total Bytes: 82608
+Showing lines 283 to 300
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+283:                                     </td>
+284:                                     
+285:                                     <td style="padding: 15px; text-align: center; vertical-align: middle;">
+286:                                         <?php
+287:                                             $displayStatus = $status;
+288:                                             if ($status === 'Pendente' && !empty($os->getExecutorNome())) {
+289:                                                 $displayStatus = 'Em Execução';
+290:                                             }
+291:                                         ?>
+292:                                         <span style="background-color: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; border: 1px solid #e2e8f0;">
+293:                                             <?php echo htmlspecialchars($displayStatus); ?>
+294:                                         </span>
+295:                                     </td>
+296:                                     
+297:                                     <td style="padding: 15px; text-align: center; vertical-align: middle;" onclick="event.stopPropagation()">
+298:                                         <?php if ($usuarioNivel === 'Gestor'): ?>
+299:                                             <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
+300:                                                 <button class="btn-visualizar" type="button" title="Visualizar Detalhes" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00C5FF; border: none; color: white; padding: 6px; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-eye-fill"></i></button>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

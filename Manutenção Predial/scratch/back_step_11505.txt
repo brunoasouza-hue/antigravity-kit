@@ -1,0 +1,48 @@
+Created At: 2026-06-02T14:09:10Z
+Completed At: 2026-06-02T14:09:11Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1275
+Total Bytes: 79969
+Showing lines 1060 to 1235
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1060:                         document.getElementById('lbl_tram_status').innerText = os.status;
+1061:                         document.getElementById('lbl_tram_desc').innerText = os.descricao;
+1062:                         
+1063:                         // Renderiza o histórico
+1064:                         let histHtml = '';
+1065:                         if (data.historico && data.historico.length > 0) {
+1066:                             data.historico.forEach(h => {
+1067:                                 histHtml += `<div style="border-bottom: 1px solid #ddd; padding: 8px 0;">
+1068:                                     <div style="font-size: 11px; color: #888;">${h.data_formatada} - ${h.origem_nome} &rarr; ${h.status_etapa}</div>
+1069:                                     <div style="font-size: 13px; color: #444; margin-top: 4px;">${h.observacao_etapa}</div>
+1070:                                 </div>`;
+1071:                             });
+1072:                         } else {
+1073:                             histHtml = 'Nenhum histórico registrado.';
+1074:                         }
+1075:                         document.getElementById('lbl_tram_historico').innerHTML = histHtml;
+1076: 
+1077:                         document.getElementById('nova_observacao').value = '';
+1078: 
+1079:                         // Lógica de exibição dos botões baseada no status e nível
+1080:                         const nivel = '<?php echo $usuarioNivel; ?>';
+1081:  
+<truncated 7664 bytes>
+s: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+1220:         <div class="modal-box" style="background: #fff; border-radius: 12px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+1221:             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--corBorda); padding-bottom: 15px; margin-bottom: 20px;">
+1222:                 <h3 style="margin: 0; color: #333;">Tramitação da O.S. <span id="lbl_tram_id" style="color:var(--corBase);"></span></h3>
+1223:                 <button type="button" onclick="fecharModalTramitacao()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #888;"><i class="bi bi-x-lg"></i></button>
+1224:             </div>
+1225:             
+1226:             <form id="form-tramitacao" onsubmit="submeterTramitacao(event)" class="modal-form">
+1227:                 <input type="hidden" name="os_id" id="tramitacao_os_id">
+1228:                 
+1229:                 <div style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--corBorda); margin-bottom: 20px;">
+1230:                     <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+1231:                         <strong>Ambiente:</strong> <span id="lbl_tram_ambiente" style="color:var(--corTxt3);"></span>
+1232:                     </div>
+1233:                     <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+1234:                         <strong>Status Atual:</strong> <span id="lbl_tram_status" style="font-weight:bold; color:#007bff;"></span>
+1235:                     </div>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

@@ -134,7 +134,7 @@ $dataAtual = date('d/m/Y');
             </a>
 
             <!-- Menu Manutenção condicional: Apenas para Gestor e Executor -->
-            <?php if ($usuarioModel->getNivelAcesso() === 'Gestor' || $usuarioModel->getNivelAcesso() === 'Executor'): ?>
+            <?php if ($usuarioModel->getNivelAcesso() === 'Gestor' || $usuarioModel->getNivelAcesso() === 'Administrador' || $usuarioModel->getNivelAcesso() === 'Executor'): ?>
                 <div class="menu-manutencao">
                     <a href="javascript:void(0)" class="links manutencao-btn" id="btn-manutencao">
                         <div>
@@ -179,14 +179,11 @@ $dataAtual = date('d/m/Y');
             </div>
 
             <!-- Painel de Ambientes: Apenas Gestor -->
-            <?php if ($usuarioModel->getNivelAcesso() === 'Gestor'): ?>
+            <?php if ($usuarioModel->getNivelAcesso() === 'Gestor' || $usuarioModel->getNivelAcesso() === 'Administrador'): ?>
                 <a href="./ambientes.php" class="links">
                     <i class="bi bi-building"></i> Painel de Ambientes
                 </a>
 
-                <a href="./dashboard_analise.php" class="links">
-                    <i class="bi bi-bar-chart-line-fill"></i> Análise de Dados
-                </a>
 
                 <a href="./usuarios.php" class="links">
                     <i class="bi bi-file-earmark-person-fill"></i> Painel de Usuários
@@ -419,12 +416,12 @@ $dataAtual = date('d/m/Y');
             }
 
             const form = document.getElementById('form-alterar-senha');
-            const formData = new FormData(form);
+            const formData = new URLSearchParams(new FormData(form));
             formData.append('ajax', '1');
 
             fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
                 body: formData
             })
             .then(res => res.json())

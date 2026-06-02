@@ -110,7 +110,6 @@ $totalAmbientes  = count($ambientes);
         </div>
 
         <a href="./ambientes.php" class="ativo links"><i class="bi bi-building"></i> Painel de Ambientes</a>
-        <a href="./dashboard_analise.php" class="links"><i class="bi bi-bar-chart-line-fill"></i> Análise de Dados</a>
         <a href="./usuarios.php" class="links"><i class="bi bi-file-earmark-person-fill"></i> Painel de Usuários</a>
         <a href="./log.php" class="links"><i class="bi bi-person-vcard"></i> Painel de Logs</a>
     </div>
@@ -207,6 +206,9 @@ $totalAmbientes  = count($ambientes);
                             Denominação (Ambiente)
                         </th>
                         <th style="display:table-cell;padding:13px 20px;text-align:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#444;border-bottom:2px solid #ddd;white-space:nowrap;">
+                            Família
+                        </th>
+                        <th style="display:table-cell;padding:13px 20px;text-align:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#444;border-bottom:2px solid #ddd;white-space:nowrap;">
                             Status
                         </th>
                         <th style="display:table-cell;padding:13px 20px;text-align:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#444;border-bottom:2px solid #ddd;white-space:nowrap;">
@@ -235,6 +237,10 @@ $totalAmbientes  = count($ambientes);
                         <td style="display:table-cell;padding:13px 20px;text-align:left;vertical-align:middle;font-weight:700;text-transform:uppercase;color:var(--corTxt3);font-size:.9rem;">
                             <?php echo htmlspecialchars($amb->getNomeAmbiente()); ?>
                         </td>
+                        <!-- Família -->
+                        <td style="display:table-cell;padding:13px 20px;text-align:center;vertical-align:middle;font-weight:700;color:var(--corTxt3);font-size:.9rem;">
+                            <?php echo htmlspecialchars($amb->getFamilia() ?? 'Geral'); ?>
+                        </td>
                         <!-- Status -->
                         <td style="display:table-cell;padding:13px 20px;text-align:center;vertical-align:middle;white-space:nowrap;">
                             <?php if ($amb->getStatus() === 'Ativo'): ?>
@@ -251,7 +257,7 @@ $totalAmbientes  = count($ambientes);
                         <td style="display:table-cell;padding:13px 20px;text-align:center;vertical-align:middle;white-space:nowrap;">
                             <div style="display:inline-flex;gap:5px;align-items:center;justify-content:center;">
                                 <button type="button" title="Editar"
-                                        onclick="abrirModalEdicao(<?php echo $amb->getId(); ?>, '<?php echo addslashes($amb->getNomeAmbiente()); ?>', '<?php echo $amb->getStatus(); ?>')"
+                                        onclick="abrirModalEdicao(<?php echo $amb->getId(); ?>, '<?php echo addslashes($amb->getNomeAmbiente()); ?>', '<?php echo $amb->getStatus(); ?>', '<?php echo $amb->getFamilia() ?? 'Geral'; ?>')"
                                         style="width:36px;height:36px;border:none;border-radius:6px;background:#00c5ff;color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.95rem;transition:opacity .2s;">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
@@ -311,6 +317,18 @@ $totalAmbientes  = count($ambientes);
                        style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--corBordas);outline:none;background:var(--corFundo);color:var(--corTxt3);">
                 <span id="cad_erro" style="color:#fc2323;font-size:12px;display:none;margin-top:5px;font-weight:bold;"></span>
             </div>
+            
+            <div class="modal-input" style="margin-bottom:15px;">
+                <label style="font-weight:bold;display:block;margin-bottom:8px;">Família:</label>
+                <select name="familia" id="cad_familia" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--corBordas);outline:none;background:var(--corFundo);color:var(--corTxt3);">
+                    <option value="Salas de Aulas">📚 Salas de Aulas</option>
+                    <option value="Laboratórios">🔬 Laboratórios</option>
+                    <option value="Oficinas">⚙️ Oficinas</option>
+                    <option value="Administrativos">🏢 Administrativos</option>
+                    <option value="Externos">🌳 Externos</option>
+                    <option value="Geral">📦 Geral</option>
+                </select>
+            </div>
             <div class="modal-input" style="margin-bottom:20px;">
                 <label for="cad_status" style="font-weight:bold;display:block;margin-bottom:8px;">Status Inicial:</label>
                 <select name="status" id="cad_status" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--corBordas);outline:none;background:var(--corFundo);color:var(--corTxt3);">
@@ -344,6 +362,18 @@ $totalAmbientes  = count($ambientes);
                 <input type="text" name="nome_ambiente" id="edit_nome" required
                        style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--corBordas);outline:none;background:var(--corFundo);color:var(--corTxt3);">
                 <span id="edit_erro" style="color:#fc2323;font-size:12px;display:none;margin-top:5px;font-weight:bold;"></span>
+            </div>
+            
+            <div class="modal-input" style="margin-bottom:15px;">
+                <label style="font-weight:bold;display:block;margin-bottom:8px;">Família:</label>
+                <select name="familia" id="edit_familia" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--corBordas);outline:none;background:var(--corFundo);color:var(--corTxt3);">
+                    <option value="Salas de Aulas">📚 Salas de Aulas</option>
+                    <option value="Laboratórios">🔬 Laboratórios</option>
+                    <option value="Oficinas">⚙️ Oficinas</option>
+                    <option value="Administrativos">🏢 Administrativos</option>
+                    <option value="Externos">🌳 Externos</option>
+                    <option value="Geral">📦 Geral</option>
+                </select>
             </div>
             <div class="modal-input" style="margin-bottom:20px;">
                 <label for="edit_status" style="font-weight:bold;display:block;margin-bottom:8px;">Status:</label>
@@ -436,7 +466,7 @@ function showToast(msg, tipo) {
 }
 
 /* ── RENDER ROW (AJAX reactive) ──────────────────────────────────── */
-function renderRowHtml(id, nome, status) {
+function renderRowHtml(id, nome, status, familia = 'Geral') {
     const isAtivo = status === 'Ativo';
     const badge = isAtivo
         ? `<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(40,167,69,.12);color:#28a745;border:1px solid #28a745;padding:4px 13px;border-radius:8px;font-weight:700;font-size:.75rem;"><i class="bi bi-check2"></i> Ativo</span>`
@@ -448,10 +478,11 @@ function renderRowHtml(id, nome, status) {
     return `
         <td style="display:table-cell;padding:13px 20px;text-align:center;vertical-align:middle;white-space:nowrap;">${id}</td>
         <td style="display:table-cell;padding:13px 20px;text-align:left;vertical-align:middle;font-weight:700;text-transform:uppercase;">${nome}</td>
+        <td style="display:table-cell;padding:13px 20px;text-align:center;vertical-align:middle;font-weight:700;color:var(--corTxt3);font-size:.9rem;">${familia}</td>
         <td style="display:table-cell;padding:13px 20px;text-align:center;vertical-align:middle;white-space:nowrap;">${badge}</td>
         <td style="display:table-cell;padding:13px 20px;text-align:center;vertical-align:middle;white-space:nowrap;">
             <div style="display:inline-flex;gap:5px;align-items:center;">
-                <button type="button" style="${BTN}background:#00c5ff;" title="Editar" onclick="abrirModalEdicao(${id},'${n}','${status}')"><i class="bi bi-pencil-square"></i></button>
+                <button type="button" style="${BTN}background:#00c5ff;" title="Editar" onclick="abrirModalEdicao(${id},'${n}','${status}', '${familia}')"><i class="bi bi-pencil-square"></i></button>
                 <button type="button" style="${BTN}background:#ff2323;" title="Excluir" onclick="abrirModalExclusao(${id},'${n}')"><i class="bi bi-trash"></i></button>
                 <a href="corretivas.php?ambiente_id=${id}" style="${BTN}background:#6f42c1;text-decoration:none;" title="Ordem de Serviço"><i class="bi bi-tools"></i></a>
             </div>
@@ -464,10 +495,11 @@ function abrirModalCadastro() {
     document.getElementById('cad_erro').style.display='none';
     document.getElementById('adicaoAmbiente').style.display='flex';
 }
-function abrirModalEdicao(id, nome, status) {
+function abrirModalEdicao(id, nome, status, familia = 'Geral') {
     document.getElementById('edit_id').value     = id;
     document.getElementById('edit_nome').value   = nome;
     document.getElementById('edit_status').value = status;
+    document.getElementById('edit_familia').value = familia;
     document.getElementById('edit_erro').style.display='none';
     document.getElementById('edicaoAmbiente').style.display='flex';
 }
@@ -511,7 +543,7 @@ function submeterFormCadastro(e) {
             const tr = document.createElement('tr');
             tr.id = `row-${d.data.id}`;
             tr.style.cssText='display:table-row;border-bottom:1px solid #e8edf3;';
-            tr.innerHTML = renderRowHtml(d.data.id, d.data.nome_ambiente, d.data.status);
+            tr.innerHTML = renderRowHtml(d.data.id, d.data.nome_ambiente, d.data.status, d.data.familia);
             tr.style.background='rgba(40,167,69,.07)';
             const rows = [...tbody.querySelectorAll('tr[id^="row-"]')];
             const after = rows.find(r=>parseInt(r.id.replace('row-',''))>d.data.id);
@@ -540,7 +572,7 @@ function submeterFormEdicao(e) {
         if (d.success) {
             showToast(d.message,'success'); fecharModal('edicaoAmbiente');
             const row = document.getElementById(`row-${d.data.id}`);
-            if (row) { row.innerHTML=renderRowHtml(d.data.id,d.data.nome_ambiente,d.data.status); row.style.background='rgba(0,123,255,.07)'; setTimeout(()=>{row.style.background='';},900); }
+            if (row) { row.innerHTML=renderRowHtml(d.data.id,d.data.nome_ambiente,d.data.status,d.data.familia); row.style.background='rgba(0,123,255,.07)'; setTimeout(()=>{row.style.background='';},900); }
         } else { showToast(d.message,'danger'); }
     }).catch(()=>showToast('Erro de rede.','danger'));
 }
@@ -549,12 +581,12 @@ function submeterFormEdicao(e) {
 function alternarStatus(id, acao) {
     const fd = new FormData();
     fd.append('acao',acao); fd.append('id',id); fd.append('ajax','1');
-    fetch(window.location.href, {method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'},body:fd})
+    fetch(window.location.href, {method:'POST',headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },body:fd})
     .then(r=>r.json()).then(d=>{
         if (d.success) {
             showToast(d.message,'success');
             const row = document.getElementById(`row-${d.data.id}`);
-            if (row) { row.innerHTML=renderRowHtml(d.data.id,d.data.nome_ambiente,d.data.status); row.style.background='rgba(224,168,0,.08)'; setTimeout(()=>{row.style.background='';},900); }
+            if (row) { row.innerHTML=renderRowHtml(d.data.id,d.data.nome_ambiente,d.data.status,d.data.familia); row.style.background='rgba(224,168,0,.08)'; setTimeout(()=>{row.style.background='';},900); }
         } else { showToast(d.message,'danger'); }
     }).catch(()=>showToast('Erro de rede.','danger'));
 }
@@ -585,7 +617,7 @@ function submeterExclusaoInteligente(e, acao) {
                             tbody.innerHTML='<tr id="linha-vazia" style="display:table-row;"><td colspan="4" style="display:table-cell;padding:40px;text-align:center;color:#888;">Nenhum ambiente cadastrado.</td></tr>';
                         }
                     },300);
-                } else { row.innerHTML=renderRowHtml(d.data.id,d.data.nome_ambiente,d.data.status); }
+                } else { row.innerHTML=renderRowHtml(d.data.id,d.data.nome_ambiente,d.data.status,d.data.familia); }
             }
         } else { showToast(d.message,'danger'); }
     }).catch(()=>showToast('Erro de rede.','danger'));

@@ -1,0 +1,45 @@
+Created At: 2026-06-02T14:14:29Z
+Completed At: 2026-06-02T14:14:29Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/scratch/step_11178.txt`
+Total Lines: 42
+Total Bytes: 4161
+Showing lines 1 to 42
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: Created At: 2026-06-02T12:59:16Z
+2: Completed At: 2026-06-02T12:59:16Z
+3: File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+4: Total Lines: 1311
+5: Total Bytes: 83223
+6: Showing lines 626 to 700
+7: The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+8: 626:             }, 3500);
+9: 627:         }
+10: 628: 
+11: 629:         // Constrói HTML do badge de status dinamicamente
+12: 630:         function renderStatusBadge(status, executorNome = null) {
+13: 631:             if (status === 'Pendente' && executorNome) {
+14: 632:                 status = 'Em Execução';
+15: 633:             }
+16: 634:             if (status === 'Em Andamento') {
+17: 635:                 status = 'Em Execução';
+18: 636:             }
+19: 637:             
+20: 638:             if (status === 'Pendente') {
+21: 639:                 return `<span style="background-color: #fffbeb; color: #b45309; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; border: 1px solid #fcd34d;">Pendente</span>`;
+22: 640:             } else if (status === 'Em Execução') {
+23: 641:                 return `<span style="background-color: #eff6ff; color: 
+<truncated 842 bytes>
+e="Visualizar Detalhes" onclick="visualizarOS(${data.id})" style="background-color: #00C5FF; border: none; color: white; padding: 6px; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-eye-fill"></i></button>
+31: 691:                         <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="visualizarOS(${data.id})" style="background-color: #00E676; border: none; color: white; padding: 6px; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-check-lg"></i></button>
+32: 692:                         <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 6px; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-trash-fill"></i></button>
+33: 693:                     </div>
+34: 694:                     ` : `
+35: 695:                     <button class="btn-visualizar" type="button" title="Abrir O.S." onclick="visualizarOS(${data.id})" style="background-color: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Abrir ➔</button>
+36: 696:                     `}
+37: 697:                 </td>
+38: 698:             `;
+39: 699:         }
+40: 700: 
+41: The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+42: 
+The above content shows the entire, complete file contents of the requested file.

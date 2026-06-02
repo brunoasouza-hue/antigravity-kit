@@ -50,7 +50,7 @@ class OrdemServicoController {
      * Ponto de entrada para processar requisições POST/GET destinadas às ordens corretivas.
      */
     public function processarAcao(): void {
-        $acao = $_POST['acao'] ?? $_GET['acao'] ?? '';
+        $acao = $_POST['acao'] ?? $_GET['acao'] ?? $_POST['action'] ?? $_GET['action'] ?? '';
 
         switch ($acao) {
             case 'abrir':
@@ -67,6 +67,18 @@ class OrdemServicoController {
                 break;
             case 'buscar':
                 $this->buscar();
+                break;
+            case 'aceitar_os':
+                $this->aceitarOS();
+                break;
+            case 'finalizar_reparo':
+                $this->finalizarReparo();
+                break;
+            case 'validar_conclusao':
+                $this->validarConclusao();
+                break;
+            case 'recusar_servico':
+                $this->recusarServico();
                 break;
         }
     }
@@ -321,6 +333,8 @@ class OrdemServicoController {
 
         $this->retornarResposta(true, "OS localizada com sucesso!", [
             'id' => $os->getId(),
+            'solicitante_id' => $os->getSolicitanteId(),
+            'executor_id' => $os->getExecutorId(),
             'solicitante_nome' => $os->getSolicitanteNome(),
             'gestor_nome' => $os->getGestorNome(),
             'executor_nome' => $os->getExecutorNome(),
@@ -331,6 +345,198 @@ class OrdemServicoController {
             'data_abertura' => $os->getDataAbertura() ? date('d/m/Y H:i', strtotime($os->getDataAbertura())) : '',
             'data_fechamento' => $os->getDataFechamento() ? date('d/m/Y H:i', strtotime($os->getDataFechamento())) : ''
         ]);
+    }
+
+    }
+
+    /**
+     * Aceita uma ordem de serviço (Executor).
+     */
+    private function aceitarOS(): void {
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            $this->retornarResposta(false, "ID de ordem de serviço inválido.");
+        }
+
+        $os = OrdemServico::buscarPorId($id);
+        if ($os === null) {
+            $this->retornarResposta(false, "Ordem de serviço não encontrada.");
+        }
+
+        if ($os->getStatus() !== 'Aguardando Aceite') {
+            $this->retornarResposta(false, "Esta ordem de serviço não está aguardando aceite.");
+        }
+
+        // Valida se o executor designado é quem está logado
+        if ($os->getExecutorId() !== (int)$_SESSION['usuario_id']) {
+            $this->retornarResposta(false, "Acesso negado: Você não é o executor designado para esta ordem.");
+        }
+
+        try {
+            if ($os->aceitar()) {
+                $osSalva = OrdemServico::buscarPorId($id);
+                $dataRetorno = null;
+                if ($osSalva !== null) {
+                    $dataRetorno = [
+                        'id' => $osSalva->getId(),
+                        'status' => $osSalva->getStatus(),
+                        'executor_nome' => $osSalva->getExecutorNome()
+                    ];
+                }
+                $this->retornarResposta(true, "Ordem de serviço aceita! Iniciando execução.", $dataRetorno);
+            } else {
+                $this->retornarResposta(false, "Erro ao aceitar a ordem de serviço.");
+            }
+        } catch (Exception $e) {
+            $this->retornarResposta(false, "Erro: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Finaliza o reparo de uma ordem de serviço (Executor).
+     */
+    private function finalizarReparo(): void {
+        $id = (int)($_POST['id'] ?? 0);
+        $relato = trim($_POST['relato_conclusao'] ?? $_POST['observacoes'] ?? '');
+
+        if ($id <= 0) {
+            $this->retornarResposta(false, "ID de ordem de serviço inválido.");
+        }
+        if ($relato === '') {
+            $this->retornarResposta(false, "O relato técnico de conclusão é obrigatório.");
+        }
+        if (strcasecmp($relato, 'VAZIO') === 0) {
+            $this->retornarResposta(false, "Erro: O relato técnico não pode ser 'VAZIO'.");
+        }
+
+        $os = OrdemServico::buscarPorId($id);
+        if ($os === null) {
+            $this->retornarResposta(false, "Ordem de serviço não encontrada.");
+        }
+
+        if ($os->getExecutorId() !== (int)$_SESSION['usuario_id']) {
+            $this->retornarResposta(false, "Acesso negado: Você não é o executor designado.");
+        }
+
+        if ($os->getStatus() !== 'Em Execução') {
+            $this->retornarResposta(false, "Esta ordem de serviço não está em execução.");
+        }
+
+        try {
+            if ($os->finalizar($relato)) {
+                $osSalva = OrdemServico::buscarPorId($id);
+                $dataRetorno = null;
+                if ($osSalva !== null) {
+                    $dataRetorno = [
+                        'id' => $osSalva->getId(),
+                        'status' => $osSalva->getStatus()
+                    ];
+                }
+                $this->retornarResposta(true, "Término de serviço registrado! Enviado para validação.", $dataRetorno);
+            } else {
+                $this->retornarResposta(false, "Erro ao registrar o término de serviço.");
+            }
+        } catch (Exception $e) {
+            $this->retornarResposta(false, "Erro: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Valida a conclusão aprovando o serviço (Solicitante).
+     */
+    private function validarConclusao(): void {
+        $id = (int)($_POST['id'] ?? 0);
+        $obs = trim($_POST['observacoes_validacao'] ?? $_POST['observacoes'] ?? '');
+
+        if ($id <= 0) {
+            $this->retornarResposta(false, "ID de ordem de serviço inválido.");
+        }
+        if (strcasecmp($obs, 'VAZIO') === 0) {
+            $this->retornarResposta(false, "Erro: Observações não podem conter a palavra 'VAZIO'.");
+        }
+
+        $os = OrdemServico::buscarPorId($id);
+        if ($os === null) {
+            $this->retornarResposta(false, "Ordem de serviço não encontrada.");
+        }
+
+        $nivelAcesso = $_SESSION['usuario_nivel'] ?? '';
+        if ($os->getSolicitanteId() !== (int)$_SESSION['usuario_id'] && $nivelAcesso !== 'Gestor') {
+            $this->retornarResposta(false, "Acesso negado: Apenas o solicitante original ou gestores podem validar.");
+        }
+
+        if ($os->getStatus() !== 'Aguardando Validação') {
+            $this->retornarResposta(false, "Esta ordem de serviço não está aguardando validação.");
+        }
+
+        try {
+            if ($os->validarOS(true, $obs)) {
+                $osSalva = OrdemServico::buscarPorId($id);
+                $dataRetorno = null;
+                if ($osSalva !== null) {
+                    $dataRetorno = [
+                        'id' => $osSalva->getId(),
+                        'status' => $osSalva->getStatus(),
+                        'data_fechamento' => $osSalva->getDataFechamento() ? date('d/m/Y H:i', strtotime($osSalva->getDataFechamento())) : null
+                    ];
+                }
+                $this->retornarResposta(true, "Ordem de serviço aprovada e concluída com sucesso!", $dataRetorno);
+            } else {
+                $this->retornarResposta(false, "Erro ao validar a ordem de serviço.");
+            }
+        } catch (Exception $e) {
+            $this->retornarResposta(false, "Erro: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Recusa o serviço e retorna para em execução (Solicitante).
+     */
+    private function recusarServico(): void {
+        $id = (int)($_POST['id'] ?? 0);
+        $obs = trim($_POST['observacoes_validacao'] ?? $_POST['observacoes'] ?? '');
+
+        if ($id <= 0) {
+            $this->retornarResposta(false, "ID de ordem de serviço inválido.");
+        }
+        if ($obs === '') {
+            $this->retornarResposta(false, "O motivo da recusa é obrigatório.");
+        }
+        if (strcasecmp($obs, 'VAZIO') === 0) {
+            $this->retornarResposta(false, "Erro: Observações não podem conter a palavra 'VAZIO'.");
+        }
+
+        $os = OrdemServico::buscarPorId($id);
+        if ($os === null) {
+            $this->retornarResposta(false, "Ordem de serviço não encontrada.");
+        }
+
+        $nivelAcesso = $_SESSION['usuario_nivel'] ?? '';
+        if ($os->getSolicitanteId() !== (int)$_SESSION['usuario_id'] && $nivelAcesso !== 'Gestor') {
+            $this->retornarResposta(false, "Acesso negado: Apenas o solicitante original ou gestores podem validar.");
+        }
+
+        if ($os->getStatus() !== 'Aguardando Validação') {
+            $this->retornarResposta(false, "Esta ordem de serviço não está aguardando validação.");
+        }
+
+        try {
+            if ($os->validarOS(false, $obs)) {
+                $osSalva = OrdemServico::buscarPorId($id);
+                $dataRetorno = null;
+                if ($osSalva !== null) {
+                    $dataRetorno = [
+                        'id' => $osSalva->getId(),
+                        'status' => $osSalva->getStatus()
+                    ];
+                }
+                $this->retornarResposta(true, "Serviço recusado! Retornado ao executor em execução.", $dataRetorno);
+            } else {
+                $this->retornarResposta(false, "Erro ao processar a recusa de serviço.");
+            }
+        } catch (Exception $e) {
+            $this->retornarResposta(false, "Erro: " . $e->getMessage());
+        }
     }
 
     /**

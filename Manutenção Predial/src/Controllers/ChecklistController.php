@@ -54,6 +54,7 @@ class ChecklistController {
 
         switch ($acao) {
             case 'cadastrar':
+            case 'salvar_checklist':
                 $this->cadastrar();
                 break;
             case 'excluir':
@@ -63,9 +64,10 @@ class ChecklistController {
     }
 
     /**
-     * Registra uma nova inspeção preventiva de sala.
+     * Registra uma nova inspeção preventiva de sala ou atualiza uma existente.
      */
     private function cadastrar(): void {
+        $checklistId = isset($_POST['checklist_id']) ? (int)$_POST['checklist_id'] : null;
         $ambienteId = (int)($_POST['ambiente_id'] ?? 0);
         $dataInspecao = trim($_POST['data_inspecao'] ?? '');
         $statusTomadas = trim($_POST['status_tomadas'] ?? 'Não se aplica');
@@ -115,7 +117,8 @@ class ChecklistController {
                 $statusProjetor,
                 $statusTela,
                 $statusLousa,
-                empty($observacoes) ? null : $observacoes
+                empty($observacoes) ? null : $observacoes,
+                $checklistId
             );
 
             if ($checklist->salvar()) {

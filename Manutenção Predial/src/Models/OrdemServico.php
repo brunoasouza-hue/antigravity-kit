@@ -80,7 +80,7 @@ class OrdemServico {
     
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $status): void {
-        $validos = ['Pendente', 'Em Execução', 'Aguardando Validação', 'Concluída'];
+        $validos = ['Pendente', 'Aguardando Aceite', 'Em Execução', 'Aguardando Validação', 'Concluída'];
         if (in_array($status, $validos, true)) {
             $this->status = $status;
         }
@@ -178,7 +178,7 @@ class OrdemServico {
         }
 
         $sql = "UPDATE ordens_servico 
-                SET gestor_id = :gestor_id, executor_atual_id = :executor_atual_id, tipo_execucao = :tipo_execucao, status = 'Em Execução' 
+                SET gestor_id = :gestor_id, executor_atual_id = :executor_atual_id, tipo_execucao = :tipo_execucao, status = 'Aguardando Aceite' 
                 WHERE id = :id";
         
         $stmt = $this->db->prepare($sql);
@@ -193,7 +193,7 @@ class OrdemServico {
             $this->gestor_id = $gestorId;
             $this->executor_atual_id = $executorId;
             $this->tipo_execucao = $tipoExecucao;
-            $this->status = 'Em Execução';
+            $this->status = 'Aguardando Aceite';
             return true;
         }
         return false;
@@ -303,8 +303,8 @@ class OrdemServico {
                        ug.nome AS gestor_nome,
                        ue.nome AS executor_nome
                 FROM ordens_servico os
-                INNER JOIN ambientes a ON os.ambiente_id = a.id
-                INNER JOIN usuarios us ON os.solicitante_id = us.id
+                LEFT JOIN ambientes a ON os.ambiente_id = a.id
+                LEFT JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
                 LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
                 WHERE os.id = :id 
@@ -351,8 +351,8 @@ class OrdemServico {
                        ug.nome AS gestor_nome,
                        ue.nome AS executor_nome
                 FROM ordens_servico os
-                INNER JOIN ambientes a ON os.ambiente_id = a.id
-                INNER JOIN usuarios us ON os.solicitante_id = us.id
+                LEFT JOIN ambientes a ON os.ambiente_id = a.id
+                LEFT JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
                 LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
                 WHERE os.solicitante_id = :solicitante_id
@@ -398,8 +398,8 @@ class OrdemServico {
                        ug.nome AS gestor_nome,
                        ue.nome AS executor_nome
                 FROM ordens_servico os
-                INNER JOIN ambientes a ON os.ambiente_id = a.id
-                INNER JOIN usuarios us ON os.solicitante_id = us.id
+                LEFT JOIN ambientes a ON os.ambiente_id = a.id
+                LEFT JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
                 LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
                 ORDER BY os.id DESC";
@@ -444,8 +444,8 @@ class OrdemServico {
                        ug.nome AS gestor_nome,
                        ue.nome AS executor_nome
                 FROM ordens_servico os
-                INNER JOIN ambientes a ON os.ambiente_id = a.id
-                INNER JOIN usuarios us ON os.solicitante_id = us.id
+                LEFT JOIN ambientes a ON os.ambiente_id = a.id
+                LEFT JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
                 LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
                 WHERE os.executor_atual_id = :executor_atual_id
@@ -476,5 +476,25 @@ class OrdemServico {
         }
 
         return $lista;
+    }
+
+    /**
+     * Aceita a ordem de serviço pelo Executor.
+     * Atualiza o status para "Em Execução".
+     *
+     * @return bool
+     */
+    public function aceitar(): bool {
+        if ($this->id === null) return false;
+
+        $sql = "UPDATE ordens_servico SET status = 'Em Execução' WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $success = $stmt->execute(['id' => $this->id]);
+
+        if ($success) {
+            $this->status = 'Em Execução';
+            return true;
+        }
+        return false;
     }
 }

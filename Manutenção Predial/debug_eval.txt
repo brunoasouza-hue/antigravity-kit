@@ -1,0 +1,5 @@
+
+[COMPILE] hist length: 2
+HTML chunk: <?php if (empty($historicoInspecoes)): ?>
+                            <tr id="linha-vazia">
+                                <td colspan="4" style="pad

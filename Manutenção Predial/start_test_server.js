@@ -842,7 +842,8 @@ function evaluatePhpCondition(condStr, session, localContext = {}) {
         .replace(/\$erro/g, 'localContext.erro')
         .replace(/empty\((.*?)\)/g, '( !$1 || (Array.isArray($1) && $1.length === 0) )')
         .replace(/!empty\((.*?)\)/g, '( $1 && (!Array.isArray($1) || $1.length > 0) )')
-        .replace(/isset\((.*?)\)/g, '( typeof $1 !== "undefined" && $1 !== null )');
+        .replace(/isset\((.*?)\)/g, '( typeof $1 !== "undefined" && $1 !== null )')
+        .replace(/\$os->getExecutorNome\(\)/g, '(localContext.item && localContext.item.executor_nome)');
     
     try {
         const fn = new Function('session', 'localContext', `return (${js});`);
@@ -897,30 +898,33 @@ function compileLoops(html, session, dbContext) {
             
             // Substituições simples de getters e propriedades do item na tabela
             const getterMatches = [
-                { regex: new RegExp(`<\\?php\\s+echo\\s+\\$${itemVar}->getId\\(\\)\\s*;?\\s*\\?>`, 'g'), val: item.id },
-                { regex: new RegExp(`<?=\\s*\\$${itemVar}->getId\\(\\)\\s*\\?>`, 'g'), val: item.id },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\$${itemVar}->getNomeAmbiente\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.nome_ambiente || '') },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+addslashes\\(\\s*\\$${itemVar}->getNomeAmbiente\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: (item.nome_ambiente || '').replace(/'/g, "\\'") },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+\\$${itemVar}->getStatus\\(\\)\\s*;?\\s*\\?>`, 'g'), val: item.status },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$${itemVar}->getId\\(\\)\\s*;?\\s*\\?>`, 'g'), val: item.id },
+                { regex: new RegExp(`<?=\\s*\\\$${itemVar}->getId\\(\\)\\s*\\?>`, 'g'), val: item.id },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getNomeAmbiente\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.nome_ambiente || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+addslashes\\(\\s*\\\$${itemVar}->getNomeAmbiente\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: (item.nome_ambiente || '').replace(/'/g, "\\'") },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$${itemVar}->getStatus\\(\\)\\s*;?\\s*\\?>`, 'g'), val: item.status },
                 
                 // Checklist
-                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\$${itemVar}->getAmbienteNome\\(\\)\\s*(?:\\?\\?\\s*['\"].*?['\"]\\s*)?\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.ambiente_nome || 'Desconhecido') },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\$${itemVar}->getResponsavelNome\\(\\)\\s*(?:\\?\\?\\s*['\"].*?['\"]\\s*)?\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.responsavel_nome || 'N/A') },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+date\\(\\s*['\"]d/m/Y['\"]\\s*,\\s*strtotime\\(\\s*\\$${itemVar}->getDataInspecao\\(\\)\\s*\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: formatDate(item.data_inspecao) },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getAmbienteNome\\(\\)\\s*(?:\\?\\?\\s*['\"].*?['\"]\\s*)?\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.ambiente_nome || 'Desconhecido') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getResponsavelNome\\(\\)\\s*(?:\\?\\?\\s*['\"].*?['\"]\\s*)?\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.responsavel_nome || 'N/A') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+date\\(\\s*['\"]d/m/Y['\"]\\s*,\\s*strtotime\\(\\s*\\\$${itemVar}->getDataInspecao\\(\\)\\s*\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: formatDate(item.data_inspecao) },
                 
                 // OS
-                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\$${itemVar}->getSolicitanteNome\\(\\)\\s*(?:\\?\\?\\s*['\"].*?['\"]\\s*)?\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.solicitante_nome || '') },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\$${itemVar}->getExecutorNome\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.executor_nome || 'Não Atribuído') },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\$${itemVar}->getGestorNome\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.gestor_nome || 'Pendente') },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+date\\(\\s*['\"]d/m/Y H:i['\"]\\s*,\\s*strtotime\\(\\s*\\$${itemVar}->getDataAbertura\\(\\)\\s*\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: formatDate(item.data_abertura, true) },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+date\\(\\s*['\"]d/m/Y H:i['\"]\\s*,\\s*strtotime\\(\\s*\\$${itemVar}->getDataFechamento\\(\\)\\s*\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: formatDate(item.data_fechamento, true) },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+\\$${itemVar}->getDescricaoProblema\\(\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.descricao_problema || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$${itemVar}->getExecutorId\\(\\)\\s*;?\\s*\\?>`, 'g'), val: item.executor_atual_id || '' },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$${itemVar}->getSolicitanteId\\(\\)\\s*;?\\s*\\?>`, 'g'), val: item.solicitante_id || '' },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getSolicitanteNome\\(\\)\\s*(?:\\?\\?\\s*['\"].*?['\"]\\s*)?\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.solicitante_nome || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getExecutorNome\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.executor_nome || 'Não Atribuído') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getGestorNome\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.gestor_nome || 'Pendente') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+date\\(\\s*['"]d/m/Y H:i['"]\\s*,\\s*strtotime\\(\\s*\\\$${itemVar}->getDataAbertura\\(\\)\\s*(?:\\?\\?\\s*['"].*?['"]\\s*)?\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: formatDate(item.data_abertura, true) },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+date\\(\\s*['"]d/m/Y H:i['"]\\s*,\\s*strtotime\\(\\s*\\\$${itemVar}->getDataFechamento\\(\\)\\s*(?:\\?\\?\\s*['"].*?['"]\\s*)?\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: formatDate(item.data_fechamento, true) },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+(?:htmlspecialchars\\(\\s*)?\\\$${itemVar}->getDescricaoProblema\\(\\)\\s*(?:\\))?\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.descricao_problema || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+(?:htmlspecialchars\\(\\s*)?\\\$${itemVar}->getTipoExecucao\\(\\)\\s*(?:\\))?\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.tipo_execucao || '') },
                 
                 // Ranking
-                { regex: new RegExp(`<\\?php\\s+echo\\s+\\$idx\\s*\\+\\s*1\\s*;?\\s*\\?>`, 'g'), val: idx + 1 },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\$item\\['nome'\\]\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.nome || '') },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+\\$item\\['total'\\]\\s*;?\\s*\\?>`, 'g'), val: item.total || 0 },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+\\$percentual\\s*;?\\s*\\?>`, 'g'), val: (item.total / dbContext.maxOS * 100) || 0 }
+                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$idx\\s*\\+\\s*1\\s*;?\\s*\\?>`, 'g'), val: idx + 1 },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$item\\['nome'\\]\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.nome || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$item\\['total'\\]\\s*;?\\s*\\?>`, 'g'), val: item.total || 0 },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$percentual\\s*;?\\s*\\?>`, 'g'), val: (item.total / dbContext.maxOS * 100) || 0 }
             ];
             
             getterMatches.forEach(m => {
@@ -955,6 +959,29 @@ function compileLoops(html, session, dbContext) {
                 // Fix the TR onclicks
                 itemHtml = itemHtml.replace(/\$onClick = 'onclick="abrirModalDespacho\(' \. \$os->getId\(\) \. '\)"';/g, `$onClick = "onclick='abrirModalTramitacao(${detailsJson})'";`);
                 itemHtml = itemHtml.replace(/\$onClick = 'onclick="abrirModalFinalizacao\(' \. \$os->getId\(\) \. '\)"';/g, `$onClick = "onclick='abrirModalTramitacao(${detailsJson})'";`);
+
+                // Resolve the $displayStatus PHP block: strip the procedural PHP and replace the echo
+                const execNome = item.executor_nome || '';
+                const executorValido = (execNome && execNome !== 'Não Atribuído');
+                const displayStatus = (item.status === 'Pendente' && executorValido) ? 'Em Execução' : (item.status || 'Pendente');
+
+                // Color map matching the PHP switch
+                const colorMap = {
+                    'Pendente':               { bg: '#fef08a', txt: '#854d0e', brd: '#fde047' },
+                    'Em Execução':            { bg: '#e0f2fe', txt: '#075985', brd: '#bae6fd' },
+                    'Aguardando Validação':   { bg: '#ffedd5', txt: '#9a3412', brd: '#fed7aa' },
+                    'Concluída':              { bg: '#dcfce7', txt: '#166534', brd: '#bbf7d0' }
+                };
+                const cores = colorMap[displayStatus] || { bg: '#f3e8ff', txt: '#6b21a8', brd: '#e9d5ff' };
+
+                // Strip the entire procedural PHP block (<?php ... $displayStatus ... switch ... ?>)
+                itemHtml = itemHtml.replace(/<\?php\s*\n[\s\S]*?\$displayStatus[\s\S]*?\?>/g, '');
+                // Replace color variable echos
+                itemHtml = itemHtml.replace(/<\?php\s+echo\s+\$corFundo\s*;\s*\?>/g, cores.bg);
+                itemHtml = itemHtml.replace(/<\?php\s+echo\s+\$corTexto\s*;\s*\?>/g, cores.txt);
+                itemHtml = itemHtml.replace(/<\?php\s+echo\s+\$corBorda\s*;\s*\?>/g, cores.brd);
+                // Replace the display status echo
+                itemHtml = itemHtml.replace(/<\?php\s+echo\s+htmlspecialchars\(\s*\$displayStatus\s*\)\s*;?\s*\?>/g, escapeHtml(displayStatus));
             }
 
             // Tratamento especial para detalhes em preventivas.php (conversão de objeto para JSON)
@@ -977,7 +1004,7 @@ function compileLoops(html, session, dbContext) {
             
             // Compila blocos condicionais dentro do item do loop
             for (let i = 0; i < 3; i++) {
-                itemHtml = compileConditionals(itemHtml, session, { ...localContext, status: item.status });
+                itemHtml = compileConditionals(itemHtml, session, { ...localContext, status: item.status, item: item });
             }
             
             rendered += itemHtml;
@@ -989,6 +1016,13 @@ function compileLoops(html, session, dbContext) {
 
 function compileVariables(html, context) {
     const echos = [
+        { regex: /<\?=\s*isset\(\$_SESSION\['usuario_id'\]\).*?:\s*['\"]?null['\"]?\s*\?>/g, val: context.usuarioId || '1' },
+        { regex: /<\?php\s+echo\s+\$_SESSION\['usuario_id'\]\s*\?\?\s*['\"]?null['\"]?\s*;?\s*\?>/g, val: context.usuarioId || '1' },
+        { regex: /<\?php\s+echo\s+\$_SESSION\['usuario_nivel'\]\s*\?\?\s*['\"].*?['\"]\s*;?\s*\?>/g, val: context.usuarioNivel || 'Gestor' },
+        { regex: /<\?php\s+echo\s+\$usuarioNivel\s*;?\s*\?>/g, val: context.usuarioNivel || 'Gestor' },
+        { regex: /<\?=\s*\$_SESSION\['usuario_nivel'\]\s*\?\?\s*['\"].*?['\"]\s*\?>/g, val: context.usuarioNivel || 'Gestor' },
+        { regex: /<\?php\s+echo\s+\$_SESSION\['usuario_id'\]\s*;?\s*\?>/g, val: context.usuarioId || '1' },
+        { regex: /<\?php\s+echo\s+\$_SESSION\['usuario_nivel'\]\s*;?\s*\?>/g, val: context.usuarioNivel || 'Gestor' },
         { regex: /<\?php\s+echo\s+htmlspecialchars\(\s*\$usuarioNome\s*\)\s*;?\s*\?>/g, val: escapeHtml(context.usuarioNome) },
         { regex: /<\?php\s+echo\s+htmlspecialchars\(\s*\$usuarioNivel\s*\)\s*;?\s*\?>/g, val: escapeHtml(context.usuarioNivel) },
         { regex: /<\?php\s+echo\s+htmlspecialchars\(\s*\$usuarioEmail\s*\)\s*;?\s*\?>/g, val: escapeHtml(context.usuarioEmail) },
@@ -1853,7 +1887,7 @@ const server = http.createServer((req, res) => {
                     db.ordens_servico[idx].executor_atual_id = execId;
                     db.ordens_servico[idx].gestor_id = session.usuario_id;
                     db.ordens_servico[idx].tipo_execucao = tipo;
-                    db.ordens_servico[idx].status = 'Em Execução';
+                    db.ordens_servico[idx].status = 'Aguardando Aceite';
                     
                     saveDatabase(db);
 
@@ -1862,7 +1896,7 @@ const server = http.createServer((req, res) => {
                         id: id,
                         executor_nome: exec.nome || 'Designado',
                         gestor_nome: session.usuario_nome,
-                        status: 'Em Execução',
+                        status: 'Aguardando Aceite',
                         tipo_execucao: tipo
                     });
                 }
@@ -1977,6 +2011,109 @@ const server = http.createServer((req, res) => {
                         data_fechamento: db.ordens_servico[idx].data_fechamento ? formatDate(db.ordens_servico[idx].data_fechamento, true) : null
                     });
                 }
+
+                if (acao === 'aceitar_os') {
+                    const id = parseInt(postParams.id);
+                    const idx = db.ordens_servico.findIndex(o => o.id === id);
+                    if (idx === -1) return respondJson(false, "Ordem de serviço não localizada.");
+                    if (db.ordens_servico[idx].status !== 'Aguardando Aceite') {
+                        return respondJson(false, "Esta chamada não está aguardando aceite.");
+                    }
+                    if (db.ordens_servico[idx].executor_atual_id !== session.usuario_id) {
+                        return respondJson(false, "Acesso negado: Você não é o executor designado.");
+                    }
+                    db.ordens_servico[idx].status = 'Em Execução';
+                    saveDatabase(db);
+                    const exec = db.usuarios.find(u => u.id === session.usuario_id) || {};
+                    return respondJson(true, "Ordem de serviço aceita! Iniciando execução.", {
+                        id: id,
+                        status: 'Em Execução',
+                        executor_nome: exec.nome
+                    });
+                }
+
+                if (acao === 'finalizar_reparo') {
+                    const id = parseInt(postParams.id);
+                    const relato = (postParams.relato_conclusao || '').trim();
+                    if (!relato) return respondJson(false, "O relato técnico de conclusão é obrigatório.");
+                    if (relato.toUpperCase() === 'VAZIO') return respondJson(false, "Erro: Relato não pode ser 'VAZIO'.");
+
+                    const idx = db.ordens_servico.findIndex(o => o.id === id);
+                    if (idx === -1) return respondJson(false, "Ordem de serviço não localizada.");
+                    if (db.ordens_servico[idx].executor_atual_id !== session.usuario_id) {
+                        return respondJson(false, "Acesso negado: Você não é o executor designado.");
+                    }
+                    if (db.ordens_servico[idx].status !== 'Em Execução') {
+                        return respondJson(false, "Esta chamada não está em execução.");
+                    }
+
+                    const dataStr = formatDate(new Date().toISOString(), true);
+                    db.ordens_servico[idx].descricao_problema += `\\n\\n[Conclusão do Executor em ${dataStr}]: ${relato}`;
+                    db.ordens_servico[idx].status = 'Aguardando Validação';
+
+                    saveDatabase(db);
+                    return respondJson(true, "Término de serviço registrado! Enviado para validação.", {
+                        id: id,
+                        status: 'Aguardando Validação'
+                    });
+                }
+
+                if (acao === 'validar_conclusao') {
+                    const id = parseInt(postParams.id);
+                    const obs = (postParams.observacoes_validacao || '').trim();
+                    if (obs.toUpperCase() === 'VAZIO') return respondJson(false, "Erro: Observações não podem ser 'VAZIO'.");
+
+                    const idx = db.ordens_servico.findIndex(o => o.id === id);
+                    if (idx === -1) return respondJson(false, "Ordem de serviço não localizada.");
+                    if (db.ordens_servico[idx].solicitante_id !== session.usuario_id && session.usuario_nivel !== 'Gestor') {
+                        return respondJson(false, "Acesso negado: Apenas o solicitante original ou gestores podem validar.");
+                    }
+                    if (db.ordens_servico[idx].status !== 'Aguardando Validação') {
+                        return respondJson(false, "Esta chamada não está aguardando validação.");
+                    }
+
+                    const dataStr = formatDate(new Date().toISOString(), true);
+                    db.ordens_servico[idx].status = 'Concluída';
+                    db.ordens_servico[idx].data_fechamento = new Date().toISOString().replace('T', ' ').substring(0, 19);
+                    if (obs) {
+                        db.ordens_servico[idx].descricao_problema += `\\n\\n[Aprovado pelo Solicitante em ${dataStr}]: ${obs}`;
+                    } else {
+                        db.ordens_servico[idx].descricao_problema += `\\n\\n[Aprovado pelo Solicitante em ${dataStr}]`;
+                    }
+
+                    saveDatabase(db);
+                    return respondJson(true, "Ordem de serviço aprovada e concluída com sucesso!", {
+                        id: id,
+                        status: 'Concluída',
+                        data_fechamento: formatDate(db.ordens_servico[idx].data_fechamento, true)
+                    });
+                }
+
+                if (acao === 'recusar_servico') {
+                    const id = parseInt(postParams.id);
+                    const obs = (postParams.observacoes_validacao || '').trim();
+                    if (!obs) return respondJson(false, "O motivo da recusa é obrigatório.");
+                    if (obs.toUpperCase() === 'VAZIO') return respondJson(false, "Erro: Observações não podem ser 'VAZIO'.");
+
+                    const idx = db.ordens_servico.findIndex(o => o.id === id);
+                    if (idx === -1) return respondJson(false, "Ordem de serviço não localizada.");
+                    if (db.ordens_servico[idx].solicitante_id !== session.usuario_id && session.usuario_nivel !== 'Gestor') {
+                        return respondJson(false, "Acesso negado: Apenas o solicitante original ou gestores podem validar.");
+                    }
+                    if (db.ordens_servico[idx].status !== 'Aguardando Validação') {
+                        return respondJson(false, "Esta chamada não está aguardando validação.");
+                    }
+
+                    const dataStr = formatDate(new Date().toISOString(), true);
+                    db.ordens_servico[idx].status = 'Em Execução';
+                    db.ordens_servico[idx].descricao_problema += `\\n\\n[Recusado pelo Solicitante em ${dataStr}]: ${obs}`;
+
+                    saveDatabase(db);
+                    return respondJson(true, "Serviço recusado! Retornado ao executor em execução.", {
+                        id: id,
+                        status: 'Em Execução'
+                    });
+                }
             }
 
             // Ação desconhecida ou inválida
@@ -2011,7 +2148,9 @@ const server = http.createServer((req, res) => {
                 id: os.id,
                 ambiente: db.ambientes.find(a => a.id === os.ambiente_id)?.nome_ambiente || 'N/D',
                 solicitante: userSol,
+                solicitante_id: os.solicitante_id,
                 executor_atual: userExec,
+                executor_atual_id: os.executor_atual_id,
                 status: os.status,
                 descricao: os.descricao_problema,
                 data_abertura: os.data_abertura
@@ -2035,9 +2174,12 @@ const server = http.createServer((req, res) => {
 
         return respondJson(true, "Dados carregados com sucesso!", {
             id: os.id,
-            solicitante_name: sol.nome || 'Desconhecido',
-            gestor_name: gest.nome || 'Pendente',
-            executor_name: exec.nome || 'Não Atribuído',
+            solicitante_id: os.solicitante_id,
+            executor_id: os.executor_atual_id,
+            executor_atual_id: os.executor_atual_id,
+            solicitante_nome: sol.nome || 'Desconhecido',
+            gestor_nome: gest.nome || 'Pendente',
+            executor_nome: exec.nome || 'Não Atribuído',
             ambiente_nome: amb.nome_ambiente || 'Desconhecido',
             descricao_problema: os.descricao_problema,
             tipo_execucao: os.tipo_execucao,

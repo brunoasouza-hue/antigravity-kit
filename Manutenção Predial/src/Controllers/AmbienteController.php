@@ -120,6 +120,7 @@ class AmbienteController {
         $id = (int)($_POST['id'] ?? 0);
         $nome = trim($_POST['nome_ambiente'] ?? '');
         $status = trim($_POST['status'] ?? 'Ativo');
+        $familia = trim($_POST['familia'] ?? 'Geral');
 
         if ($id <= 0 || empty($nome)) {
             $this->retornarResposta(false, "Dados inválidos para edição.");
@@ -137,12 +138,14 @@ class AmbienteController {
         try {
             $ambiente->setNomeAmbiente($nome);
             $ambiente->setStatus($status);
+            $ambiente->setFamilia($familia);
             
             if ($ambiente->salvar()) {
                 $this->retornarResposta(true, "Ambiente atualizado com sucesso!", [
                     'id' => $ambiente->getId(),
                     'nome_ambiente' => $ambiente->getNomeAmbiente(),
-                    'status' => $ambiente->getStatus()
+                    'status' => $ambiente->getStatus(),
+                    'familia' => $ambiente->getFamilia()
                 ]);
             } else {
                 $this->retornarResposta(false, "Nenhuma alteração foi realizada.");

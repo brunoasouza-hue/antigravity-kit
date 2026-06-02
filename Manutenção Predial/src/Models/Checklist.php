@@ -101,8 +101,8 @@ class Checklist {
      */
     public function salvar(): bool {
         if ($this->id !== null) {
-            // Checklists de inspeção são registros históricos, não devem ser atualizados após inserção.
-            return false;
+            // Checklists de inspeção são registros históricos, mas permitimos edição na mesma inspeção
+            return $this->atualizar();
         }
 
         $sql = "INSERT INTO checklists (
@@ -135,6 +135,36 @@ class Checklist {
         }
 
         return false;
+    }
+
+    public function atualizar(): bool {
+        $sql = "UPDATE checklists SET 
+                    ambiente_id = :ambiente_id, 
+                    responsavel_id = :responsavel_id, 
+                    data_inspecao = :data_inspecao,
+                    status_tomadas = :status_tomadas, 
+                    status_forros = :status_forros, 
+                    status_paredes = :status_paredes,
+                    status_projetor = :status_projetor, 
+                    status_tela = :status_tela, 
+                    status_lousa = :status_lousa, 
+                    observacoes = :observacoes 
+                WHERE id = :id";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => $this->id,
+            'ambiente_id' => $this->ambiente_id,
+            'responsavel_id' => $this->responsavel_id,
+            'data_inspecao' => $this->data_inspecao,
+            'status_tomadas' => $this->status_tomadas,
+            'status_forros' => $this->status_forros,
+            'status_paredes' => $this->status_paredes,
+            'status_projetor' => $this->status_projetor,
+            'status_tela' => $this->status_tela,
+            'status_lousa' => $this->status_lousa,
+            'observacoes' => $this->observacoes
+        ]);
     }
 
     /**

@@ -1,0 +1,49 @@
+Created At: 2026-06-02T13:00:25Z
+Completed At: 2026-06-02T13:00:26Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1318
+Total Bytes: 83523
+Showing lines 650 to 710
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+650:         }
+651: 
+652:         // Constrói HTML das ações dinamicamente de acordo com o nível de acesso e status
+653:         function renderActionsHtml(id, status) {
+654:             return `
+655:                 <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="abrirModalTramitacao(${id})" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
+656:                 <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="abrirModalTramitacao(${id})" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
+657:                 <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer;        // Nível do usuário injetado pelo PHP uma única vez
+658:         const nivelUsuarioAtual = '<?php echo $usuarioNivel; ?>';
+659: 
+660:         // Re-renderiza de forma inteligente e reativa as linhas da tabela
+661:         function renderRowHtm
+<truncated 3118 bytes>
+ze: 10px; padding: 2px 6px; margin-left: 4px;">${data.tipo_execucao}</span></div>
+684:                 </td>
+685:                 <td style="padding: 15px; vertical-align: middle; line-height: 1.4;">
+686:                     <div style="font-size: 13px; margin-bottom: 6px;">
+687:                         <span style="color: #888; font-size: 10px; text-transform: uppercase; font-weight: bold;">SOLICITANTE</span><br>
+688:                         <span style="color: #222; font-weight: 500;" title="${data.solicitante_nome || 'N/D'}">${data.solicitante_nome || 'N/D'}</span>
+689:                     </div>
+690:                     <div style="font-size: 13px;">
+691:                         <span style="color: #888; font-size: 10px; text-transform: uppercase; font-weight: bold;">EXECUTOR</span><br>
+692:                         <span style="color: #222; font-weight: 500;" title="${data.executor_nome || 'Não Atribuído'}">${execNome}</span>
+693:                     </div>
+694:                 </td>
+695:                 <td style="padding: 15px; text-align: center; vertical-align: middle;">
+696:                     ${renderStatusBadge(data.status, data.executor_nome)}
+697:                 </td>
+698:                 <td style="padding: 15px; text-align: center; vertical-align: middle;" onclick="event.stopPropagation()">
+699:                     ${acoesHtml}
+700:                 </td>
+701:             `;
+702:         }font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Abrir ➔</button>
+703:                     `}
+704:                 </td>
+705:             `;
+706:         }
+707: 
+708:         // =========================================================================
+709:         // MÉTODOS DE ABERTURA E CONTROLE DOS MODAIS VIA FETCH API
+710:         // =========================================================================
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

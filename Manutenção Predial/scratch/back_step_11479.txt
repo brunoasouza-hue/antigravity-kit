@@ -1,0 +1,34 @@
+Created At: 2026-06-02T14:07:57Z
+Completed At: 2026-06-02T14:07:57Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1603
+Total Bytes: 103355
+Showing lines 1220 to 1245
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1220:                             <button type="button" onclick="alterarStatusOS(${os.id}, 'recusar_servico')" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px;"><i class="bi bi-hand-thumbs-down-fill"></i> 👎 Recusar Serviço</button>
+1221:                             ${btnFechar}
+1222:                         `;
+1223:                     }
+1224:                     
+1225:                     document.getElementById('modalVisualizacao').style.display = 'flex';
+1226:                 } else {
+1227:                     showToast(res.message, 'danger');
+1228:                 }
+1229:             })
+1230:             .catch(err => {
+1231:                 console.error(err);
+1232:                 showToast('Erro de rede ao buscar detalhes do chamado.', 'danger');
+1233:             });
+1234:         }
+1235: 
+1236:         // Submete a atribuição / despacho diretamente no modal de detalhes unificado
+1237:         function submeterDespachoUnificado(osId) {
+1238:             const execSelect = document.getElementById('vis_executor_select');
+1239:             const tipoSelect = document.getElementById('vis_tipo_select');
+1240:             
+1241:             if (!execSelect || !execSelect.value) {
+1242:                 showToast('Por favor, selecione um executor designado.', 'danger');
+1243:                 return;
+1244:             }
+1245: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

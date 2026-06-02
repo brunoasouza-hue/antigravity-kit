@@ -1,0 +1,58 @@
+Created At: 2026-06-02T14:10:03Z
+Completed At: 2026-06-02T14:10:03Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1275
+Total Bytes: 79969
+Showing lines 1000 to 1100
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1000:             });
+1001:         }
+1002: 
+1003:         // Abre o modal de apenas leitura para visualizar detalhes
+1004:         function visualizarOS(id) {
+1005:             fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
+1006:                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
+1007:             })
+1008:             .then(res => res.json())
+1009:             .then(res => {
+1010:                 if (res.success) {
+1011:                     document.getElementById('vis_id_display').innerText = res.data.id;
+1012:                     document.getElementById('vis_ambiente').innerText = res.data.ambiente_nome;
+1013:                     document.getElementById('vis_solicitante').innerText = res.data.solicitante_nome;
+1014:                     document.getElementById('vis_abertura').innerText = res.data.data_abertura;
+1015:                     document.getElementById('vis_fechamento').innerText = res.data.data_fechamento ? res.data.data_fechamento : 'Em andamento';
+1016:                     document.getElementById('vis_executor').innerText = res.data.executor_nome ? res.data.executor_nome : 'Não designado';
+1017:                     document.getElementById('vis_tipo').innerText = res.data.tipo_execucao;
+1018:                     
+1019:                     const statusVal = res.data.status;
+1020:                     let badgeHtml = '';
+1021:                     if (statusVal === 'Pendente') {
+1022:                         ba
+<truncated 4419 bytes>
+bl_tram_historico').innerHTML = histHtml;
+1076: 
+1077:                         document.getElementById('nova_observacao').value = '';
+1078: 
+1079:                         // Lógica de exibição dos botões baseada no status e nível
+1080:                         const nivel = '<?php echo $usuarioNivel; ?>';
+1081:                         const btnTramitar = document.getElementById('btnTramitarAcao');
+1082:                         const selectExecutor = document.getElementById('div_select_executor');
+1083:                         
+1084:                         btnTramitar.style.display = 'none';
+1085:                         selectExecutor.style.display = 'none';
+1086:                         document.getElementById('nova_observacao').disabled = false;
+1087: 
+1088:                         if (nivel === 'Gestor' && os.status === 'Pendente') {
+1089:                             selectExecutor.style.display = 'block';
+1090:                             btnTramitar.innerText = 'Atribuir a Executor';
+1091:                             btnTramitar.style.background = '#007bff';
+1092:                             btnTramitar.style.display = 'block';
+1093:                         } else if (nivel === 'Executor' && os.status === 'Em Execução') {
+1094:                             btnTramitar.innerText = 'Relatar e Concluir Serviço';
+1095:                             btnTramitar.style.background = '#28a745';
+1096:                             btnTramitar.style.display = 'block';
+1097:                         } else if (nivel === 'Solicitante' && os.status === 'Aguardando Validação') {
+1098:                             btnTramitar.innerText = 'Aprovar Serviço (Concluir)';
+1099:                             btnTramitar.style.background = '#17a2b8';
+1100:                             btnTramitar.style.display = 'block';
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

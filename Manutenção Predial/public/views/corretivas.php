@@ -257,7 +257,7 @@ $dataAtual = date('d/m/Y');
                         <?php else: ?>
                             <?php foreach ($ordensServico as $os): ?>
                                 <?php $status = $os->getStatus(); ?>
-                                <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo htmlspecialchars($status); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s;" class="linha-tabela-os">
+                                <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo htmlspecialchars($status); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s; cursor: pointer;" class="linha-tabela-os" onclick="visualizarOS(<?php echo $os->getId(); ?>)">
                                     <td style="padding: 15px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#<?php echo $os->getId(); ?></td>
                                     
                                     <td style="padding: 15px; font-weight: bold; color: #B91C1C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?></td>
@@ -283,6 +283,8 @@ $dataAtual = date('d/m/Y');
                                     <td style="padding: 15px; text-align: center; white-space: nowrap;">
                                         <?php if ($status === 'Pendente'): ?>
                                             <span style="background-color: rgba(255, 193, 7, 0.12); color: #ffc107; border: 1px solid #ffc107; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">Pendente</span>
+                                        <?php elseif ($status === 'Aguardando Aceite'): ?>
+                                            <span style="background-color: rgba(0, 197, 255, 0.12); color: #00c5ff; border: 1px solid #00c5ff; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">Aguardando Aceite</span>
                                         <?php elseif ($status === 'Em Execução'): ?>
                                             <span style="background-color: rgba(0, 123, 255, 0.12); color: #007bff; border: 1px solid #007bff; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">Em Execução</span>
                                         <?php elseif ($status === 'Aguardando Validação'): ?>
@@ -294,8 +296,8 @@ $dataAtual = date('d/m/Y');
                                     
                                     <td style="padding: 15px; text-align: center; white-space: nowrap;" onclick="event.stopPropagation()">
                                         <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
-                                            <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="abrirModalTramitacao(<?php echo $os->getId(); ?>)" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
-                                            <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="abrirModalTramitacao(<?php echo $os->getId(); ?>)" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
+                                            <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
+                                            <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
                                             <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>
                                         </div>
                                     </td>
@@ -519,7 +521,7 @@ $dataAtual = date('d/m/Y');
         <div class="modal-box" style="width: 500px; backdrop-filter: blur(20px); border: 1px solid var(--corBorda);">
             <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
                 <h3>Detalhes da O.S. #<span id="vis_id_display" style="color: var(--corBase);"></span></h3>
-                <button onclick="fecharModal('modalVisualizacao')"><i class="bi bi-x-lg"></i></button>
+                <button onclick="fecharModalVisualizacao()"><i class="bi bi-x-lg"></i></button>
             </div>
             
             <div style="padding-top: 15px; color: var(--corTxt3); font-size: 14px; line-height: 1.6; display: grid; grid-template-columns: 1fr; gap: 15px;">
@@ -541,10 +543,14 @@ $dataAtual = date('d/m/Y');
                     <strong>Histórico de Ocorrência & Conclusão:</strong>
                     <p id="vis_descricao" style="margin: 5px 0 0 0; white-space: pre-line; color: var(--corTxt3); font-size: 13.5px;"></p>
                 </div>
+                
+                <!-- Corpo do Modal: Interface do Formulário de Atribuição e Status -->
+                <div id="vis_action_container"></div>
             </div>
 
-            <div class="modal-footer" style="border-top: 1px solid var(--corBorda); padding-top: 15px; display: flex; justify-content: flex-end;">
-                <button type="button" onclick="fecharModal('modalVisualizacao')" class="btn-confirmar-full" style="background: #6c757d; color: #fff; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+            <!-- Rodapé do Modal: Reservado estritamente para os botões de ação -->
+            <div id="vis_modal_footer" class="modal-footer" style="border-top: 1px solid var(--corBorda); padding-top: 15px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+                <button type="button" onclick="fecharModalVisualizacao()" class="btn-confirmar-full" style="background: #6c757d; color: #fff; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">
                     Fechar Detalhes
                 </button>
             </div>
@@ -553,6 +559,18 @@ $dataAtual = date('d/m/Y');
 
     <!-- JAVASCRIPT GERAL DA TELA DE OS CORRETIVAS -->
     <script>
+        // Variáveis de Sessão globais blindadas contra SyntaxError
+        const usuarioLogadoId = parseInt('<?php echo $_SESSION['usuario_id'] ?? 0; ?>') || 0;
+        const nivelUsuarioAtual = '<?php echo $_SESSION['usuario_nivel'] ?? ''; ?>';
+        const executoresDisponiveis = <?php 
+            if (empty($executores)) {
+                $executores = Usuario::listarPorNivel('Executor');
+            }
+            echo json_encode(array_map(function($e) {
+                return ['id' => $e->getId(), 'nome' => $e->getNome()];
+            }, $executores));
+        ?>;
+
         // Transições Suaves - Fecha Modais clicando fora no fundo do dialog
         window.onclick = function(event) {
             if (event.target.classList.contains('modal-fundo')) {
@@ -622,6 +640,8 @@ $dataAtual = date('d/m/Y');
         function renderStatusBadge(status) {
             if (status === 'Pendente') {
                 return `<span style="background-color: rgba(255, 193, 7, 0.12); color: #ffc107; border: 1px solid #ffc107; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-hourglass-split"></i> Pendente</span>`;
+            } else if (status === 'Aguardando Aceite') {
+                return `<span style="background-color: rgba(0, 197, 255, 0.12); color: #00C5FF; border: 1px solid #00C5FF; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-hourglass"></i> Aguardando Aceite</span>`;
             } else if (status === 'Em Execução') {
                 return `<span style="background-color: rgba(0, 123, 255, 0.12); color: #007bff; border: 1px solid #007bff; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-gear-fill"></i> Em Execução</span>`;
             } else if (status === 'Aguardando Validação') {
@@ -635,8 +655,8 @@ $dataAtual = date('d/m/Y');
         // Constrói HTML das ações dinamicamente de acordo com o nível de acesso e status
         function renderActionsHtml(id, status) {
             return `
-                <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="abrirModalTramitacao(${id})" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
-                <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="abrirModalTramitacao(${id})" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
+                <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="visualizarOS(${id})" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
+                <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="visualizarOS(${id})" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
                 <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>
             `;
         }
@@ -1000,7 +1020,7 @@ $dataAtual = date('d/m/Y');
             });
         }
 
-        // Abre o modal de apenas leitura para visualizar detalhes
+        // Abre o modal de apenas leitura para visualizar detalhes e tramitar (Unificado)
         function visualizarOS(id) {
             fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -1008,28 +1028,231 @@ $dataAtual = date('d/m/Y');
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
-                    document.getElementById('vis_id_display').innerText = res.data.id;
-                    document.getElementById('vis_ambiente').innerText = res.data.ambiente_nome;
-                    document.getElementById('vis_solicitante').innerText = res.data.solicitante_nome;
-                    document.getElementById('vis_abertura').innerText = res.data.data_abertura;
-                    document.getElementById('vis_fechamento').innerText = res.data.data_fechamento ? res.data.data_fechamento : 'Em andamento';
-                    document.getElementById('vis_executor').innerText = res.data.executor_nome ? res.data.executor_nome : 'Não designado';
-                    document.getElementById('vis_tipo').innerText = res.data.tipo_execucao;
+                    const os = res.data;
                     
-                    const statusVal = res.data.status;
-                    let badgeHtml = '';
-                    if (statusVal === 'Pendente') {
-                        badgeHtml = `<span style="background-color: rgba(255, 193, 7, 0.12); color: #ffc107; border: 1px solid #ffc107; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-hourglass-split"></i> Pendente</span>`;
-                    } else if (statusVal === 'Em Execução') {
-                        badgeHtml = `<span style="background-color: rgba(0, 123, 255, 0.12); color: #007bff; border: 1px solid #007bff; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-gear-fill"></i> Em Execução</span>`;
-                    } else if (statusVal === 'Aguardando Validação') {
-                        badgeHtml = `<span style="background-color: rgba(23, 162, 184, 0.12); color: #17a2b8; border: 1px solid #17a2b8; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-clock-fill"></i> Aguardando Validação</span>`;
-                    } else if (statusVal === 'Concluída') {
-                        badgeHtml = `<span style="background-color: rgba(40, 167, 69, 0.12); color: #28a745; border: 1px solid #28a745; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-check2-all"></i> Concluída</span>`;
+                    // 1. Dualidade de Ambiente (Aliasing Dinâmico)
+                    os.executor_atual_id = os.executor_id || os.executor_atual_id;
+                    
+                    // 2. Preenchimento de campos fixos
+                    document.getElementById('vis_id_display').innerText = os.id;
+                    document.getElementById('vis_ambiente').innerText = os.ambiente_nome;
+                    document.getElementById('vis_solicitante').innerText = os.solicitante_nome;
+                    document.getElementById('vis_abertura').innerText = os.data_abertura;
+                    document.getElementById('vis_fechamento').innerText = os.data_fechamento ? os.data_fechamento : 'Em andamento';
+                    document.getElementById('vis_executor').innerText = os.executor_nome ? os.executor_nome : 'Não designado';
+                    document.getElementById('vis_tipo').innerText = os.tipo_execucao;
+                    document.getElementById('vis_status').innerHTML = renderStatusBadge(os.status);
+                    document.getElementById('vis_descricao').innerText = os.descricao_problema;
+
+                    // 3. Normalização de dados para controle da Máquina de Estados
+                    const statusOS = (os.status || '').trim().toUpperCase();
+                    const nivelUserOS = (nivelUsuarioAtual || '').trim().toUpperCase();
+                    const executorIdOS = parseInt(os.executor_atual_id) || 0;
+                    const solicitanteIdOS = parseInt(os.solicitante_id) || 0;
+                    const currentUserId = parseInt(usuarioLogadoId) || 0;
+
+                    const visActionContainer = document.getElementById('vis_action_container');
+                    const visModalFooter = document.getElementById('vis_modal_footer');
+
+                    // Reset de elementos dinâmicos
+                    visActionContainer.innerHTML = '';
+                    visModalFooter.innerHTML = '';
+
+                    let actionHTML = '';
+                    let botoesHTML = '';
+
+                    // 4. Fluxo Triplo de Aprovação (Máquina de Estados)
+                    
+                    // GESTOR/ADMIN - PENDENTE -> Despacho
+                    if (statusOS === 'PENDENTE' && (nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMIN')) {
+                        actionHTML = `
+                            <div style="background: rgba(245, 158, 11, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2); margin-top: 15px;">
+                                <strong style="color: #f59e0b; display: block; margin-bottom: 10px;"><i class="bi bi-exclamation-triangle-fill"></i> Designar Técnico Responsável</strong>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div>
+                                        <label for="vis_executor_select" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 13px;">Técnico Executor:</label>
+                                        <select id="vis_executor_select" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3); font-size: 13px;">
+                                            <option value="" disabled selected>Escolha o profissional...</option>
+                                            ${executoresDisponiveis.map(e => `<option value="${e.id}">${e.nome}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="vis_tipo_select" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 13px;">Tipo de Reparo:</label>
+                                        <select id="vis_tipo_select" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3); font-size: 13px;">
+                                            <option value="Interna" selected>Interna (Equipe Escolar)</option>
+                                            <option value="Terceirizada">Terceirizada (Externo)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <span id="vis_atribuir_erro" style="color: #fc2323; font-size: 12px; display: none; margin-top: 5px; font-weight: bold;"></span>
+                            </div>
+                        `;
+
+                        botoesHTML = `
+                            <button type="button" id="btn-atribuir-os" class="btn-confirmar-full" style="background: #f59e0b; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-send-fill"></i> Atribuir e Aprovar
+                            </button>
+                        `;
                     }
-                    document.getElementById('vis_status').innerHTML = badgeHtml;
-                    document.getElementById('vis_descricao').innerText = res.data.descricao_problema;
+                    // EXECUTOR DESIGNADO - AGUARDANDO ACEITE -> Aceite
+                    else if (statusOS === 'AGUARDANDO ACEITE' && currentUserId === executorIdOS && (nivelUserOS === 'EXECUTOR' || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMIN')) {
+                        actionHTML = `
+                            <div style="background: rgba(59, 130, 246, 0.08); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2); margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                                <i class="bi bi-info-circle-fill" style="color: #3b82f6; font-size: 1.5rem;"></i>
+                                <span style="color: var(--corTxt3); font-size: 13.5px;">Você foi designado para este serviço. Por favor, aceite a O.S. para iniciar os trabalhos.</span>
+                            </div>
+                        `;
+
+                        botoesHTML = `
+                            <button type="button" id="btn-aceitar-os" class="btn-confirmar-full" style="background: #3b82f6; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-check-lg"></i> Aceitar O.S.
+                            </button>
+                        `;
+                    }
+                    // EXECUTOR DESIGNADO - EM EXECUÇÃO -> Finalizar
+                    else if (statusOS === 'EM EXECUÇÃO' && currentUserId === executorIdOS && (nivelUserOS === 'EXECUTOR' || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMIN')) {
+                        actionHTML = `
+                            <div style="background: rgba(16, 185, 129, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); margin-top: 15px;">
+                                <label for="vis_relato_textarea" style="font-weight: bold; display: block; margin-bottom: 8px; color: #10b981; font-size: 13.5px;"><i class="bi bi-pencil-square"></i> Relato Técnico de Conclusão (Solução):</label>
+                                <textarea id="vis_relato_textarea" placeholder="Descreva os materiais usados, os reparos feitos e o estado final..." style="width: 100%; height: 100px; padding: 10px; border-radius: 6px; border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3); resize: none; font-size: 13px; outline: none;"></textarea>
+                                <span id="vis_relato_erro" style="color: #fc2323; font-size: 12px; display: none; margin-top: 5px; font-weight: bold;"></span>
+                            </div>
+                        `;
+
+                        botoesHTML = `
+                            <button type="button" id="btn-finalizar-os" class="btn-confirmar-full" style="background: #10b981; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-wrench"></i> Finalizar Reparo
+                            </button>
+                        `;
+                    }
+                    // SOLICITANTE OU GESTOR - AGUARDANDO VALIDAÇÃO -> Validar/Recusar
+                    else if (statusOS === 'AGUARDANDO VALIDAÇÃO' && (currentUserId === solicitanteIdOS || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMIN')) {
+                        actionHTML = `
+                            <div style="background: rgba(16, 185, 129, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); margin-top: 15px;">
+                                <label for="vis_validacao_textarea" style="font-weight: bold; display: block; margin-bottom: 8px; color: var(--corTxt3); font-size: 13.5px;"><i class="bi bi-chat-left-text-fill"></i> Observações da Validação / Motivo da Recusa:</label>
+                                <textarea id="vis_validacao_textarea" placeholder="Caso aprove, registre um elogio ou observação. Caso recuse, relate detalhadamente o que faltou ser feito..." style="width: 100%; height: 100px; padding: 10px; border-radius: 6px; border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3); resize: none; font-size: 13px; outline: none;"></textarea>
+                                <span id="vis_validacao_erro" style="color: #fc2323; font-size: 12px; display: none; margin-top: 5px; font-weight: bold;"></span>
+                            </div>
+                        `;
+
+                        botoesHTML = `
+                            <button type="button" id="btn-aprovar-os" class="btn-confirmar-full" style="background: #10b981; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-check-circle-fill"></i> Aprovar Serviço
+                            </button>
+                            <button type="button" id="btn-recusar-os" class="btn-confirmar-full" style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-x-circle-fill"></i> Recusar Serviço
+                            </button>
+                        `;
+                    }
+
+                    // Renderização no Corpo do Modal
+                    visActionContainer.innerHTML = actionHTML;
+
+                    // Injeção do botão de Fechar Padrão
+                    botoesHTML += `
+                        <button type="button" onclick="fecharModalVisualizacao()" class="btn-confirmar-full" style="background: #6b7280; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px;">
+                            Fechar Detalhes
+                        </button>
+                    `;
+                    visModalFooter.innerHTML = botoesHTML;
+
+                    // 5. Instanciação e Event Listeners dinâmicos pós-injeção
                     
+                    // Ação de Despachar (Gestor)
+                    const btnAtribuir = document.getElementById('btn-atribuir-os');
+                    if (btnAtribuir) {
+                        btnAtribuir.onclick = () => {
+                            const exeVal = document.getElementById('vis_executor_select').value;
+                            const tipoVal = document.getElementById('vis_tipo_select').value;
+                            const erroSpan = document.getElementById('vis_atribuir_erro');
+                            
+                            if (!exeVal) {
+                                erroSpan.innerText = "✖ Erro: Selecione um técnico executor.";
+                                erroSpan.style.display = 'block';
+                                return;
+                            }
+                            erroSpan.style.display = 'none';
+                            alterarStatusOS(os.id, 'despachar', { executor_id: exeVal, tipo_execucao: tipoVal });
+                        };
+                    }
+
+                    // Ação de Aceitar (Executor)
+                    const btnAceitar = document.getElementById('btn-aceitar-os');
+                    if (btnAceitar) {
+                        btnAceitar.onclick = () => {
+                            alterarStatusOS(os.id, 'aceitar_os');
+                        };
+                    }
+
+                    // Ação de Finalizar Reparo (Executor)
+                    const btnFinalizar = document.getElementById('btn-finalizar-os');
+                    const relatoTextarea = document.getElementById('vis_relato_textarea');
+                    const relatoErro = document.getElementById('vis_relato_erro');
+                    if (relatoTextarea && relatoErro) {
+                        relatoTextarea.addEventListener('input', () => {
+                            const val = relatoTextarea.value.trim().toUpperCase();
+                            if (val === 'VAZIO') {
+                                relatoErro.innerText = "✖ Erro: O relato técnico não pode ser a palavra 'VAZIO'.";
+                                relatoErro.style.display = 'block';
+                                relatoTextarea.style.borderColor = '#fc2323';
+                            } else {
+                                relatoErro.style.display = 'none';
+                                relatoTextarea.style.borderColor = '';
+                            }
+                        });
+                    }
+                    if (btnFinalizar) {
+                        btnFinalizar.onclick = () => {
+                            const val = relatoTextarea.value.trim();
+                            if (!val) {
+                                relatoErro.innerText = "✖ Erro: Relato técnico de conclusão é obrigatório.";
+                                relatoErro.style.display = 'block';
+                                return;
+                            }
+                            if (val.toUpperCase() === 'VAZIO') return;
+                            
+                            alterarStatusOS(os.id, 'finalizar_reparo', { relato_conclusao: val });
+                        };
+                    }
+
+                    // Ação de Validar Conclusão / Recusar (Solicitante)
+                    const btnAprovar = document.getElementById('btn-aprovar-os');
+                    const btnRecusar = document.getElementById('btn-recusar-os');
+                    const validacaoTextarea = document.getElementById('vis_validacao_textarea');
+                    const validacaoErro = document.getElementById('vis_validacao_erro');
+                    if (validacaoTextarea && validacaoErro) {
+                        validacaoTextarea.addEventListener('input', () => {
+                            const val = validacaoTextarea.value.trim().toUpperCase();
+                            if (val === 'VAZIO') {
+                                validacaoErro.innerText = "✖ Erro: Observações não podem ser 'VAZIO'.";
+                                validacaoErro.style.display = 'block';
+                                validacaoTextarea.style.borderColor = '#fc2323';
+                            } else {
+                                validacaoErro.style.display = 'none';
+                                validacaoTextarea.style.borderColor = '';
+                            }
+                        });
+                    }
+                    if (btnAprovar) {
+                        btnAprovar.onclick = () => {
+                            const val = validacaoTextarea.value.trim();
+                            if (val.toUpperCase() === 'VAZIO') return;
+                            alterarStatusOS(os.id, 'validar_conclusao', { observacoes_validacao: val });
+                        };
+                    }
+                    if (btnRecusar) {
+                        btnRecusar.onclick = () => {
+                            const val = validacaoTextarea.value.trim();
+                            if (!val) {
+                                validacaoErro.innerText = "✖ Erro: Ao recusar o serviço, é obrigatório indicar o motivo da recusa.";
+                                validacaoErro.style.display = 'block';
+                                return;
+                            }
+                            if (val.toUpperCase() === 'VAZIO') return;
+                            alterarStatusOS(os.id, 'recusar_servico', { observacoes_validacao: val });
+                        };
+                    }
+
                     document.getElementById('modalVisualizacao').style.display = 'flex';
                 } else {
                     showToast(res.message, 'danger');
@@ -1038,6 +1261,63 @@ $dataAtual = date('d/m/Y');
             .catch(err => {
                 console.error(err);
                 showToast('Erro de rede ao buscar detalhes do chamado.', 'danger');
+            });
+        }
+
+        // Helper global de fechamento seguro
+        function fecharModalVisualizacao() {
+            fecharModal('modalVisualizacao');
+        }
+
+        // Executa a alteração do status da O.S. via AJAX (POST)
+        function alterarStatusOS(id, action, extraParams = {}) {
+            const formData = new FormData();
+            formData.append('acao', action);
+            formData.append('action', action);
+            formData.append('id', id);
+            formData.append('ajax', '1');
+
+            for (const [key, value] of Object.entries(extraParams)) {
+                formData.append(key, value);
+            }
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    fecharModalVisualizacao();
+
+                    // Atualização Reativa e Suave da Linha da Tabela
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) {
+                        fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(r => r.json())
+                        .then(rData => {
+                            if (rData.success) {
+                                row.innerHTML = renderRowHtml(rData.data);
+                                row.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+                                setTimeout(() => {
+                                    row.style.backgroundColor = '';
+                                }, 1000);
+                            }
+                        });
+                    } else {
+                        setTimeout(() => window.location.reload(), 1000);
+                    }
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro interno de conexão ao atualizar chamado.', 'danger');
             });
         }
 

@@ -1,0 +1,49 @@
+Created At: 2026-06-02T13:02:01Z
+Completed At: 2026-06-02T13:02:02Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1317
+Total Bytes: 83503
+Showing lines 648 to 720
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+648:             // Fallback for unknown status so the column doesn't collapse
+649:             return `<span style="background-color: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; border: 1px solid #e2e8f0;">${status || 'DESCONHECIDO'}</span>`;
+650:         }
+651: 
+652:         // Constrói HTML das ações dinamicamente de acordo com o nível de acesso e status
+653:         function renderActionsHtml(id, status) {
+654:             return `
+655:                 <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="abrirModalTramitacao(${id})" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
+656:                 <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="abrirModalTramitacao(${id})" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
+657:                 <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 
+<truncated 3937 bytes>
+10px; text-transform: uppercase; font-weight: bold;">SOLICITANTE</span><br>
+692:                         <span style="color: #222; font-weight: 500;" title="${data.solicitante_nome || 'N/D'}">${data.solicitante_nome || 'N/D'}</span>
+693:                     </div>
+694:                     <div style="font-size: 13px;">
+695:                         <span style="color: #888; font-size: 10px; text-transform: uppercase; font-weight: bold;">EXECUTOR</span><br>
+696:                         <span style="color: #222; font-weight: 500;" title="${data.executor_nome || 'Não Atribuído'}">${execNome}</span>
+697:                     </div>
+698:                 </td>
+699:                 <td style="padding: 15px; text-align: center; vertical-align: middle;">
+700:                     ${renderStatusBadge(data.status, data.executor_nome)}
+701:                 </td>
+702:                 <td style="padding: 15px; text-align: center; vertical-align: middle;" onclick="event.stopPropagation()">
+703:                     ${acoesHtml}
+704:                 </td>
+705:             `;
+706:         }
+707:         // =========================================================================
+708:         // MÉTODOS DE ABERTURA E CONTROLE DOS MODAIS VIA FETCH API
+709:         // =========================================================================
+710:         
+711:         // Abre o modal de abertura (Solicitante)
+712:         function abrirModalAbertura() {
+713:             const form = document.getElementById('form-abertura');
+714:             if (form) form.reset();
+715:             const erroSpan = document.getElementById('abrir_erro');
+716:             if (erroSpan) erroSpan.style.display = 'none';
+717:             document.getElementById('modalAbertura').style.display = 'flex';
+718:         }
+719: 
+720:         // Submete abertura de OS
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

@@ -1,0 +1,79 @@
+Created At: 2026-06-02T14:11:38Z
+Completed At: 2026-06-02T14:11:38Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/scratch/rebuild_corretivas.js`
+Total Lines: 283
+Total Bytes: 17204
+Showing lines 1 to 283
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: const fs = require('fs');
+2: const path = 'C:\\Users\\Instrutor\\OneDrive - SESISENAISP - Corporativo\\PESSOAL\\Documents\\ANTIGRAVITY\\Manutenção Predial\\public\\views\\corretivas.php';
+3: let content = fs.readFileSync(path, 'utf8');
+4: 
+5: const phpTopTarget = "if (isset($_GET['logout'])) {";
+6: const tramitarLogic = `if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'tramitar_os') {
+7:     header('Content-Type: application/json');
+8:     try {
+9:         $pdo = Database::getConnection();
+10:         $pdo->beginTransaction();
+11:         $os_id = $_POST['os_id'] ?? 0;
+12:         $status_tramite = $_POST['status_tramite'] ?? '';
+13:         $executor_id = $_POST['executor_id'] ?? null;
+14:         $observacao_etapa = $_POST['observacao_etapa'] ?? '';
+15: 
+16:         $stmt = $pdo->prepare("UPDATE ordens_servico SET status = ?, executor_atual_id = ? WHERE id = ?");
+17:         $stmt->execute([$status_tramite, $executor_id, $os_id]);
+18: 
+19:         $stmtHist = $pdo->prepare("INSERT INTO os_historico_tramites (os_id, origem_usuario_id, destino_usuario_id, status_etapa, observacao_etapa, data_tramite) VALUES (?, ?, ?, ?, ?, NOW())");
+20:         $stmtHist->execute([$os_id, $_SESSION['usuario_id'] ?? 1, $executor_id, $status_tramite, $observacao_etapa]);
+21: 
+22:         $pdo->commit();
+23:         echo json_encode(['success' => true]);
+24:         exit;
+25:     } catch (Exception $e) {
+26:         if (isset($pdo) && $pdo->inTransa
+<truncated 15043 bytes>
+ const linhas = document.querySelectorAll('.linha-tabela-os');
+241:             let visiveis = 0;
+242: 
+243:             linhas.forEach(linha => {
+244:                 const texto = linha.textContent.toLowerCase();
+245:                 const statusLinha = (linha.getAttribute('data-status') || '').toUpperCase();
+246:                 
+247:                 const matchTexto = (termo === '' || texto.includes(termo));
+248:                 const matchStatus = (statusFiltro === '' || statusLinha === statusFiltro);
+249: 
+250:                 if (matchTexto && matchStatus) {
+251:                     linha.style.display = '';
+252:                     visiveis++;
+253:                 } else {
+254:                     linha.style.display = 'none';
+255:                 }
+256:             });
+257: 
+258:             // Lida com tabela vazia
+259:             const tbody = document.getElementById('corpoTabelaOS');
+260:             let linhaVazia = document.getElementById('linha-vazia');
+261:             if (visiveis === 0) {
+262:                 if (!linhaVazia && tbody) {
+263:                     const tr = document.createElement('tr');
+264:                     tr.id = 'linha-vazia';
+265:                     tr.innerHTML = \`<td colspan="7" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum chamado corresponde aos filtros.</td>\`;
+266:                     tbody.appendChild(tr);
+267:                 }
+268:             } else {
+269:                 if (linhaVazia) {
+270:                     linhaVazia.remove();
+271:                 }
+272:             }
+273:         }
+274: 
+275:         if (inputPesquisa) inputPesquisa.addEventListener('input', filtrarTabela);
+276:         if (selectStatus) selectStatus.addEventListener('change', filtrarTabela);
+277:     });
+278:     </script>`;
+279: content = content.replace(scriptEndTarget, jsLogic);
+280: 
+281: fs.writeFileSync(path, content);
+282: console.log('Rebuild completed again!');
+283: 
+The above content shows the entire, complete file contents of the requested file.

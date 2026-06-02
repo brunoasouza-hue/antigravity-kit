@@ -1,0 +1,24 @@
+Created At: 2026-06-02T14:07:51Z
+Completed At: 2026-06-02T14:07:51Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1603
+Total Bytes: 103355
+Showing lines 1055 to 1070
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1055:         function visualizarOS(id) {
+1056:             fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
+1057:                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
+1058:             })
+1059:             .then(res => res.json())
+1060:             .then(res => {
+1061:                 if (res.success) {
+1062:                     const os = res.data;
+1063:                     document.getElementById('vis_id_display').innerText = os.id;
+1064:                     document.getElementById('vis_ambiente').innerText = os.ambiente_nome;
+1065:                     document.getElementById('vis_solicitante').innerText = os.solicitante_nome;
+1066:                     document.getElementById('vis_abertura').innerText = os.data_abertura;
+1067:                     document.getElementById('vis_fechamento').innerText = os.data_fechamento ? os.data_fechamento : 'Em andamento';
+1068:                     document.getElementById('vis_executor').innerText = os.executor_nome ? os.executor_nome : 'Não designado';
+1069:                     document.getElementById('vis_tipo').innerText = os.tipo_execucao;
+1070:                     
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

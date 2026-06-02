@@ -1,0 +1,41 @@
+Created At: 2026-06-02T14:08:37Z
+Completed At: 2026-06-02T14:08:37Z
+File Path: `file:///C:/Users/Instrutor/.gemini/antigravity/brain/7e07d288-9874-4086-94e8-eb9e588f6b5d/task.md`
+Total Lines: 33
+Total Bytes: 2073
+Showing lines 1 to 33
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: # Checklist de Desenvolvimento: Fluxo Triplo de Aprovação (Máquina de Estados)
+2: 
+3: - [x] **Fase 1: Preparação do Modelo PHP (`OrdemServico.php`)**
+4:     - [x] Adicionar status `'Aguardando Aceite'` nos válidos.
+5:     - [x] Atualizar o método `despachar()` para atribuir `'Aguardando Aceite'`.
+6:     - [x] Criar o método `aceitar()` para evoluir para `'Em Execução'`.
+7: 
+8: - [x] **Fase 2: Backend e Ações (`OrdemServicoController.php`)**
+9:     - [x] Implementar suporte dual para os parâmetros `action` e `acao`.
+10:     - [x] Adicionar ações no switch: `aceitar_os`, `finalizar_reparo`, `validar_conclusao`, `recusar_servico`.
+11:     - [x] Criar métodos executores com tratamento rígido de validações (incluindo banimento de termos 'VAZIO' e restrições de permissão por usuário).
+12: 
+13: - [x] **Fase 3: Estilo de Badges e Tabelas (`corretivas.php`)**
+14:     - [x] Simplificar renderização da 4ª coluna do PHP (removendo ifs virtuais e adotando novos status reais).
+15:     - [x] Adicionar `'Aguardando Aceite'` nas cores dinâmicas com HSL/Hex premium (Cyan).
+16:     - [x] Sincronizar o método JavaScript `renderStatusBadge` para seguir as mesmas regras e cores.
+17: 
+18: - [x] **Fase 4: Modal de Ação e Lógica JS (`corretivas.php`)**
+19:     - [x] Injetar variáveis de sessão `usuarioLogadoId` e `usuarioNivelLogado` globais.
+20:     - [x] Unificar modal de visualização e ações dinâmicas no rodapé.
+21:     - [x] Criar os blocos de condicionais para Gestor, Executor e Solicitante.
+22:     - [x] Adicionar textareas e inputs necessários para relatos e observações de forma dinâmica.
+23:     - [x] Implementar a função AJAX global `alterarStatusOS(id, action, extraParams)`.
+24: 
+25: - [x] **Fase 5: Sincronização do Mock Server (`start_test_server.js`)**
+26:     - [x] Modificar ação `despachar` para setar `'Aguardando Aceite'`.
+27:     - [x] Criar as novas ações assíncronas no Mock Server.
+28:     - [x] Atualizar loops e echos estáticos para renderizar os novos status.
+29: 
+30: - [x] **Fase 6: Verificação Completa**
+31:     - [x] Reiniciar o mock server.
+32:     - [x] Validar fluxo de transição ponta-a-ponta.
+33: 
+The above content shows the entire, complete file contents of the requested file.

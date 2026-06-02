@@ -1,0 +1,66 @@
+Created At: 2026-06-02T14:10:14Z
+Completed At: 2026-06-02T14:10:14Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/patch_corretivas.js`
+Total Lines: 211
+Total Bytes: 19881
+Showing lines 1 to 211
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: const fs = require('fs');
+2: let file = fs.readFileSync('public/views/corretivas.php', 'utf8');
+3: 
+4: const target1 = `                        <tr>
+5:                             <th style="padding: 15px; width: 8%; white-space: nowrap;">ID</th>
+6:                             <th style="padding: 15px; width: 15%; white-space: nowrap;">Solicitante</th>
+7:                             <th style="padding: 15px; width: 15%; white-space: nowrap;">Ambiente</th>
+8:                             <th style="padding: 15px; white-space: nowrap;">Descrição do Problema</th>
+9:                             <th style="padding: 15px; width: 10%; white-space: nowrap;">Tipo</th>
+10:                             <th style="padding: 15px; width: 15%; white-space: nowrap;">Executor Atual</th>
+11:                             <th style="padding: 15px; width: 12%; white-space: nowrap;">Abertura</th>
+12:                             <th style="padding: 15px; text-align: center; width: 10%; white-space: nowrap;">Status</th>
+13:                             <th style="padding: 15px; text-align: center; width: 10%; white-space: nowrap;">Ações</th>
+14:                         </tr>
+15:                     </thead>
+16:                     <tbody id="tabela-os-body">
+17:                             <?php foreach ($ordensServico as $os): ?>
+18:                                 <?php $status = $os->getStatus(); ?>
+19:                                 <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo htmlspe
+<truncated 17350 bytes>
+: uppercase;">Solicitante:</span><br>
+175:                         <span style="font-weight: bold; color: #B91C1C;" title="\${data.solicitante_nome || 'N/D'}">\${data.solicitante_nome || 'N/D'}</span>
+176:                     </div>
+177:                     <div>
+178:                         <span style="color: var(--corTxt3); font-size: 11px; text-transform: uppercase;">Executor:</span><br>
+179:                         <span style="font-weight: 500;" title="\${data.executor_nome || 'Não Atribuído'}">
+180:                             \${execNome}
+181:                         </span>
+182:                     </div>
+183:                 </td>
+184:                 
+185:                 <td style="padding: 15px; text-align: center; white-space: nowrap;">
+186:                     \${renderStatusBadge(data.status)}
+187:                 </td>
+188:                 
+189:                 <td style="padding: 15px; text-align: center; white-space: nowrap;">
+190:                     <button class="btn-visualizar" type="button" title="Abrir O.S." onclick="visualizarOS(\${data.id})" style="background-color: #f1f3f5; border: 1px solid #dee2e6; color: var(--corTxt2); padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s;">
+191:                         Abrir <i class="bi bi-arrow-right-short" style="vertical-align: middle; font-size: 1.2em;"></i>
+192:                     </button>
+193:                 </td>
+194:             \`;
+195:         }`;
+196: 
+197: if (file.includes(target1)) {
+198:     file = file.replace(target1, repl1);
+199:     console.log('Replaced target1');
+200: } else {
+201:     console.error('Target 1 NOT FOUND');
+202: }
+203: if (file.includes(target2)) {
+204:     file = file.replace(target2, repl2);
+205:     console.log('Replaced target2');
+206: } else {
+207:     console.error('Target 2 NOT FOUND');
+208: }
+209: 
+210: fs.writeFileSync('public/views/corretivas.php', file);
+211: 
+The above content shows the entire, complete file contents of the requested file.

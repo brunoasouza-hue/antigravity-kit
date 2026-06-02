@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-tema="claro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordens de Serviço - SENAI MANUTENÇÃO</title>
+
+    <!-- Estilização Base, Sidebar, Header, Modais, Toasts e Bootstrap Icons -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/nav.css">
+    <link rel="stylesheet" href="../assets/css/header.css">
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/modal.css">
+    <link rel="stylesheet" href="../assets/css/bootstrap-icons.min.css">
+    <link rel="shortcut icon" href="../assets/img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+    <!-- SIDEBAR / PAINEL DE NAVEGAÇÃO -->
+    <nav class="sidebar">
+        <div class="botao-fechar">
+            <button id="fechar-nav">
+                <i class="bi bi-arrow-left-circle-fill"></i>
+            </button>
+        </div>
+
+        <div class="div-img">
+            <img src="../assets/img/senailogo2.png" alt="Logo Senai" id="senai-logo2" style="width: 80%;">
+        </div>
+
+        <div class="div-links">
+            <!-- Início -->
+            <a href="./home.php" class="links">
+                <i class="bi bi-house-door-fill"></i> Início
+            </a>
+
+            <a href="./dashboard.php" class="links">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+
+            <!-- Menu Manutenção condicional: Apenas para Gestor e Executor -->
+            
+                <div class="menu-manutencao aberto">
+                    <a href="javascript:void(0)" class="links ativo manutencao-btn" id="btn-manutencao">
+                        <div>
+                            <i class="bi bi-tools"></i>
+                            <span>Manutenção</span>
+                        </div>
+                        <i class="bi bi-caret-down-fill seta"></i>
+                    </a>
+                    <div class="submenu aberto" id="submenu-manutencao" style="display: flex;">
+                        <a href="./corretivas.php" class="ativo links-sub">
+                            <i class="bi bi-wrench"></i> Corretiva (O.S)
+                        </a>
+                        <a href="./preventivas.php" class="links-sub">
+                            <i class="bi bi-clock-fill"></i> Preventiva (Checklist)
+                        </a>
+                    </div>
+                </div>
+            
+
+            <!-- Inspeções de segurança (Todos os usuários) -->
+            <div class="menu-inspecoes">
+                <a href="javascript:void(0)" class="links inspecoes-btn" id="btn-inspecoes">
+                    <div>
+                        <i class="bi bi-shield-fill-check"></i>
+                        <span>Inspeções</span>
+                    </div>
+                    <i class="bi bi-caret-down-fill seta"></i>
+                </a>
+                <div class="submenu" id="submenu-inspecoes">
+                    <a href="./inspecoes_seguranca.php" class="links-sub">
+                        <i class="bi bi-plus-circle-fill"></i> Nova Inspeção
+                    </a>
+                    <a href="./inspecoes_seguranca.php" class="links-sub">
+                        <i class="bi bi-clock-history"></i> Histórico
+                    </a>
+                </div>
+            </div>
+
+            <!-- Painel de Ambientes: Apenas Gestor -->
+            
+                <a href="./ambientes.php" class="links">
+                    <i class="bi bi-building"></i> Painel de Ambientes
+                </a>
+
+                <a href="./dashboard_analise.php" class="links">
+                    <i class="bi bi-bar-chart-line-fill"></i> Análise de Dados
+                </a>
+
+                <a href="./usuarios.php" class="links">
+                    <i class="bi bi-file-earmark-person-fill"></i> Painel de Usuários
+                </a>
+
+                <a href="./log.php" class="links">
+                    <i class="bi bi-person-vcard"></i> Painel de Logs
+                </a>
+            
+        </div>
+
+        <div class="div-configs">
+            <div>
+                <button onclick="changeTheme()" id="tema"><i class="bi bi-brightness-high-fill"></i></button>
+                <a href="./perfil.php" class="configs dont-rotate" title="Perfil">
+                    <i class="bi bi-person-fill"></i>
+                </a>
+            </div>
+
+            <a href="?logout=1" class="btn sair" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>Sair</span> <i class="bi bi-door-closed-fill"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <section class="sec-main">
+        
+        <!-- CABEÇALHO (HEADER) -->
+        <div class="div-header">
+            <div class="div-img-header">
+                <div class="avatar">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <h4 style="color: var(--corTxt3)">Olá, <span style="color: var(--corDestaque);">Admin Mock</span> <small style="font-size: 12px; color: var(--corTxt2);"> (Gestor)</small></h4>
+            </div>
+            <div class="div-txt-header">
+                <p>
+                    <i class="bi bi-calendar3"></i> 27/05/2026
+                </p>
+            </div>
+        </div>
+
+        <!-- BANNERS DE ALERTA (SUCESSO / ERRO) -->
+        
+
+        
+
+        <!-- BARRA DE AÇÕES UNIFICADA -->
+        <div class="page-actions-bar" style="margin-top: 20px;">
+            <div class="page-search-form" style="display: flex; gap: 10px; width: 100%; max-width: 600px;">
+                <div class="page-search-box" style="flex-grow: 1; display: flex; align-items: center; background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 10px; padding: 0 10px;">
+                    <i class="bi bi-search" style="color: var(--corTxt2); margin-right: 8px;"></i>
+                    <input type="text" id="pesquisa" placeholder="Filtrar por sala, solicitante, executor ou status..." style="border: none; background: transparent; width: 100%; padding: 10px 0; color: var(--corTxt3); outline: none;">
+                </div>
+                <!-- NOVO FILTRO DE STATUS -->
+                <select id="filtro-status" style="border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3); border-radius: 10px; padding: 0 15px; outline: none; cursor: pointer; font-weight: bold; height: 100%; min-height: 44px;">
+                    <option value="">Todos os Status</option>
+                    <option value="PENDENTE">Pendente</option>
+                    <option value="EM ANDAMENTO">Em Andamento</option>
+                    <option value="EM EXECUÇÃO">Em Execução</option>
+                    <option value="AGUARDANDO VALIDAÇÃO">Aguardando Validação</option>
+                    <option value="FINALIZADO">Finalizado</option>
+                    <option value="ENCAMINHADA">Encaminhada</option>
+                    <option value="RECUSADA">Recusada</option>
+                </select>
+            </div>
+            
+            
+                <button class="btn-page-action" onclick="abrirModalAbertura()" style="background: var(--corBase); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold;">
+                    <i class="bi bi-plus-lg"></i> Abrir Nova O.S.
+                </button>
+            
+        </div>
+
+        <!-- TABELA DE ORDENS DE SERVIÇO -->
+        <div class="tabela-bg2" style="margin-top: 20px;">
+            <div class="tabela-titulo" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <i class="bi bi-wrench" style="font-size: 1.5rem; color: var(--corBase);"></i>
+                <h2>Ordens de Serviço Corretivas</h2>
+            </div>
+            
+            <div class="tabela-wrapper" style="overflow-x: auto; background: var(--corFundo); border-radius: 12px; border: 1px solid var(--corBorda);">
+                <div class="table-responsive" style="margin-top: 20px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <thead style="background-color: #C62828; color: white; text-transform: uppercase; font-size: 13px;">
+            <tr>
+                <th style="padding: 12px; text-align: center;">Nº O.S.</th>
+                <th style="padding: 12px;">Descrição / Ambiente</th>
+                <th style="padding: 12px; text-align: center;">Tipo</th>
+                <th style="padding: 12px; text-align: center;">Solicitante</th>
+                <th style="padding: 12px; text-align: center;">Responsável</th>
+                <th style="padding: 12px; text-align: center;">Status</th>
+                <th style="padding: 12px; text-align: center;">Ações</th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabelaOS">
+            \n                
+        </tbody>
+    </table>
+</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================================
+         1. MODAL DE ABERTURA DE O.S. (SOLICITANTE)
+         ========================================================================= -->
+    
+        <div class="modal-fundo" id="modalAbertura" style="display: none;">
+            <div class="modal-box" style="backdrop-filter: blur(20px); border: 1px solid var(--corBorda);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
+                    <h3>Solicitar Reparo Corretivo</h3>
+                    <button onclick="fecharModal('modalAbertura')"><i class="bi bi-x-lg"></i></button>
+                </div>
+                
+                <form action="" method="POST" class="modal-form" id="form-abertura" style="padding-top: 15px;" onsubmit="submeterAbertura(event)">
+                    <input type="hidden" name="acao" value="abrir">
+
+                    <div class="modal-input" style="margin-bottom: 15px;">
+                        <label for="abrir_ambiente_id" style="font-weight: bold; display: block; margin-bottom: 8px;">Ambiente (Sala / Bloco):</label>
+                        <div class="input-wrapper">
+                            <select name="ambiente_id" id="abrir_ambiente_id" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                                <option value="" disabled selected>Selecione o ambiente com problema...</option>
+                                
+                                    <option value="20770001">
+                                        #20770001 - 
+                                    </option>
+                                
+                                    <option value="20770002">
+                                        #20770002 - 
+                                    </option>
+                                
+                                    <option value="20770003">
+                                        #20770003 - 
+                                    </option>
+                                
+                                    <option value="20770004">
+                                        #20770004 - 
+                                    </option>
+                                
+                                    <option value="20770005">
+                                        #20770005 - 
+                                    </option>
+                                
+                                    <option value="20770006">
+                                        #20770006 - 
+                                    </option>
+                                
+                                    <option value="20770007">
+                                        #20770007 - 
+                                    </option>
+                                
+                                    <option value="20770008">
+                                        #20770008 - 
+                                    </option>
+                                
+                                    <option value="20770010">
+                                        #20770010 - 
+                                    </option>
+                                
+                                    <option value="20770012">
+                                        #20770012 - 
+                                    </option>
+                                
+                                    <option value="20770013">
+                                        #20770013 - 
+                                    </option>
+                                
+                                    <option value="20770014">
+                                        #20770014 - 
+                                    </option>
+                                
+                                    <option value="20770015">
+                                        #20770015 - 
+                                    </option>
+                                
+                                    <option value="20770017">
+                                        #20770017 - 
+                                    </option>
+                                
+                                    <option value="20770018">
+                                        #20770018 - 
+                                    </option>
+                                
+                                    <option value="20770019">
+                                        #20770019 - 
+                                    </option>
+                                
+                                    <option value="20770020">
+                                        #20770020 - 
+                                    </option>
+                                
+                                    <option value="20770021">
+                                        #20770021 - 
+                                    </option>
+                                
+                                    <option value="20770022">
+                                        #20770022 - 
+                                    </option>
+                                
+                                    <option value="20770023">
+                                        #20770023 - 
+                                    </option>
+                                
+                                    <option value="20770024">
+                                        #20770024 - 
+                                    </option>
+                                
+                                    <option value="20770025">
+                                        #20770025 - 
+                                    </option>
+                                
+                                    <option value="20770026">
+                                        #20770026 - 
+                                    </option>
+                                
+                                    <option value="20770027">
+                                        #20770027 - 
+                                    </option>
+                                
+                                    <option value="20770028">
+                                        #20770028 - 
+                                    </option>
+                                
+                                    <option value="20770029">
+                                        #20770029 - 
+                                    </option>
+                                
+                                    <option value="20770030">
+                                        #20770030 - 
+                                    </option>
+                                
+                                    <option value="20770031">
+                                        #20770031 - 
+                                    </option>
+                                
+                                    <option value="20770032">
+                                        #20770032 - 
+                                    </option>
+                                
+                                    <option value="20770033">
+                                        #20770033 - 
+                                    </option>
+                                
+                                    <option value="20770034">
+                                        #20770034 - 
+                                    </option>
+                                
+                                    <option value="20770035">
+                                        #20770035 - 
+                                    </option>
+                                
+                                    <option value="20770036">
+                                        #20770036 - 
+                                    </option>
+                                
+                                    <option value="20770037">
+                                        #20770037 - 
+                                    </option>
+                                
+                                    <option value="20770038">
+                                        #20770038 - 
+                                    </option>
+                                
+                                    <option value="20770039">
+                                        #20770039 - 
+                                    </option>
+                                
+                                    <option value="20770040">
+                                        #20770040 - 
+                                    </option>
+                                
+                                    <option value="20770042">
+                                        #20770042 - 
+                                    </option>
+                                
+                                    <option value="20770043">
+                                        #20770043 - 
+                                    </option>
+                                
+                                    <option value="20770044">
+                                        #20770044 - 
+                                    </option>
+                                
+                                    <option value="20770045">
+                                        #20770045 - 
+                                    </option>
+                                
+                                    <option value="20770047">
+                                        #20770047 - 
+                                    </option>
+                                
+                                    <option value="20770048">
+                                        #20770048 - 
+                                    </option>
+                                
+                                    <option value="20770049">
+                                        #20770049 - 
+                                    </option>
+                                
+                                    <option value="20770050">
+                                        #20770050 - 
+                                    </option>
+                                
+                                    <option value="20770051">
+                                        #20770051 - 
+                                    </option>
+                                
+                                    <option value="20770052">
+                                        #20770052 - 
+                                    </option>
+                                
+                                    <option value="20770053">
+                                        #20770053 - 
+                                    </option>
+                                
+                                    <option value="20770054">
+                                        #20770054 - 
+                                    </option>
+                                
+                                    <option value="20770055">
+                                        #20770055 - 
+                                    </option>
+                                
+                                    <option value="20770056">
+                                        #20770056 - 
+                                    </option>
+                                
+                                    <option value="20770057">
+                                        #20770057 - 
+                                    </option>
+                                
+                                    <option value="20770058">
+                                        #20770058 - 
+                                    </option>
+                                
+                                    <option value="20770059">
+                                        #20770059 - 
+                                    </option>
+                                
+                                    <option value="20770060">
+                                        #20770060 - 
+                                    </option>
+                                
+                                    <option value="20770061">
+                                        #20770061 - 
+                                    </option>
+                                
+                                    <option value="20770062">
+                                        #20770062 - 
+                                    </option>
+                                
+                                    <option value="20770063">
+                                        #20770063 - 
+                                    </option>
+                                
+                                    <option value="20770064">
+                                        #20770064 - 
+                                    </option>
+                                
+                                    <option value="20770065">
+                                        #20770065 - 
+                                    </option>
+                                
+                                    <option value="20770066">
+                                        #20770066 - 
+                                    </option>
+                                
+                                    <option value="20770071">
+                                        #20770071 - 
+                                    </option>
+                                
+                                    <option value="20770072">
+                                        #20770072 - 
+                                    </option>
+                                
+                                    <option value="20770073">
+                                        #20770073 - 
+                                    </option>
+                                
+                                    <option value="20770074">
+                                        #20770074 - 
+                                    </option>
+                                
+                                    <option value="20770075">
+                                        #20770075 - 
+                                    </option>
+                                
+                                    <option value="20770078">
+                                        #20770078 - 
+                                    </option>
+                                
+                                    <option value="20770079">
+                                        #20770079 - 
+                                    </option>
+                                
+                                    <option value="20770080">
+                                        #20770080 - 
+                                    </option>
+                                
+                                    <option value="20770081">
+                                        #20770081 - 
+                                    </option>
+                                
+                                    <option value="20770086">
+                                        #20770086 - 
+                                    </option>
+                                
+                                    <option value="20770095">
+                                        #20770095 - 
+                                    </option>
+                                
+                                    <option value="20770096">
+                                        #20770096 - 
+                                    </option>
+                                
+                                    <option value="20770099">
+                                        #20770099 - 
+                                    </option>
+                                
+                                    <option value="20770100">
+                                        #20770100 - 
+                                    </option>
+                                
+                                    <option value="20770101">
+                                        #20770101 - 
+                                    </option>
+                                
+                                    <option value="20770102">
+                                        #20770102 - 
+                                    </option>
+                                
+                                    <option value="20770103">
+                                        #20770103 - 
+                                    </option>
+                                
+                                    <option value="20770104">
+                                        #20770104 - 
+                                    </option>
+                                
+                                    <option value="20770105">
+                                        #20770105 - 
+                                    </option>
+                                
+                                    <option value="20770106">
+                                        #20770106 - 
+                                    </option>
+                                
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-input" style="margin-bottom: 15px;">
+                        <label for="abrir_prioridade" style="font-weight: bold; display: block; margin-bottom: 8px;">Nível de Prioridade:</label>
+                        <div class="input-wrapper">
+                            <select name="prioridade" id="abrir_prioridade" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                                <option value="" disabled selected>Defina a urgência deste chamado...</option>
+                                <option value="Baixa">Baixa</option>
+                                <option value="Média">Média</option>
+                                <option value="Alta">Alta</option>
+                                <option value="Urgente">Urgente</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-input" style="margin-bottom: 20px;">
+                        <label for="abrir_descricao_problema" style="font-weight: bold; display: block; margin-bottom: 8px;">Descrição Detalhada do Problema:</label>
+                        <div class="input-wrapper">
+                            <textarea name="descricao_problema" id="abrir_descricao_problema" placeholder="Descreva claramente o defeito ou avaria encontrada..." required style="width: 100%; height: 120px; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3); resize: none;"></textarea>
+                        </div>
+                        <!-- Mensagem de erro em tempo real contra literal VAZIO -->
+                        <span id="abrir_erro" style="color: #fc2323; font-size: 12px; display: none; margin-top: 5px; font-weight: bold;"></span>
+                    </div>
+
+                    <div class="modal-footer" style="border-top: 1px solid var(--corBorda); padding-top: 15px; display: flex; justify-content: flex-end;">
+                        <button type="submit" id="btn-enviar-abertura" class="btn-confirmar-full confirmar" style="background: var(--corBase); color:#fff; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">
+                            Abrir Chamado O.S. <i class="bi bi-megaphone-fill" style="margin-left: 5px;"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+
+    <!-- =========================================================================
+         2. MODAL DE DESPACHO DE O.S. (GESTOR)
+         ========================================================================= -->
+    
+        <div class="modal-fundo" id="modalDespacho" style="display: none;">
+            <div class="modal-box" style="backdrop-filter: blur(20px); border: 1px solid var(--corBorda);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
+                    <h3>Despachar Ordem de Serviço #<span id="despacho_id_display" style="color: var(--corBase);"></span></h3>
+                    <button onclick="fecharModal('modalDespacho')"><i class="bi bi-x-lg"></i></button>
+                </div>
+                
+                <form action="" method="POST" class="modal-form" id="form-despacho" style="padding-top: 15px;" onsubmit="submeterDespacho(event)">
+                    <input type="hidden" name="acao" value="despachar">
+                    <input type="hidden" name="id" id="despacho_id">
+
+                    <!-- Relato do Problema Original para Contexto -->
+                    <div style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border-left: 4px solid var(--corBase); margin-bottom: 20px;">
+                        <strong style="font-size: 13px; color: var(--corTxt2); display: block; margin-bottom: 5px;">Relato do Solicitante:</strong>
+                        <p id="despacho_descricao_display" style="color: var(--corTxt3); font-size: 14px; white-space: pre-line; margin: 0;"></p>
+                    </div>
+
+                    <div class="modal-input" style="margin-bottom: 15px;">
+                        <label for="despacho_tipo_execucao" style="font-weight: bold; display: block; margin-bottom: 8px;">Tipo de Reparo (Origem):</label>
+                        <div class="input-wrapper">
+                            <select name="tipo_execucao" id="despacho_tipo_execucao" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                                <option value="Interna" selected>Interna (Equipe Escolar)</option>
+                                <option value="Terceirizada">Terceirizada (Prestadores Externos)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-input" style="margin-bottom: 20px;">
+                        <label for="despacho_executor_id" style="font-weight: bold; display: block; margin-bottom: 8px;">Atribuir Executor de Manutenção:</label>
+                        <div class="input-wrapper">
+                            <select name="executor_id" id="despacho_executor_id" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                                <option value="" disabled selected>Escolha o profissional designado...</option>
+                                
+                                    <option value="3">Marcos Silva (Executor)</option>
+                                
+                                    <option value="4">Victor Izaias Arantes</option>
+                                
+                                    <option value="5">Silvio Ronei Marchetti</option>
+                                
+                                    <option value="6">Natalia Gomes dos Santos</option>
+                                
+                                    <option value="7">Cesar Ferraiolo Batista</option>
+                                
+                                    <option value="8">Luciana Flores</option>
+                                
+                                    <option value="9">Bruna Regina Bianchini Roveda</option>
+                                
+                                    <option value="10">Antônio Carlos Morettin</option>
+                                
+                                    <option value="11">Claudemir Aparecido Flores</option>
+                                
+                                    <option value="12">Adriana Cristina de Jesus Rosa</option>
+                                
+                                    <option value="13">Geovane Roberto da Silva</option>
+                                
+                                    <option value="14">Flavio Alves da Silva</option>
+                                
+                                    <option value="15">Marcelo Vinicius Oliveira Dionisio</option>
+                                
+                                    <option value="16">Alexandre Felix de Araujo</option>
+                                
+                                    <option value="17">Wellington Gonçalves Norberto</option>
+                                
+                                    <option value="18">Sergio Eduardo Brunessi</option>
+                                
+                                    <option value="19">Bruno Alves de Souza</option>
+                                
+                                    <option value="20">Cleiton Cezar Monteiro</option>
+                                
+                                    <option value="21">Angelica Affonso Bassan</option>
+                                
+                                    <option value="22">Gustavo Antonio Marchiori</option>
+                                
+                                    <option value="23">Marcio Donizete Gasparoto</option>
+                                
+                                    <option value="24">Everton Luiz Cerantula</option>
+                                
+                                    <option value="25">Diego Soares de Oliveira</option>
+                                
+                                    <option value="26">Almir Lotito Lima</option>
+                                
+                                    <option value="27">Marcio Garcia</option>
+                                
+                                    <option value="28">Rafael Marangoni Paixão</option>
+                                
+                                    <option value="29">Equipe Itinerante</option>
+                                
+                                    <option value="30">Roberto de Souza Ribeiro Moraes Junior</option>
+                                
+                                    <option value="31">Renan Junior de Almeida Silva</option>
+                                
+                                    <option value="32">Rafael Forti Scalfi</option>
+                                
+                                    <option value="33">Rogerio Monteiro da Silva</option>
+                                
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="border-top: 1px solid var(--corBorda); padding-top: 15px; display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn-confirmar-full confirmar" style="background: var(--corBase); color:#fff; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">
+                            Despachar Chamado <i class="bi bi-send-fill" style="margin-left: 5px;"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+
+    <!-- =========================================================================
+         3. MODAL DE FINALIZAÇÃO DE O.S. (EXECUTOR)
+         ========================================================================= -->
+    
+
+    <!-- =========================================================================
+         4. MODAL DE VALIDAÇÃO / AVALIAÇÃO DE O.S. (SOLICITANTE)
+         ========================================================================= -->
+    
+        <div class="modal-fundo" id="modalValidacao" style="display: none;">
+            <div class="modal-box" style="width: 550px; backdrop-filter: blur(20px); border: 1px solid var(--corBorda);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
+                    <h3>Avaliar Execução O.S. #<span id="validacao_id_display" style="color: var(--corBase);"></span></h3>
+                    <button onclick="fecharModal('modalValidacao')"><i class="bi bi-x-lg"></i></button>
+                </div>
+                
+                <form action="" method="POST" class="modal-form" id="form-validacao" style="padding-top: 15px;">
+                    <input type="hidden" name="acao" value="validar">
+                    <input type="hidden" name="id" id="validacao_id">
+                    <input type="hidden" name="decisao" id="validacao_decisao">
+
+                    <!-- Histórico Completo de logs para Auditoria de Campo -->
+                    <div style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border-left: 4px solid #17a2b8; margin-bottom: 20px; max-height: 180px; overflow-y: auto;">
+                        <strong style="font-size: 13px; color: var(--corTxt2); display: block; margin-bottom: 5px;">Histórico do Chamado:</strong>
+                        <p id="validacao_historico_display" style="color: var(--corTxt3); font-size: 14px; white-space: pre-line; margin: 0; line-height: 1.4;"></p>
+                    </div>
+
+                    <div class="modal-input" style="margin-bottom: 20px;">
+                        <label for="validacao_observacoes" style="font-weight: bold; display: block; margin-bottom: 8px;">Observações da Validação / Motivo da Recusa:</label>
+                        <div class="input-wrapper">
+                            <textarea name="observacoes_validacao" id="validacao_observacoes" placeholder="Caso aprove, registre um elogio ou observação. Caso recuse, relate detalhadamente o que faltou ser feito..." style="width: 100%; height: 100px; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3); resize: none;"></textarea>
+                        </div>
+                        <!-- Mensagem de erro em tempo real contra literal VAZIO -->
+                        <span id="validacao_erro" style="color: #fc2323; font-size: 12px; display: none; margin-top: 5px; font-weight: bold;"></span>
+                    </div>
+
+                    <div class="modal-footer" style="border-top: 1px solid var(--corBorda); padding-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Duplo botão de ação inteligente -->
+                        <div style="display: flex; gap: 10px; width: 100%;">
+                            <button type="button" id="btn-aprovar" onclick="submeterValidacao('aprovar')" class="btn-confirmar-full" style="flex: 1; background: #28a745; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <i class="bi bi-check-circle-fill"></i> Aprovar e Concluir
+                            </button>
+                            <button type="button" id="btn-recusar" onclick="submeterValidacao('recusar')" class="btn-confirmar-full" style="flex: 1; background: var(--corBase); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <i class="bi bi-x-circle-fill"></i> Recusar Serviço
+                            </button>
+                        </div>
+                        
+                        <button type="button" onclick="fecharModal('modalValidacao')" class="btn-confirmar-full" style="width: 100%; background: #6c757d; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                            Voltar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+
+    <!-- =========================================================================
+         5. MODAL DE VISUALIZAÇÃO GERAL DE DETALHES (LEITURA APENAS - TODOS)
+         ========================================================================= -->
+    <div class="modal-fundo" id="modalVisualizacao" style="display: none;">
+        <div class="modal-box" style="width: 500px; backdrop-filter: blur(20px); border: 1px solid var(--corBorda);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
+                <h3>Detalhes da O.S. #<span id="vis_id_display" style="color: var(--corBase);"></span></h3>
+                <button onclick="fecharModal('modalVisualizacao')"><i class="bi bi-x-lg"></i></button>
+            </div>
+            
+            <div style="padding-top: 15px; color: var(--corTxt3); font-size: 14px; line-height: 1.6; display: grid; grid-template-columns: 1fr; gap: 15px;">
+                
+                <div style="background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px;">
+                    <strong>Ambiente:</strong> <span id="vis_ambiente" style="color: var(--corDestaque); font-weight: bold;"></span><br>
+                    <strong>Solicitante:</strong> <span id="vis_solicitante"></span><br>
+                    <strong>Abertura:</strong> <span id="vis_abertura"></span><br>
+                    <strong>Fechamento:</strong> <span id="vis_fechamento" style="font-weight: bold;"></span>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px;">
+                    <strong>Executor Designado:</strong> <span id="vis_executor" style="font-weight: bold;"></span><br>
+                    <strong>Tipo de Reparo:</strong> <span id="vis_tipo"></span><br>
+                    <strong>Status Atual:</strong> <span id="vis_status"></span>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border-left: 4px solid var(--corBase); max-height: 180px; overflow-y: auto;">
+                    <strong>Histórico de Ocorrência & Conclusão:</strong>
+                    <p id="vis_descricao" style="margin: 5px 0 0 0; white-space: pre-line; color: var(--corTxt3); font-size: 13.5px;"></p>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="border-top: 1px solid var(--corBorda); padding-top: 15px; display: flex; justify-content: flex-end;">
+                <button type="button" onclick="fecharModal('modalVisualizacao')" class="btn-confirmar-full" style="background: #6c757d; color: #fff; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                    Fechar Detalhes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT GERAL DA TELA DE OS CORRETIVAS -->
+    <script>
+        // Transições Suaves - Fecha Modais clicando fora no fundo do dialog
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-fundo')) {
+                fecharModal(event.target.id);
+            }
+        }
+
+        // Fecha qualquer modal pelo ID
+        function fecharModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Sistema de Toast Premium Glassmorphic
+        function showToast(mensagem, tipo = 'success') {
+            const container = document.getElementById('toast-container') || (() => {
+                const div = document.createElement('div');
+                div.id = 'toast-container';
+                div.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+                document.body.appendChild(div);
+                return div;
+            })();
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                pointer-events: auto;
+                background: ${tipo === 'success' ? 'rgba(40, 167, 69, 0.9)' : 'rgba(252, 35, 35, 0.9)'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+                font-family: 'TASA Orbiter', sans-serif;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transform: translateY(-20px);
+                opacity: 0;
+                transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            `;
+
+            const icon = document.createElement('i');
+            icon.className = tipo === 'success' ? 'bi bi-check-circle-fill' : 'bi bi-exclamation-triangle-fill';
+            icon.style.fontSize = '1.2rem';
+            toast.appendChild(icon);
+
+            const text = document.createElement('span');
+            text.innerText = mensagem;
+            toast.appendChild(text);
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(0)';
+                toast.style.opacity = '1';
+            }, 50);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-20px)';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Constrói HTML do badge de status dinamicamente
+        function renderStatusBadge(status) {
+            if (status === 'Pendente') {
+                return `<span style="background-color: rgba(255, 193, 7, 0.12); color: #ffc107; border: 1px solid #ffc107; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-hourglass-split"></i> Pendente</span>`;
+            } else if (status === 'Em Execução') {
+                return `<span style="background-color: rgba(0, 123, 255, 0.12); color: #007bff; border: 1px solid #007bff; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-gear-fill"></i> Em Execução</span>`;
+            } else if (status === 'Aguardando Validação') {
+                return `<span style="background-color: rgba(23, 162, 184, 0.12); color: #17a2b8; border: 1px solid #17a2b8; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-clock-fill"></i> Aguardando Validação</span>`;
+            } else if (status === 'Concluída') {
+                return `<span style="background-color: rgba(40, 167, 69, 0.12); color: #28a745; border: 1px solid #28a745; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-check2-all"></i> Concluída</span>`;
+            }
+            return '';
+        }
+
+        // Constrói HTML das ações dinamicamente de acordo com o nível de acesso e status
+        function renderActionsHtml(id, status) {
+            return `
+                <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="abrirModalTramitacao(${id})" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
+                <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="abrirModalTramitacao(${id})" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
+                <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>
+            `;
+        }
+
+        // Re-renderiza de forma inteligente e reativa as linhas da tabela
+        function renderRowHtml(data) {
+            const execNome = data.executor_nome ? data.executor_nome : '<span style="color: #999; font-style: italic;">Não Atribuído</span>';
+
+            return `
+                <td style="padding: 15px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#${data.id}</td>
+                <td style="padding: 15px; font-weight: bold; color: #B91C1C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.solicitante_nome || 'N/D'}">${data.solicitante_nome || 'N/D'}</td>
+                <td style="padding: 15px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.ambiente_nome || 'N/D'}">${data.ambiente_nome || 'N/D'}</td>
+                <td style="padding: 15px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="${data.descricao_problema}">${data.descricao_problema}</td>
+                <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap;"><span class="badge-tipo">${data.tipo_execucao}</span></td>
+                <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.executor_nome || 'Não Atribuído'}">${execNome}</td>
+                <td style="padding: 15px; font-size: 13px; color: var(--corTxt2); white-space: nowrap;">${data.data_abertura}</td>
+                <td style="padding: 15px; text-align: center; white-space: nowrap;">${renderStatusBadge(data.status)}</td>
+                <td style="padding: 15px; text-align: center; white-space: nowrap;" onclick="event.stopPropagation()">
+                    <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
+                        ${renderActionsHtml(data.id, data.status)}
+                    </div>
+                </td>
+            `;
+        }
+
+        // =========================================================================
+        // MÉTODOS DE ABERTURA E CONTROLE DOS MODAIS VIA FETCH API
+        // =========================================================================
+        
+        // Abre o modal de abertura (Solicitante)
+        function abrirModalAbertura() {
+            const form = document.getElementById('form-abertura');
+            if (form) form.reset();
+            const erroSpan = document.getElementById('abrir_erro');
+            if (erroSpan) erroSpan.style.display = 'none';
+            document.getElementById('modalAbertura').style.display = 'flex';
+        }
+
+        // Submete abertura de OS
+        function submeterAbertura(event) {
+            event.preventDefault();
+            const descInput = document.getElementById('abrir_descricao_problema');
+            const erroSpan = document.getElementById('abrir_erro');
+            
+            if (descInput.value.trim().toUpperCase() === 'VAZIO') {
+                erroSpan.innerText = "✖ Erro: A descrição do problema não pode ser a palavra 'VAZIO'.";
+                erroSpan.style.display = 'block';
+                descInput.style.borderColor = '#fc2323';
+                descInput.focus();
+                return false;
+            }
+
+            const form = document.getElementById('form-abertura');
+            const formData = new FormData(form);
+            formData.append('ajax', '1');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    fecharModal('modalAbertura');
+
+                    // Insere reativamente na tabela
+                    const tbody = document.getElementById('tabela-os-body');
+                    const linhaVazia = document.getElementById('linha-vazia');
+                    if (linhaVazia) {
+                        linhaVazia.remove();
+                    }
+
+                    const novaLinha = document.createElement('tr');
+                    novaLinha.id = `row-${data.data.id}`;
+                    novaLinha.className = 'linha-tabela-os';
+                    novaLinha.style.cssText = 'border-bottom: 1px solid var(--corBorda); transition: 0.2s;';
+                    
+                    const nivel = '';
+                    if (nivel === 'Gestor') {
+                        novaLinha.style.cursor = 'pointer';
+                        novaLinha.onclick = () => abrirModalDespacho(data.data.id);
+                    }
+
+                    novaLinha.innerHTML = renderRowHtml({
+                        id: data.data.id,
+                        solicitante_nome: data.data.solicitante_nome,
+                        ambiente_nome: data.data.ambiente_nome,
+                        descricao_problema: data.data.descricao_problema,
+                        tipo_execucao: data.data.tipo_execucao,
+                        executor_nome: null,
+                        data_abertura: data.data.data_abertura,
+                        status: data.data.status
+                    });
+
+                    // Efeito flash suave de fade-in
+                    novaLinha.style.backgroundColor = 'rgba(40, 167, 69, 0.08)';
+                    tbody.prepend(novaLinha);
+                    setTimeout(() => {
+                        novaLinha.style.backgroundColor = '';
+                    }, 1000);
+
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro interno de rede ao abrir ordem de serviço.', 'danger');
+            });
+        }
+
+        // Abre o modal de despacho de OS (Gestor)
+        function abrirModalDespacho(id) {
+            fecharModal('modalVisualizacao');
+            const form = document.getElementById('form-despacho');
+            if (form) form.reset();
+
+            // Carrega dinamicamente os detalhes do banco via AJAX (buscar)
+            fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    document.getElementById('despacho_id').value = res.data.id;
+                    document.getElementById('despacho_id_display').innerText = res.data.id;
+                    document.getElementById('despacho_descricao_display').innerText = res.data.descricao_problema;
+                    document.getElementById('modalDespacho').style.display = 'flex';
+                } else {
+                    showToast(res.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro de rede ao buscar detalhes do chamado.', 'danger');
+            });
+        }
+
+        // Submete despacho de OS (Gestor)
+        function submeterDespacho(event) {
+            event.preventDefault();
+            const form = document.getElementById('form-despacho');
+            const formData = new FormData(form);
+            formData.append('ajax', '1');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    fecharModal('modalDespacho');
+
+                    // Atualiza a linha reativamente no painel
+                    const row = document.getElementById(`row-${data.data.id}`);
+                    if (row) {
+                        // Carrega detalhes atualizados e substitui o HTML
+                        fetch(`${window.location.pathname}?acao=buscar&id=${data.data.id}&ajax=1`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(r => r.json())
+                        .then(rData => {
+                            if (rData.success) {
+                                row.innerHTML = renderRowHtml(rData.data);
+                                // Remove link de click da linha já despachada
+                                row.onclick = null;
+                                row.style.cursor = '';
+                                row.style.backgroundColor = 'rgba(0, 123, 255, 0.08)';
+                                setTimeout(() => row.style.backgroundColor = '', 1000);
+                            }
+                        });
+                    }
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro ao despachar chamado.', 'danger');
+            });
+        }
+
+        // Abre o modal de finalização de OS (Executor)
+        function abrirModalFinalizacao(id) {
+            fecharModal('modalVisualizacao');
+            const form = document.getElementById('form-finalizacao');
+            if (form) form.reset();
+            const erroSpan = document.getElementById('finalizacao_erro');
+            if (erroSpan) erroSpan.style.display = 'none';
+
+            fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    document.getElementById('finalizacao_id').value = res.data.id;
+                    document.getElementById('finalizacao_id_display').innerText = res.data.id;
+                    document.getElementById('finalizacao_descricao_display').innerText = res.data.descricao_problema;
+                    document.getElementById('modalFinalizacao').style.display = 'flex';
+                } else {
+                    showToast(res.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro de rede ao buscar detalhes do chamado.', 'danger');
+            });
+        }
+
+        // Submete finalização de OS (Executor)
+        function submeterFinalizacao(event) {
+            event.preventDefault();
+            const relatoInput = document.getElementById('finalizacao_relato');
+            const erroSpan = document.getElementById('finalizacao_erro');
+            
+            if (relatoInput.value.trim().toUpperCase() === 'VAZIO') {
+                erroSpan.innerText = "✖ Erro: O relato técnico não pode ser a palavra 'VAZIO'.";
+                erroSpan.style.display = 'block';
+                relatoInput.style.borderColor = '#fc2323';
+                relatoInput.focus();
+                return false;
+            }
+
+            const form = document.getElementById('form-finalizacao');
+            const formData = new FormData(form);
+            formData.append('ajax', '1');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    fecharModal('modalFinalizacao');
+
+                    // Atualiza a linha reativamente
+                    const row = document.getElementById(`row-${data.data.id}`);
+                    if (row) {
+                        fetch(`${window.location.pathname}?acao=buscar&id=${data.data.id}&ajax=1`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(r => r.json())
+                        .then(rData => {
+                            if (rData.success) {
+                                row.innerHTML = renderRowHtml(rData.data);
+                                row.onclick = null;
+                                row.style.cursor = '';
+                                row.style.backgroundColor = 'rgba(23, 162, 184, 0.08)';
+                                setTimeout(() => row.style.backgroundColor = '', 1000);
+                            }
+                        });
+                    }
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro ao finalizar chamado.', 'danger');
+            });
+        }
+
+        // Abre o modal de validação de OS (Solicitante)
+        function abrirModalValidacao(id) {
+            fecharModal('modalVisualizacao');
+            const form = document.getElementById('form-validacao');
+            if (form) form.reset();
+            const erroSpan = document.getElementById('validacao_erro');
+            if (erroSpan) erroSpan.style.display = 'none';
+
+            fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    document.getElementById('validacao_id').value = res.data.id;
+                    document.getElementById('validacao_id_display').innerText = res.data.id;
+                    document.getElementById('validacao_historico_display').innerText = res.data.descricao_problema;
+                    document.getElementById('modalValidacao').style.display = 'flex';
+                } else {
+                    showToast(res.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro ao buscar dados do chamado.', 'danger');
+            });
+        }
+
+        // Submete validação (Aprovar / Recusar)
+        function submeterValidacao(decisao) {
+            const obsInput = document.getElementById('validacao_observacoes');
+            const erroSpan = document.getElementById('validacao_erro');
+            
+            if (obsInput.value.trim().toUpperCase() === 'VAZIO') {
+                erroSpan.innerText = "✖ Erro: As observações não podem ser preenchidas como 'VAZIO'.";
+                erroSpan.style.display = 'block';
+                obsInput.style.borderColor = '#fc2323';
+                obsInput.focus();
+                return false;
+            }
+
+            if (decisao === 'recusar' && obsInput.value.trim() === '') {
+                erroSpan.innerText = "✖ Erro: Ao recusar o serviço, é obrigatório indicar o motivo da recusa.";
+                erroSpan.style.display = 'block';
+                obsInput.style.borderColor = '#fc2323';
+                obsInput.focus();
+                return false;
+            }
+
+            document.getElementById('validacao_decisao').value = decisao;
+
+            const form = document.getElementById('form-validacao');
+            const formData = new FormData(form);
+            formData.append('ajax', '1');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    fecharModal('modalValidacao');
+
+                    // Atualiza a linha reativamente
+                    const row = document.getElementById(`row-${data.data.id}`);
+                    if (row) {
+                        fetch(`${window.location.pathname}?acao=buscar&id=${data.data.id}&ajax=1`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(r => r.json())
+                        .then(rData => {
+                            if (rData.success) {
+                                row.innerHTML = renderRowHtml(rData.data);
+                                const isAprovado = decisao === 'aprovar';
+                                row.style.backgroundColor = isAprovado ? 'rgba(40, 167, 69, 0.08)' : 'rgba(252, 35, 35, 0.08)';
+                                setTimeout(() => row.style.backgroundColor = '', 1000);
+                            }
+                        });
+                    }
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro ao validar ordem de serviço.', 'danger');
+            });
+        }
+
+        // Abre o modal de apenas leitura para visualizar detalhes
+        function visualizarOS(id) {
+            fetch(`${window.location.pathname}?acao=buscar&id=${id}&ajax=1`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    document.getElementById('vis_id_display').innerText = res.data.id;
+                    document.getElementById('vis_ambiente').innerText = res.data.ambiente_nome;
+                    document.getElementById('vis_solicitante').innerText = res.data.solicitante_nome;
+                    document.getElementById('vis_abertura').innerText = res.data.data_abertura;
+                    document.getElementById('vis_fechamento').innerText = res.data.data_fechamento ? res.data.data_fechamento : 'Em andamento';
+                    document.getElementById('vis_executor').innerText = res.data.executor_nome ? res.data.executor_nome : 'Não designado';
+                    document.getElementById('vis_tipo').innerText = res.data.tipo_execucao;
+                    
+                    const statusVal = res.data.status;
+                    let badgeHtml = '';
+                    if (statusVal === 'Pendente') {
+                        badgeHtml = `<span style="background-color: rgba(255, 193, 7, 0.12); color: #ffc107; border: 1px solid #ffc107; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-hourglass-split"></i> Pendente</span>`;
+                    } else if (statusVal === 'Em Execução') {
+                        badgeHtml = `<span style="background-color: rgba(0, 123, 255, 0.12); color: #007bff; border: 1px solid #007bff; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-gear-fill"></i> Em Execução</span>`;
+                    } else if (statusVal === 'Aguardando Validação') {
+                        badgeHtml = `<span style="background-color: rgba(23, 162, 184, 0.12); color: #17a2b8; border: 1px solid #17a2b8; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-clock-fill"></i> Aguardando Validação</span>`;
+                    } else if (statusVal === 'Concluída') {
+                        badgeHtml = `<span style="background-color: rgba(40, 167, 69, 0.12); color: #28a745; border: 1px solid #28a745; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;"><i class="bi bi-check2-all"></i> Concluída</span>`;
+                    }
+                    document.getElementById('vis_status').innerHTML = badgeHtml;
+                    document.getElementById('vis_descricao').innerText = res.data.descricao_problema;
+                    
+                    document.getElementById('modalVisualizacao').style.display = 'flex';
+                } else {
+                    showToast(res.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Erro de rede ao buscar detalhes do chamado.', 'danger');
+            });
+        }
+
+        // =========================================================================
+        // MODAL DE TRAMITAÇÃO (Unificado com Histórico)
+        // =========================================================================
+        function abrirModalTramitacao(osId) {
+            document.getElementById('lbl_tram_historico').innerHTML = 'Carregando histórico...';
+            document.getElementById('modalTramitacao').style.display = 'flex';
+
+            fetch(`/public/api/os_historico.php?os_id=${osId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const os = data.os;
+                        document.getElementById('tramitacao_os_id').value = os.id;
+                        document.getElementById('lbl_tram_id').innerText = '#' + os.id;
+                        document.getElementById('lbl_tram_ambiente').innerText = os.ambiente;
+                        document.getElementById('lbl_tram_abertura').innerText = os.data_abertura;
+                        document.getElementById('lbl_tram_status').innerText = os.status;
+                        document.getElementById('lbl_tram_desc').innerText = os.descricao;
+                        
+                        // Renderiza o histórico
+                        let histHtml = '';
+                        if (data.historico && data.historico.length > 0) {
+                            data.historico.forEach(h => {
+                                histHtml += `<div style="border-bottom: 1px solid #ddd; padding: 8px 0;">
+                                    <div style="font-size: 11px; color: #888;">${h.data_formatada} - ${h.origem_nome} &rarr; ${h.status_etapa}</div>
+                                    <div style="font-size: 13px; color: #444; margin-top: 4px;">${h.observacao_etapa}</div>
+                                </div>`;
+                            });
+                        } else {
+                            histHtml = 'Nenhum histórico registrado.';
+                        }
+                        document.getElementById('lbl_tram_historico').innerHTML = histHtml;
+
+                        document.getElementById('nova_observacao').value = '';
+
+                        // Lógica de exibição dos botões baseada no status e nível
+                        const nivel = '';
+                        const btnTramitar = document.getElementById('btnTramitarAcao');
+                        const selectExecutor = document.getElementById('div_select_executor');
+                        
+                        btnTramitar.style.display = 'none';
+                        selectExecutor.style.display = 'none';
+                        document.getElementById('nova_observacao').disabled = false;
+
+                        if (nivel === 'Gestor' && os.status === 'Pendente') {
+                            selectExecutor.style.display = 'block';
+                            btnTramitar.innerText = 'Atribuir a Executor';
+                            btnTramitar.style.background = '#007bff';
+                            btnTramitar.style.display = 'block';
+                        } else if (nivel === 'Executor' && os.status === 'Em Execução') {
+                            btnTramitar.innerText = 'Relatar e Concluir Serviço';
+                            btnTramitar.style.background = '#28a745';
+                            btnTramitar.style.display = 'block';
+                        } else if (nivel === 'Solicitante' && os.status === 'Aguardando Validação') {
+                            btnTramitar.innerText = 'Aprovar Serviço (Concluir)';
+                            btnTramitar.style.background = '#17a2b8';
+                            btnTramitar.style.display = 'block';
+                        } else {
+                            document.getElementById('nova_observacao').disabled = true;
+                            document.getElementById('nova_observacao').placeholder = 'Apenas leitura para este status.';
+                        }
+                    } else {
+                        alert(data.message || 'Erro ao carregar dados da OS.');
+                        fecharModalTramitacao();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Erro de comunicação com o servidor.');
+                    fecharModalTramitacao();
+                });
+        }
+
+        function fecharModalTramitacao() {
+            document.getElementById('modalTramitacao').style.display = 'none';
+        }
+
+        function submeterTramitacao(event) {
+            event.preventDefault();
+            const form = document.getElementById('form-tramitacao');
+            const formData = new URLSearchParams(new FormData(form));
+            const searchParams = new URLSearchParams();
+            for (const [key, value] of formData.entries()) {
+                searchParams.append(key, value);
+            }
+            searchParams.append('acao', 'tramitar_os');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: searchParams.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Erro interno de conexão.');
+            });
+        }
+
+        // =========================================================================
+        // VALIDADDORES EM TEMPO REAL CONTRA PALAVRA 'VAZIO' E NOME DO CAMPO
+        // =========================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputsVal = [
+                { id: 'abrir_descricao_problema', erroId: 'abrir_erro' },
+                { id: 'finalizacao_relato', erroId: 'finalizacao_erro' },
+                { id: 'validacao_observacoes', erroId: 'validacao_erro' }
+            ];
+
+            inputsVal.forEach(item => {
+                const el = document.getElementById(item.id);
+                const erroSpan = document.getElementById(item.erroId);
+
+                if (el && erroSpan) {
+                    el.addEventListener('input', () => {
+                        const val = el.value.trim().toUpperCase();
+                        if (val === 'VAZIO') {
+                            erroSpan.innerText = "✖ Erro: O texto do campo não pode ser 'VAZIO'.";
+                            erroSpan.style.display = 'block';
+                            el.style.borderColor = '#fc2323';
+                        } else {
+                            erroSpan.style.display = 'none';
+                            el.style.borderColor = '';
+                        }
+                    });
+                }
+            });
+
+            // Filtro visual rápido na tabela utilizando o input de pesquisa principal
+            const inputPesquisa = document.getElementById('pesquisa');
+            if (inputPesquisa) {
+                inputPesquisa.addEventListener('input', function() {
+                    const termo = this.value.toLowerCase().trim();
+                    const linhas = document.querySelectorAll('.linha-tabela-os');
+                    let visiveis = 0;
+
+                    linhas.forEach(linha => {
+                        const texto = linha.textContent.toLowerCase();
+                        if (termo === '' || texto.includes(termo)) {
+                            linha.style.display = '';
+                            visiveis++;
+                        } else {
+                            linha.style.display = 'none';
+                        }
+                    });
+
+                    // Se a tabela ficou vazia após o filtro
+                    const tbody = document.getElementById('tabela-os-body');
+                    const linhaVazia = document.getElementById('linha-vazia');
+                    if (visiveis === 0) {
+                        if (!linhaVazia) {
+                            const tr = document.createElement('tr');
+                            tr.id = 'linha-vazia';
+                            tr.innerHTML = `<td colspan="10" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum chamado corresponde aos filtros.</td>`;
+                            tbody.appendChild(tr);
+                        }
+                    } else {
+                        if (linhaVazia) {
+                            linhaVazia.remove();
+                        }
+                    }
+                });
+            }
+        });
+            // Filtro visual rápido
+        const inputPesquisa = document.getElementById('pesquisa');
+        const selectStatus = document.getElementById('filtro-status');
+
+        function filtrarTabela() {
+            const termo = (inputPesquisa ? inputPesquisa.value.toLowerCase().trim() : '');
+            const statusFiltro = (selectStatus ? selectStatus.value.toUpperCase() : '');
+            const linhas = document.querySelectorAll('.linha-tabela-os');
+            let visiveis = 0;
+
+            linhas.forEach(linha => {
+                const texto = linha.textContent.toLowerCase();
+                const statusLinha = (linha.getAttribute('data-status') || '').replace(/'/g, '').toUpperCase();
+                
+                const matchTexto = (termo === '' || texto.includes(termo));
+                const matchStatus = (statusFiltro === '' || statusLinha === statusFiltro);
+
+                if (matchTexto && matchStatus) {
+                    linha.style.display = '';
+                    visiveis++;
+                } else {
+                    linha.style.display = 'none';
+                }
+            });
+
+            // Lida com tabela vazia
+            const tbody = document.getElementById('corpoTabelaOS');
+            let linhaVazia = document.getElementById('linha-vazia');
+            if (visiveis === 0) {
+                if (!linhaVazia && tbody) {
+                    const tr = document.createElement('tr');
+                    tr.id = 'linha-vazia';
+                    tr.innerHTML = `<td colspan="7" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum chamado corresponde aos filtros.</td>`;
+                    tbody.appendChild(tr);
+                }
+            } else {
+                if (linhaVazia) {
+                    linhaVazia.remove();
+                }
+            }
+        }
+
+        if(inputPesquisa) inputPesquisa.addEventListener('keyup', filtrarTabela);
+        if(selectStatus) selectStatus.addEventListener('change', filtrarTabela);
+
+        // Run initially
+        filtrarTabela();
+
+    </script>
+
+    <!-- MODAL DE TRAMITAÇÃO / HISTÓRICO -->
+    <div class="modal-fundo" id="modalTramitacao" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+        <div class="modal-box" style="background: #fff; border-radius: 12px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--corBorda); padding-bottom: 15px; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #333;">Tramitação da O.S. <span id="lbl_tram_id" style="color:var(--corBase);"></span></h3>
+                <button type="button" onclick="fecharModalTramitacao()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #888;"><i class="bi bi-x-lg"></i></button>
+            </div>
+            
+            <form id="form-tramitacao" onsubmit="submeterTramitacao(event)" class="modal-form">
+                <input type="hidden" name="os_id" id="tramitacao_os_id">
+                
+                <div style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--corBorda); margin-bottom: 20px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong>Ambiente:</strong> <span id="lbl_tram_ambiente" style="color:var(--corTxt3);"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong>Status Atual:</strong> <span id="lbl_tram_status" style="font-weight:bold; color:#007bff;"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong>Abertura:</strong> <span id="lbl_tram_abertura" style="color:var(--corTxt2);"></span>
+                    </div>
+                    <hr style="border:0; border-top:1px solid var(--corBorda); margin: 15px 0;">
+                    <strong style="display:block; margin-bottom:5px;">Descrição do Problema:</strong>
+                    <p id="lbl_tram_desc" style="color:var(--corTxt3); font-size:14px; line-height:1.5;"></p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <strong style="display:block; margin-bottom:8px; color:var(--corTxt3);">Histórico da OS:</strong>
+                    <div id="lbl_tram_historico" style="background:var(--corFundo); border:1px solid var(--corBorda); padding:12px; border-radius:8px; font-size:13px; color:var(--corTxt2); min-height:60px; max-height:200px; overflow-y:auto; line-height:1.5;"></div>
+                </div>
+
+                <div class="modal-input" style="margin-bottom: 15px;">
+                    <label for="nova_observacao" style="display:block; margin-bottom: 8px; font-weight: 500;">Adicionar Observação (Registro no Histórico):</label>
+                    <textarea name="nova_observacao" id="nova_observacao" rows="3" placeholder="Digite uma nova observação ou relatório de serviço..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+
+                <div class="modal-input" id="div_select_executor" style="display: none; margin-bottom: 15px;">
+                    <label for="executor_atual_id" style="display:block; margin-bottom: 8px; font-weight: 500;">Atribuir a um Executor (Gestores):</label>
+                    <select name="executor_atual_id" id="executor_atual_id" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                        <option value="" disabled selected>Selecione o funcionário...</option>
+                        
+                            <option value="3">Marcos Silva (Executor)</option>
+                        
+                            <option value="4">Victor Izaias Arantes</option>
+                        
+                            <option value="5">Silvio Ronei Marchetti</option>
+                        
+                            <option value="6">Natalia Gomes dos Santos</option>
+                        
+                            <option value="7">Cesar Ferraiolo Batista</option>
+                        
+                            <option value="8">Luciana Flores</option>
+                        
+                            <option value="9">Bruna Regina Bianchini Roveda</option>
+                        
+                            <option value="10">Antônio Carlos Morettin</option>
+                        
+                            <option value="11">Claudemir Aparecido Flores</option>
+                        
+                            <option value="12">Adriana Cristina de Jesus Rosa</option>
+                        
+                            <option value="13">Geovane Roberto da Silva</option>
+                        
+                            <option value="14">Flavio Alves da Silva</option>
+                        
+                            <option value="15">Marcelo Vinicius Oliveira Dionisio</option>
+                        
+                            <option value="16">Alexandre Felix de Araujo</option>
+                        
+                            <option value="17">Wellington Gonçalves Norberto</option>
+                        
+                            <option value="18">Sergio Eduardo Brunessi</option>
+                        
+                            <option value="19">Bruno Alves de Souza</option>
+                        
+                            <option value="20">Cleiton Cezar Monteiro</option>
+                        
+                            <option value="21">Angelica Affonso Bassan</option>
+                        
+                            <option value="22">Gustavo Antonio Marchiori</option>
+                        
+                            <option value="23">Marcio Donizete Gasparoto</option>
+                        
+                            <option value="24">Everton Luiz Cerantula</option>
+                        
+                            <option value="25">Diego Soares de Oliveira</option>
+                        
+                            <option value="26">Almir Lotito Lima</option>
+                        
+                            <option value="27">Marcio Garcia</option>
+                        
+                            <option value="28">Rafael Marangoni Paixão</option>
+                        
+                            <option value="29">Equipe Itinerante</option>
+                        
+                            <option value="30">Roberto de Souza Ribeiro Moraes Junior</option>
+                        
+                            <option value="31">Renan Junior de Almeida Silva</option>
+                        
+                            <option value="32">Rafael Forti Scalfi</option>
+                        
+                            <option value="33">Rogerio Monteiro da Silva</option>
+                        
+                    </select>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 25px; display:flex; justify-content:flex-end;">
+                    <button type="submit" id="btnTramitarAcao" style="color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts de utilidades globais e relógio em tempo real -->
+    <script src="../assets/js/scripts.js" defer></script>
+    <!-- MODAL DE APROVAÇÃO/TRAMITAÇÃO (INJETADO) -->
+    <div class="modal-fundo" id="modalAprovacao" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+        <div class="modal-box" style="background: #fff; border-radius: 12px; width: 100%; max-width: 500px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--corBorda); padding-bottom: 15px;">
+                <h3 style="margin: 0; color: #333;">Tramitar Ordem de Serviço #<span id="aprovacao_id_display" style="color: var(--corBase);"></span></h3>
+                <button type="button" onclick="fecharModalAprovacao()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #888;"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form class="modal-form" id="formAprovacaoOS" style="padding-top: 15px;" onsubmit="enviarTramite(event)">
+                <input type="hidden" name="action" value="tramitar_os">
+                <input type="hidden" name="os_id" id="aprovacao_os_id">
+                
+                <div class="modal-input" style="margin-bottom: 15px;">
+                    <label for="aprovacao_status" style="font-weight: bold; display: block; margin-bottom: 8px;">Novo Status:</label>
+                    <select name="status_tramite" id="aprovacao_status" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none;">
+                        <option value="EM ANDAMENTO">Em Andamento</option>
+                        <option value="EM EXECUÇÃO">Em Execução</option>
+                        <option value="AGUARDANDO VALIDAÇÃO">Aguardando Validação</option>
+                        <option value="FINALIZADO">Finalizado</option>
+                        <option value="ENCAMINHADA">Encaminhada</option>
+                        <option value="RECUSADA">Recusada</option>
+                    </select>
+                </div>
+
+                <div class="modal-input" style="margin-bottom: 15px;">
+                    <label for="aprovacao_executor" style="font-weight: bold; display: block; margin-bottom: 8px;">Designar Executor (Opcional):</label>
+                    <select name="executor_id" id="aprovacao_executor" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none;">
+                        <option value="">-- Manter Atual / Nenhum --</option>
+                        
+                            <option value=""></option>
+                        
+                    </select>
+                </div>
+
+                <div class="modal-input" style="margin-bottom: 20px;">
+                    <label for="aprovacao_observacao" style="font-weight: bold; display: block; margin-bottom: 8px;">Observação da Etapa:</label>
+                    <textarea name="observacao_etapa" id="aprovacao_observacao" required style="width: 100%; height: 80px; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none;"></textarea>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn-confirmar-full" style="background: #28a745; color:#fff; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">
+                        Confirmar Trâmite <i class="bi bi-check-lg" style="margin-left: 5px;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -11,15 +11,18 @@ class Ambiente {
     private ?int $id = null;
     private string $nome_ambiente;
     private string $status;
+    private string $familia;
     private PDO $db;
 
     public function __construct(
         string $nome_ambiente = '',
         string $status = 'Ativo',
+        string $familia = 'Geral',
         ?int $id = null
     ) {
         $this->nome_ambiente = trim($nome_ambiente);
         $this->status = $status;
+        $this->familia = $familia;
         $this->id = $id;
         $this->db = Database::getConnection();
     }
@@ -31,6 +34,16 @@ class Ambiente {
         $this->id = $id;
     }
     
+    
+    public function getFamilia(): string {
+        return $this->familia;
+    }
+    
+    public function setFamilia(string $familia): self {
+        $this->familia = $familia;
+        return $this;
+    }
+
     public function getNomeAmbiente(): string { return $this->nome_ambiente; }
     
     public function setNomeAmbiente(string $nome_ambiente): void { 
@@ -159,8 +172,9 @@ class Ambiente {
         if ($row) {
             return new self(
                 $row['nome_ambiente'],
-                $row['status'],
-                (int)$row['id']
+                  $row['status'],
+                  $row['familia'] ?? 'Geral',
+                  (int)$row['id']
             );
         }
         return null;
@@ -178,8 +192,9 @@ class Ambiente {
         while ($row = $stmt->fetch()) {
             $ambientes[] = new self(
                 $row['nome_ambiente'],
-                $row['status'],
-                (int)$row['id']
+                  $row['status'],
+                  $row['familia'] ?? 'Geral',
+                  (int)$row['id']
             );
         }
         return $ambientes;
@@ -197,8 +212,9 @@ class Ambiente {
         while ($row = $stmt->fetch()) {
             $ambientes[] = new self(
                 $row['nome_ambiente'],
-                $row['status'],
-                (int)$row['id']
+                  $row['status'],
+                  $row['familia'] ?? 'Geral',
+                  (int)$row['id']
             );
         }
         return $ambientes;

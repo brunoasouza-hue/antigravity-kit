@@ -242,7 +242,7 @@ $dataAtual = date('d/m/Y');
             </a>
 
             <!-- Menu Manutenção condicional -->
-            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
+            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador' || $usuarioNivel === 'Executor'): ?>
                 <div class="menu-manutencao">
                     <a href="javascript:void(0)" class="links manutencao-btn" id="btn-manutencao">
                         <div>
@@ -286,14 +286,11 @@ $dataAtual = date('d/m/Y');
             </div>
 
             <!-- Painel de Ambientes: Apenas Gestor -->
-            <?php if ($usuarioNivel === 'Gestor'): ?>
+            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
                 <a href="./ambientes.php" class="links">
                     <i class="bi bi-building"></i> Painel de Ambientes
                 </a>
 
-                <a href="./dashboard_analise.php" class="links">
-                    <i class="bi bi-bar-chart-line-fill"></i> Análise de Dados
-                </a>
 
                 <a href="./usuarios.php" class="links">
                     <i class="bi bi-file-earmark-person-fill"></i> Painel de Usuários

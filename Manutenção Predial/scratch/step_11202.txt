@@ -1,0 +1,39 @@
+Created At: 2026-06-02T13:08:29Z
+Completed At: 2026-06-02T13:08:29Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1317
+Total Bytes: 83503
+Showing lines 235 to 315
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+235:             </div>
+236:             
+237:             <div class="tabela-wrapper" style="overflow-x: auto; background: var(--corFundo); border-radius: 12px; border: 1px solid var(--corBorda);">
+238:                 <table class="tabela-main" style="width: 100%; border-collapse: collapse;">
+239:                     <thead style="position: sticky; top: 0; z-index: 10; background: #B91C1C; color: #fff;">
+240:                         <tr>
+241:                             <th style="padding: 15px; width: 12%; white-space: nowrap;">Ordem</th>
+242:                             <th style="padding: 15px; width: 30%;">Local e Problema</th>
+243:                             <th style="padding: 15px; width: 20%; white-space: nowrap;">Envolvidos</th>
+244:                             <th style="padding: 15px; width: 15%; text-align: center; white-space: nowrap;">Status</th>
+245:                             <th style="padding: 15px; width: 10%; text-align: center; white-space: nowrap;">Ação</th>
+246:                         </tr>
+247:                     </thead>
+248:                     <tbody id="tabela-os-body">
+249:                             <?php foreach ($ordensServico as $os): ?>
+250:                                 <?php $status = $os->getStatus(); ?>
+251:                                 <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo htmlspecialchars($status); ?>" style="border-bottom: 1px solid #e0e0e0; background-color: #fff; transition: background-color
+<truncated 6124 bytes>
+justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-eye-fill"></i></button>
+304:                                                 <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00E676; border: none; color: white; padding: 6px; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-check-lg"></i></button>
+305:                                                 <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 6px; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-trash-fill"></i></button>
+306:                                             </div>
+307:                                         <?php else: ?>
+308:                                             <button class="btn-visualizar" type="button" title="Abrir O.S." onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Abrir ➔</button>
+309:                                         <?php endif; ?>
+310:                                     </td>
+311:                                 </tr>
+312:                             <?php endforeach; ?>
+313:                     </tbody>
+314:                 </table>
+315:             </div>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

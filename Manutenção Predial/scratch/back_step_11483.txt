@@ -1,0 +1,44 @@
+Created At: 2026-06-02T14:08:12Z
+Completed At: 2026-06-02T14:08:12Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+Total Lines: 1604
+Total Bytes: 103305
+Showing lines 1220 to 1255
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1220:                     footerContainer.innerHTML = botoesHTML;
+1221:                     
+1222:                     document.getElementById('modalVisualizacao').style.display = 'flex';
+1223:                 } else {
+1224:                     showToast(res.message, 'danger');
+1225:                 }
+1226:             })
+1227:             .catch(err => {
+1228:                 console.error(err);
+1229:                 showToast('Erro de rede ao buscar detalhes do chamado.', 'danger');
+1230:             });
+1231:         }
+1232:                 console.error(err);
+1233:                 showToast('Erro de rede ao buscar detalhes do chamado.', 'danger');
+1234:             });
+1235:         }
+1236: 
+1237:         // Submete a atribuição / despacho diretamente no modal de detalhes unificado
+1238:         function submeterDespachoUnificado(osId) {
+1239:             const execSelect = document.getElementById('vis_executor_select');
+1240:             const tipoSelect = document.getElementById('vis_tipo_select');
+1241:             
+1242:             if (!execSelect || !execSelect.value) {
+1243:                 showToast('Por favor, selecione um executor designado.', 'danger');
+1244:                 return;
+1245:             }
+1246: 
+1247:             const params = new URLSearchParams();
+1248:             params.append('acao', 'despachar');
+1249:             params.append('id', osId);
+1250:             params.append('executor_atual_id', execSelect.value);
+1251:             params.append('tipo_execucao', tipoSelect.value);
+1252:             params.append('ajax', '1');
+1253: 
+1254:             fetch(window.location.href, {
+1255:                 method: 'POST',
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

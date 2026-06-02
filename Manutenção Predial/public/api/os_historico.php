@@ -53,7 +53,9 @@ try {
             'id' => $os->getId(),
             'ambiente' => $os->getAmbienteNome(),
             'solicitante' => $os->getSolicitanteNome(),
+            'solicitante_id' => $os->getSolicitanteId(),
             'executor_atual' => $os->getExecutorNome(),
+            'executor_atual_id' => $os->getExecutorAtualId(),
             'status' => $os->getStatus(),
             'descricao' => $os->getDescricaoProblema(),
             'data_abertura' => date('d/m/Y H:i', strtotime($os->getDataAbertura() ?? ''))

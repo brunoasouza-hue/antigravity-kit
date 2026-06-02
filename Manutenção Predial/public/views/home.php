@@ -193,7 +193,7 @@ $dataAtual = date('d/m/Y');
             </a>
 
             <!-- Menu Manutenção condicional: Apenas para Gestor e Executor -->
-            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
+            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador' || $usuarioNivel === 'Executor'): ?>
                 <div class="menu-manutencao">
                     <a href="javascript:void(0)" class="links manutencao-btn" id="btn-manutencao">
                         <div>
@@ -238,14 +238,11 @@ $dataAtual = date('d/m/Y');
             </div>
 
             <!-- Painel de Ambientes: Apenas Gestor -->
-            <?php if ($usuarioNivel === 'Gestor'): ?>
+            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
                 <a href="./ambientes.php" class="links">
                     <i class="bi bi-building"></i> Painel de Ambientes
                 </a>
 
-                <a href="./dashboard_analise.php" class="links">
-                    <i class="bi bi-bar-chart-line-fill"></i> Análise de Dados
-                </a>
 
                 <a href="./usuarios.php" class="links">
                     <i class="bi bi-file-earmark-person-fill"></i> Painel de Usuários
@@ -318,7 +315,7 @@ $dataAtual = date('d/m/Y');
             <div class="home-cards-grid">
 
                 <!-- 1. Checklist Preventiva (Apenas Gestor e Executor) -->
-                <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
+                <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador' || $usuarioNivel === 'Executor'): ?>
                     <a href="./preventivas.php" class="home-card">
                         <div class="home-card-icon-box">
                             <i class="bi bi-clock-fill"></i>
@@ -345,7 +342,7 @@ $dataAtual = date('d/m/Y');
                 </a>
 
                 <!-- 3. Gestão de Ambientes (Apenas Gestor) -->
-                <?php if ($usuarioNivel === 'Gestor'): ?>
+                <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
                     <a href="./ambientes.php" class="home-card">
                         <div class="home-card-icon-box">
                             <i class="bi bi-building"></i>

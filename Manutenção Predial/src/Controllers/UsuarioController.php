@@ -43,11 +43,53 @@ class UsuarioController {
         $acao = $_POST['acao'] ?? '';
 
         switch ($acao) {
+
+            case 'criar':
+                $this->criarUsuario();
+                break;
             case 'alterar_nivel':
                 $this->alterarNivel();
                 break;
             default:
                 $this->retornarResposta(false, "Ação inválida.");
+        }
+    }
+
+
+    private function criarUsuario(): void {
+        $nome = trim($_POST['nome'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $nivelAcesso = trim($_POST['nivel_acesso'] ?? 'Solicitante');
+        $ambientesPost = $_POST['ambientes_vinculados'] ?? [];
+        
+        // Ensure ambientes is an array of ints
+        $ambientesVinculados = [];
+        if (is_array($ambientesPost)) {
+            foreach ($ambientesPost as $ambId) {
+                if ((int)$ambId > 0) {
+                    $ambientesVinculados[] = (int)$ambId;
+                }
+            }
+        }
+
+        if (empty($nome) || empty($email)) {
+            $this->retornarResposta(false, "Nome e e-mail são obrigatórios.");
+        }
+
+        if (Usuario::buscarPorEmail($email) !== null) {
+            $this->retornarResposta(false, "Já existe um usuário cadastrado com este e-mail.");
+        }
+
+        $usuario = new Usuario($nome, $email, "senai123", $nivelAcesso, null, null, $ambientesVinculados);
+
+        try {
+            if ($usuario->salvar()) {
+                $this->retornarResposta(true, "Usuário criado com sucesso. A senha padrão é 'senai123'.");
+            } else {
+                $this->retornarResposta(false, "Erro ao tentar salvar o usuário no banco de dados.");
+            }
+        } catch (PDOException $e) {
+            $this->retornarResposta(false, "Erro no Banco de Dados: " . $e->getMessage());
         }
     }
 

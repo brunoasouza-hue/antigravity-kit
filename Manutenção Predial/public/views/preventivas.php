@@ -28,7 +28,60 @@ if (isset($_GET['logout'])) {
 // Processamento de Ações do Controller antes do carregamento da página
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['acao'])) {
     $controller = new ChecklistController();
-    $controller->processarAcao();
+}
+
+// =========================================================================
+// EXPORTAÇÃO DE RELATÓRIO PARA EXCEL (CSV)
+// =========================================================================
+if (isset($_GET['action']) && $_GET['action'] == 'exportar_excel') {
+    $data_inicio = $_GET['data_inicio'] ?? date('Y-m-01');
+    $data_fim = $_GET['data_fim'] ?? date('Y-m-t');
+
+    // Conexão e Busca
+    $db = \Database::getConnection();
+    $sql = "
+        SELECT 
+            c.id AS checklist_id,
+            a.nome_ambiente,
+            c.data_inspecao,
+            u.nome AS tecnico_responsavel,
+            im.status AS status_inspecao
+        FROM checklists c
+        JOIN ambientes a ON c.ambiente_id = a.id
+        JOIN usuarios u ON c.responsavel_id = u.id
+        JOIN inspecoes_mensais im ON c.inspecao_mensal_id = im.id
+        WHERE c.data_inspecao BETWEEN :inicio AND :fim
+        ORDER BY c.data_inspecao DESC
+    ";
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':inicio' => $data_inicio, ':fim' => $data_fim]);
+    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Headers de Download CSV
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=relatorio_preventivas.csv');
+
+    // Abertura do Stream e Escrita do CSV (delimitador ;)
+    $output = fopen('php://output', 'w');
+    // Adiciona o BOM do UTF-8 para o Excel reconhecer acentuação corretamente
+    fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+    fputcsv($output, ['ID Checklist', 'Ambiente', 'Data Inspeção', 'Técnico Responsável', 'Status da Inspeção Mensal'], ';');
+
+    foreach ($resultados as $row) {
+        $data_br = date('d/m/Y', strtotime($row['data_inspecao']));
+        fputcsv($output, [
+            $row['checklist_id'],
+            $row['nome_ambiente'],
+            $data_br,
+            $row['tecnico_responsavel'],
+            $row['status_inspecao']
+        ], ';');
+    }
+
+    fclose($output);
+    exit;
+}
+// =========================================================================    $controller->processarAcao();
 }
 
 // Busca dados necessários para renderizar a página
@@ -103,20 +156,18 @@ $dataAtual = date('d/m/Y');
 
         /* Botão OK Ativo (Verde Premium) */
         .seg-btn.btn-ok.active {
-            background-color: rgba(40, 167, 69, 0.15) !important;
-            color: #28a745 !important;
-            box-shadow: none;
+            background-color: #28a745 !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            border-color: #28a745 !important;
         }
 
         /* Botão Defeito Ativo (Vermelho Premium / Cor Base) */
         .seg-btn.btn-defeito.active {
-            background-color: rgba(252, 35, 35, 0.15) !important;
-            color: #fc2323 !important;
-            box-shadow: none;
+            background-color: #fc2323 !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(252, 35, 35, 0.3);
+            box-shadow: 0 4px 12px rgba(252, 35, 35, 0.4);
+            border-color: #fc2323 !important;
         }
 
         /* Botão Não se Aplica Ativo (Cinza/Neutro) */
@@ -242,14 +293,11 @@ $dataAtual = date('d/m/Y');
             </div>
 
             <!-- Painel de Ambientes: Apenas Gestor -->
-            <?php if ($usuarioNivel === 'Gestor'): ?>
+            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
                 <a href="./ambientes.php" class="links">
                     <i class="bi bi-building"></i> Painel de Ambientes
                 </a>
 
-                <a href="./dashboard_analise.php" class="links">
-                    <i class="bi bi-bar-chart-line-fill"></i> Análise de Dados
-                </a>
 
                 <a href="./usuarios.php" class="links">
                     <i class="bi bi-file-earmark-person-fill"></i> Painel de Usuários
@@ -302,6 +350,16 @@ $dataAtual = date('d/m/Y');
                 <h2 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Manutenção Preventiva (Mensal)</h2>
                 <p style="color: var(--corTxt2); font-size: 13px; margin-top: 5px;">Acompanhe o ciclo de vistorias mensais e inspecione os ambientes.</p>
             </div>
+            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="abrirModalExportacao()" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-file-earmark-excel-fill"></i> 📥 Exportar Relatório Excel
+                </button>
+                <button onclick="abrirModalGerenciarItens()" style="background: var(--corDestaque); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-list-check"></i> Gerenciar Itens
+                </button>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- INJETAR_INSPECAO_ATIVA -->
@@ -321,12 +379,13 @@ $dataAtual = date('d/m/Y');
                             <th style="padding: 15px;">Início</th>
                             <th style="padding: 15px;">Fim</th>
                             <th style="padding: 15px; text-align: center; width: 180px;">Status</th>
+                            <th style="padding: 15px; text-align: right; width: 120px;">Ação</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-historico">
                         <?php if (empty($historicoInspecoes)): ?>
                             <tr id="linha-vazia">
-                                <td colspan="4" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum ciclo finalizado no histórico.</td>
+                                <td colspan="5" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum ciclo finalizado no histórico.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($historicoInspecoes as $h): ?>
@@ -337,6 +396,9 @@ $dataAtual = date('d/m/Y');
                                     <td style="padding: 15px; text-align: center;">
                                         <span class="badge" style="background: rgba(40,167,69,0.1); color: #28a745; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;"><i class="bi bi-check2-circle"></i> Finalizada</span>
                                     </td>
+                                    <td style="padding: 15px; text-align: right;">
+                                        <button onclick="visualizarHistorico(<?php echo $h['id']; ?>)" style="background: var(--corBase); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;"><i class="bi bi-eye"></i> Visualizar</button>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -345,6 +407,47 @@ $dataAtual = date('d/m/Y');
             </div>
         </div>
     </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL DE VISUALIZAÇÃO DE HISTÓRICO -->
+    <!-- ========================================================================= -->
+    <div class="modal-fundo" id="modalVisualizarHistorico" style="display: none;">
+        <div class="modal-box modal-box-wide" style="max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>Detalhes da Inspeção Mensal #<span id="vis-id-hist"></span></h3>
+                <button type="button" onclick="fecharModal('modalVisualizarHistorico')"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="background: var(--corFundo); padding: 20px; border-radius: 8px; border: 1px solid var(--corBorda); margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <small style="color: var(--corTxt2); display: block; margin-bottom: 5px;">Data de Início</small>
+                        <div style="font-weight: bold; color: var(--corTxt3);" id="vis-data-inicio">--</div>
+                    </div>
+                    <div>
+                        <small style="color: var(--corTxt2); display: block; margin-bottom: 5px;">Data de Fim</small>
+                        <div style="font-weight: bold; color: var(--corTxt3);" id="vis-data-fim">--</div>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 15px; color: var(--corTxt3); border-bottom: 1px solid var(--corBorda); padding-bottom: 10px;">Ambientes Verificados</h4>
+                <div style="overflow-x: auto; background: var(--corFundo); border-radius: 8px; border: 1px solid var(--corBorda);">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                        <thead>
+                            <tr style="background: rgba(0,0,0,0.02); border-bottom: 2px solid var(--corBorda);">
+                                <th style="padding: 12px 15px;">Ambiente</th>
+                                <th style="padding: 12px 15px; text-align: center;">Status Geral</th>
+                                <th style="padding: 12px 15px; text-align: center;">Data Inspeção</th>
+                                <th style="padding: 12px 15px; text-align: center;">Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-itens-historico">
+                            <!-- Injetado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ========================================================================= -->
     <!-- MODAL 1: REGISTRO DE NOVO CHECKLIST PREVENTIVO -->
@@ -358,6 +461,7 @@ $dataAtual = date('d/m/Y');
 
             <form action="" method="POST" id="form-checklist" onsubmit="submeterChecklist(event)" class="modal-form">
                 <input type="hidden" name="acao" value="cadastrar">
+                <input type="hidden" name="checklist_id" id="checklist_id" value="">
 
                 <!-- Bloco / Sala e Data da Inspeção -->
                 <div class="modal-row quebraMobile">
@@ -385,111 +489,9 @@ $dataAtual = date('d/m/Y');
                     <h4 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Vistoria dos Ativos Prediais</h4>
                 </div>
 
-                <!-- 6 ITENS OBRIGATÓRIOS DO CHECKLIST COM SELECTORES SVG VECTOR VERDES QUANDO "OK" -->
-                <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-                    
-                    <!-- Item 1: Tomadas -->
-                    <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
-                        <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Tomadas:</span>
-                        <div class="segmented-control-wrapper" data-field="status_tomadas">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
-                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
-                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
-                                N/A
-                            </button>
-                        </div>
-                        <input type="hidden" name="status_tomadas" id="status_tomadas" value="Não se aplica">
-                    </div>
-
-                    <!-- Item 2: Forros -->
-                    <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
-                        <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Forros:</span>
-                        <div class="segmented-control-wrapper" data-field="status_forros">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
-                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
-                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
-                                N/A
-                            </button>
-                        </div>
-                        <input type="hidden" name="status_forros" id="status_forros" value="Não se aplica">
-                    </div>
-
-                    <!-- Item 3: Paredes -->
-                    <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
-                        <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Paredes:</span>
-                        <div class="segmented-control-wrapper" data-field="status_paredes">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
-                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
-                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
-                                N/A
-                            </button>
-                        </div>
-                        <input type="hidden" name="status_paredes" id="status_paredes" value="Não se aplica">
-                    </div>
-
-                    <!-- Item 4: Projetor -->
-                    <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
-                        <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Projetor:</span>
-                        <div class="segmented-control-wrapper" data-field="status_projetor">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
-                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
-                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
-                                N/A
-                            </button>
-                        </div>
-                        <input type="hidden" name="status_projetor" id="status_projetor" value="Não se aplica">
-                    </div>
-
-                    <!-- Item 5: Tela -->
-                    <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
-                        <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Tela:</span>
-                        <div class="segmented-control-wrapper" data-field="status_tela">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
-                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
-                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
-                                N/A
-                            </button>
-                        </div>
-                        <input type="hidden" name="status_tela" id="status_tela" value="Não se aplica">
-                    </div>
-
-                    <!-- Item 6: Lousa -->
-                    <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
-                        <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">Lousa:</span>
-                        <div class="segmented-control-wrapper" data-field="status_lousa">
-                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok">
-                                <i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito">
-                                <i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i>
-                            </button>
-                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">
-                                N/A
-                            </button>
-                        </div>
-                        <input type="hidden" name="status_lousa" id="status_lousa" value="Não se aplica">
-                    </div>
-
+                <!-- CONTAINER DINÂMICO DE ITENS DO CHECKLIST -->
+                <div id="container-itens-checklist-dinamico" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                    <!-- Preenchido pelo JS -->
                 </div>
 
                 <!-- Observações -->
@@ -540,31 +542,8 @@ $dataAtual = date('d/m/Y');
                 </div>
 
                 <!-- Lista de Itens do Checklist -->
-                <div class="grid-detalhes-check">
-                    <div class="card-detalhe-item">
-                        <span class="title">Tomadas:</span>
-                        <div id="detalhe_status_tomadas"></div>
-                    </div>
-                    <div class="card-detalhe-item">
-                        <span class="title">Forros:</span>
-                        <div id="detalhe_status_forros"></div>
-                    </div>
-                    <div class="card-detalhe-item">
-                        <span class="title">Paredes:</span>
-                        <div id="detalhe_status_paredes"></div>
-                    </div>
-                    <div class="card-detalhe-item">
-                        <span class="title">Projetor:</span>
-                        <div id="detalhe_status_projetor"></div>
-                    </div>
-                    <div class="card-detalhe-item">
-                        <span class="title">Tela:</span>
-                        <div id="detalhe_status_tela"></div>
-                    </div>
-                    <div class="card-detalhe-item">
-                        <span class="title">Lousa:</span>
-                        <div id="detalhe_status_lousa"></div>
-                    </div>
+                <div class="grid-detalhes-check" id="detalhes-itens-container">
+                    <!-- Preenchido pelo JS -->
                 </div>
 
                 <!-- Observações -->
@@ -575,7 +554,12 @@ $dataAtual = date('d/m/Y');
                     </div>
                 </div>
 
-                <div class="modal-footer" style="margin-top: 20px;">
+                <div class="modal-footer" style="margin-top: 20px; display: flex; gap: 10px;">
+                    <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador' || $usuarioNivel === 'Executor'): ?>
+                    <button type="button" class="btn-confirmar-full btn" onclick="editarChecklistAtual()" style="background-color: var(--corDestaque); color: white;">
+                        Editar Inspeção <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <?php endif; ?>
                     <button type="button" class="btn-confirmar-full btn" onclick="fecharModal('modalVerDetalhes')" style="background-color: var(--corBorda); color: var(--corTxt3);">
                         Fechar <i class="bi bi-x-circle-fill"></i>
                     </button>
@@ -589,6 +573,59 @@ $dataAtual = date('d/m/Y');
 
     <!-- SCRIPTS DE GERENCIAMENTO AJAX FETCH API -->
     <script>
+        // Visualizar histórico
+        function visualizarHistorico(id) {
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ acao: 'buscar_historico_detalhes', ajax: '1', inspecao_id: id })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    const dados = response.data;
+                    document.getElementById('vis-id-hist').innerText = dados.inspecao.id;
+                    document.getElementById('vis-data-inicio').innerText = dados.inspecao.data_inicio;
+                    document.getElementById('vis-data-fim').innerText = dados.inspecao.data_fim;
+
+                    const tbody = document.getElementById('tabela-itens-historico');
+                    tbody.innerHTML = '';
+                    if (dados.checklists.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #888;">Nenhum ambiente verificado neste ciclo.</td></tr>`;
+                    } else {
+                        dados.checklists.forEach(c => {
+                            let hasError = false;
+                            if (c.itens_dinamicos) {
+                                Object.values(c.itens_dinamicos).forEach(val => {
+                                    if (val === 'Reparo Necessário' || val === 'NOk' || val === 'NOK') hasError = true;
+                                });
+                            }
+                            
+                            const badgeOk = `<span style="background:rgba(40,167,69,0.1); color:#28a745; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:bold;"><i class="bi bi-check-circle-fill"></i> OK</span>`;
+                            const badgeNok = `<span style="background:rgba(220,53,69,0.1); color:#dc3545; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:bold;"><i class="bi bi-exclamation-triangle-fill"></i> Com Ocorrências</span>`;
+
+                            const dataInspecao = c.data_inspecao ? c.data_inspecao.split('-').reverse().join('/') : '-';
+
+                            tbody.innerHTML += `
+                                <tr style="border-bottom: 1px solid var(--corBorda);">
+                                    <td style="padding: 12px 15px; font-weight: bold; color: var(--corTxt3);">${c.ambiente_nome}</td>
+                                    <td style="padding: 12px 15px; text-align: center;">${hasError ? badgeNok : badgeOk}</td>
+                                    <td style="padding: 12px 15px; text-align: center; font-size: 13px;">${dataInspecao}</td>
+                                    <td style="padding: 12px 15px; text-align: center;">${c.observacoes ? '<span title="' + c.observacoes + '" style="cursor:help; color:var(--corBase);"><i class="bi bi-chat-text-fill"></i></span>' : '-'}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    document.getElementById('modalVisualizarHistorico').style.display = 'flex';
+                } else {
+                    alert(response.message || 'Erro ao carregar detalhes.');
+                }
+            })
+            .catch(err => {
+                alert('Erro de conexão ao buscar histórico: ' + err.message);
+            });
+        }
+
         // Abre o modal de cadastro
         function abrirModalChecklist() {
             document.getElementById('form-checklist').reset();
@@ -608,6 +645,7 @@ $dataAtual = date('d/m/Y');
 
         // Abre o modal de visualização de detalhes
         function visualizarDetalhes(info) {
+            window.checklistAtual = info;
             document.getElementById('detalhe_ambiente').innerText = info.ambiente_nome || 'Desconhecido';
             document.getElementById('detalhe_responsavel').innerText = info.responsavel_nome || 'N/A';
             document.getElementById('detalhe_data').innerText = info.data_inspecao;
@@ -635,6 +673,54 @@ $dataAtual = date('d/m/Y');
 
             document.getElementById('detalhe_observacoes').innerText = info.observacoes || 'Nenhuma observação registrada.';
             document.getElementById('modalVerDetalhes').style.display = 'flex';
+        }
+
+        // Abre o modal de edição com os dados atuais
+        function editarChecklistAtual() {
+            fecharModal('modalVerDetalhes');
+            if (!window.checklistAtual) return;
+            
+            abrirModalChecklist(window.checklistAtual.ambiente_id);
+            document.querySelector('#modalNovoChecklist .modal-header h3').innerText = 'Editar Inspeção Preventiva';
+            const btnSubmit = document.querySelector('#modalNovoChecklist button[type="submit"]');
+            if (btnSubmit) btnSubmit.innerHTML = 'Atualizar Inspeção <i class="bi bi-arrow-repeat"></i>';
+            
+            document.getElementById('checklist_id').value = window.checklistAtual.id;
+            
+            if (document.getElementById('data_inspecao')) {
+                // Conversão simples se for YYYY-MM-DD
+                let dateStr = window.checklistAtual.data_inspecao;
+                if (dateStr && dateStr.includes('/')) {
+                    dateStr = dateStr.split('/').reverse().join('-');
+                }
+                document.getElementById('data_inspecao').value = dateStr;
+            }
+            
+            if (document.getElementById('observacoes')) {
+                document.getElementById('observacoes').value = window.checklistAtual.observacoes || '';
+            }
+            
+            // Set dynamic fields if they exist
+            const fields = ['tomadas', 'forros', 'paredes', 'projetor', 'tela', 'lousa'];
+            setTimeout(() => {
+                fields.forEach((field, index) => {
+                    const status = window.checklistAtual['status_' + field];
+                    if (!status) return;
+                    
+                    const hiddenInp = document.getElementById('status_' + index);
+                    if (hiddenInp) {
+                        hiddenInp.value = status;
+                        const wrapper = hiddenInp.parentElement;
+                        wrapper.querySelectorAll('.seg-btn').forEach(btn => btn.classList.remove('active'));
+                        
+                        let btnSel = wrapper.querySelector('.btn-nsa');
+                        if (status === 'Ok' || status === 'OK') btnSel = wrapper.querySelector('.btn-ok');
+                        else if (status === 'Defeito') btnSel = wrapper.querySelector('.btn-defeito');
+                        
+                        if (btnSel) btnSel.classList.add('active');
+                    }
+                });
+            }, 50);
         }
 
         // Fecha modais pelo ID
@@ -815,42 +901,14 @@ $dataAtual = date('d/m/Y');
 
         function abrirModalChecklistRapido(inspecaoId, ambId, ambNome) {
             inspecaoAtualId = inspecaoId;
-            document.getElementById('form-checklist').reset();
+            abrirModalChecklist(ambId);
             
-            // Set hidden ids
+            // Se for um select visível, forçamos o valor e desabilitamos para o usuário não trocar
             let inpHiddenAmb = document.getElementById('ambiente_id');
-            if(inpHiddenAmb) {
-                // Se for um select visível, forçamos o valor
-                if (inpHiddenAmb.tagName === 'SELECT') {
-                    inpHiddenAmb.value = ambId;
-                    // opcional: desabilitar para o usuário não trocar
-                    inpHiddenAmb.style.pointerEvents = 'none';
-                    inpHiddenAmb.style.opacity = '0.7';
-                } else {
-                    inpHiddenAmb.value = ambId;
-                }
-            } else {
-                inpHiddenAmb = document.createElement('input');
-                inpHiddenAmb.type = 'hidden';
-                inpHiddenAmb.name = 'ambiente_id';
-                inpHiddenAmb.id = 'ambiente_id';
-                document.getElementById('form-checklist').appendChild(inpHiddenAmb);
-                inpHiddenAmb.value = ambId;
+            if(inpHiddenAmb && inpHiddenAmb.tagName === 'SELECT') {
+                inpHiddenAmb.style.pointerEvents = 'none';
+                inpHiddenAmb.style.opacity = '0.7';
             }
-
-            // Limpa seletores segmentados (Ok, Defeito, Nsa)
-            document.querySelectorAll('.segmented-control-wrapper').forEach(wrapper => {
-                const btns = wrapper.querySelectorAll('.seg-btn');
-                btns.forEach(b => b.classList.remove('active'));
-                const nsaBtn = wrapper.querySelector('.btn-nsa');
-                if(nsaBtn) nsaBtn.classList.add('active');
-                
-                const hiddenInput = document.getElementById(wrapper.dataset.field);
-                if (hiddenInput) hiddenInput.value = 'Não se aplica';
-            });
-
-            // Open modal
-            document.getElementById('modalNovoChecklist').style.display = 'flex';
         }
 
         function finalizarInspecao(inspecaoId) {
@@ -893,7 +951,7 @@ $dataAtual = date('d/m/Y');
 
             fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
                 body: formData
             })
             .then(res => res.json())
@@ -952,5 +1010,338 @@ $dataAtual = date('d/m/Y');
 
     <!-- JS Globais -->
     <script src="../assets/js/scripts.js" defer></script>
+
+    <!-- MODAL GERENCIAR ITENS DO CHECKLIST -->
+    <div class="modal-fundo" id="modalGerenciarItens" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Gerenciar Itens do Checklist</h3>
+                <button type="button" onclick="fecharModal('modalGerenciarItens')"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-form" style="padding: 20px;">
+                <p style="font-size: 13px; color: var(--corTxt2); margin-bottom: 20px;">Selecione a família de ambientes e defina os itens que deverão ser inspecionados.</p>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: bold; font-size: 14px; margin-bottom: 5px; display: block;">Família do Ambiente:</label>
+                    <select id="seletorFamiliaGerenciar" onchange="renderizarItensGerenciamento()" style="width: 100%; padding: 10px; border: 1px solid var(--corBorda); border-radius: 8px; outline: none; background: #fff; font-size: 14px; color: var(--corTxt3);">
+                        <option value="Salas de Aulas">📚 Salas de Aulas</option>
+                        <option value="Laboratórios">🔬 Laboratórios</option>
+                        <option value="Oficinas">⚙️ Oficinas</option>
+                        <option value="Administrativos">🏢 Administrativos</option>
+                        <option value="Externos">🌳 Externos</option>
+                        <option value="Geral">📦 Geral (Sem família cadastrada)</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="novoItemNome" placeholder="Ex: Extintores" style="flex: 1; padding: 10px; border: 1px solid var(--corBorda); border-radius: 8px; outline: none;">
+                    <button type="button" onclick="adicionarItemChecklist()" style="background: var(--corDestaque); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;"><i class="bi bi-plus-lg"></i> Adicionar</button>
+                </div>
+                <div id="lista-itens-checklist" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto;">
+                    <!-- Itens gerados dinamicamente pelo JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Lógica do Modal de Gerenciar Itens
+        function abrirModalGerenciarItens() {
+            renderizarItensGerenciamento();
+            document.getElementById('modalGerenciarItens').style.display = 'flex';
+        }
+        
+        function renderizarItensGerenciamento() {
+            const container = document.getElementById('lista-itens-checklist');
+            const familiaSelect = document.getElementById('seletorFamiliaGerenciar');
+            const familia = familiaSelect ? familiaSelect.value : 'Geral';
+            container.innerHTML = '';
+            
+            const itens = window.ITENS_CHECKLIST[familia] || [];
+            
+            if (itens.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-size: 13px;">Nenhum item cadastrado para esta família.</p>';
+                return;
+            }
+            
+            itens.forEach((item, index) => {
+                container.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--corFundo2); border: 1px solid var(--corBorda); border-radius: 8px;">
+                        <span style="font-weight: bold; color: var(--corTxt3); font-size: 14px;">${item}</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" onclick="editarItemChecklist('${item}', '${familia}')" style="background: none; border: none; color: #00c5ff; cursor: pointer; font-size: 1.1rem;" title="Editar"><i class="bi bi-pencil-square"></i></button>
+                            <button type="button" onclick="removerItemChecklist('${item}', '${familia}')" style="background: none; border: none; color: #fc2323; cursor: pointer; font-size: 1.1rem;" title="Excluir"><i class="bi bi-trash-fill"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        function adicionarItemChecklist() {
+            const input = document.getElementById('novoItemNome');
+            const nome = input.value.trim();
+            const familiaSelect = document.getElementById('seletorFamiliaGerenciar');
+            const familia = familiaSelect ? familiaSelect.value : 'Geral';
+            
+            if (!nome) return;
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ acao: 'adicionar_item_checklist', ajax: '1', nome: nome, familia: familia })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (!window.ITENS_CHECKLIST[familia]) window.ITENS_CHECKLIST[familia] = [];
+                    window.ITENS_CHECKLIST[familia].push(nome);
+                    input.value = '';
+                    renderizarItensGerenciamento();
+                    showToast('Item adicionado na família ' + familia + '!', 'success');
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            });
+        }
+        
+        function editarItemChecklist(nomeAntigo, familia) {
+            document.getElementById('edit_item_familia').value = familia;
+            document.getElementById('edit_item_nome_antigo').value = nomeAntigo;
+            document.getElementById('edit_item_nome_novo').value = nomeAntigo;
+            document.getElementById('modalEditarItemChecklist').style.display = 'flex';
+            setTimeout(() => document.getElementById('edit_item_nome_novo').focus(), 100);
+        }
+        
+        function removerItemChecklist(nome, familia) {
+            if (!confirm(`Tem certeza que deseja remover o item '${nome}' da família '${familia}'?`)) return;
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ acao: 'remover_item_checklist', ajax: '1', nome: nome, familia: familia })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (window.ITENS_CHECKLIST[familia]) {
+                        window.ITENS_CHECKLIST[familia] = window.ITENS_CHECKLIST[familia].filter(i => i !== nome);
+                    }
+                    renderizarItensGerenciamento();
+                    showToast('Item removido!', 'success');
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            });
+        }
+        
+        // Substituir a abertura de modal antigo
+        // Detecta quando o usuário troca de ambiente no Select
+        document.getElementById('ambiente_id').addEventListener('change', function(e) {
+            const ambId = this.value;
+            const familia = window.AMBIENTES_FAMILIAS[ambId] || 'Geral';
+            renderizarFormularioInspecao(familia);
+        });
+
+        function renderizarFormularioInspecao(familia) {
+            const container = document.getElementById('container-itens-checklist-dinamico');
+            container.innerHTML = '';
+            
+            const itens = window.ITENS_CHECKLIST[familia] || window.ITENS_CHECKLIST['Geral'] || [];
+            
+            if (itens.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-size: 13px;">Nenhum item padrão para esta família. Inspeção opcional.</p>';
+                return;
+            }
+            
+            itens.forEach((item, index) => {
+                const safeId = 'status_' + index;
+                container.innerHTML += `
+                    <div class="modal-row" style="align-items: center; justify-content: space-between; gap: 15px;">
+                        <span style="font-weight: bold; color: var(--corTxt3); width: 120px;">${item}:</span>
+                        <div class="segmented-control-wrapper" data-field="${safeId}">
+                            <button type="button" class="seg-btn btn-ok" data-value="Ok" title="Ok"><i class="bi bi-check-lg" style="font-size: 1.3rem; font-weight: bold;"></i></button>
+                            <button type="button" class="seg-btn btn-defeito" data-value="Defeito" title="Defeito"><i class="bi bi-x-lg" style="font-size: 1.3rem; font-weight: bold;"></i></button>
+                            <button type="button" class="seg-btn btn-nsa active" data-value="Não se aplica" title="Não se aplica">N/A</button>
+                        </div>
+                        <input type="hidden" name="item_name_${index}" value="${item}">
+                        <input type="hidden" name="item_status_${index}" id="${safeId}" value="Não se aplica">
+                    </div>
+                `;
+            });
+            
+            // Re-bind segmented controls for dynamic items
+            container.querySelectorAll('.segmented-control-wrapper').forEach(wrapper => {
+                const hiddenInput = document.getElementById(wrapper.getAttribute('data-field'));
+                wrapper.querySelectorAll('.seg-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        wrapper.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        hiddenInput.value = btn.getAttribute('data-value');
+                    });
+                });
+            });
+        }
+
+        const abrirModalChecklistOld = abrirModalChecklist;
+        abrirModalChecklist = function(ambientePreSelecionado = null) {
+            document.getElementById('form-checklist').reset();
+            
+            const ambSelect = document.getElementById('ambiente_id');
+            if (ambientePreSelecionado) {
+                ambSelect.value = ambientePreSelecionado;
+            } else {
+                ambSelect.selectedIndex = 0; // Se não enviou preselecionado, reseta
+            }
+            
+            // Renderiza itens baseados na familia do ambiente selecionado (ou vazio se não selecionou)
+            const ambId = ambSelect.value;
+            const familia = ambId ? (window.AMBIENTES_FAMILIAS[ambId] || 'Geral') : 'Geral';
+            renderizarFormularioInspecao(familia);
+            
+            document.getElementById('observacoes_erro').style.display = 'none';
+            document.getElementById('observacoes').style.borderColor = '';
+            document.getElementById('modalNovoChecklist').style.display = 'flex';
+        }
+        
+        // Atualizar visualizarDetalhes para campos dinâmicos
+        function visualizarDetalhes(info) {
+            document.getElementById('detalhe_ambiente').innerText = info.ambiente_nome || 'Desconhecido';
+            document.getElementById('detalhe_responsavel').innerText = info.responsavel_nome || 'N/A';
+            document.getElementById('detalhe_data').innerText = info.data_inspecao;
+
+            const container = document.getElementById('detalhes-itens-container');
+            container.innerHTML = '';
+            
+            if (info.itens_dinamicos) {
+                for (const [nome, status] of Object.entries(info.itens_dinamicos)) {
+                    let badgeClass = 'badge-nsa';
+                    let iconClass = 'bi-slash-circle';
+                    if (status === 'Ok') { badgeClass = 'badge-ok'; iconClass = 'bi-check-circle-fill'; } 
+                    else if (status === 'Defeito') { badgeClass = 'badge-defeito'; iconClass = 'bi-exclamation-triangle-fill'; }
+                    
+                    container.innerHTML += `
+                        <div class="card-detalhe-item">
+                            <span class="title">${nome}:</span>
+                            <div>
+                                <span class="badge-status ${badgeClass}">
+                                    <i class="bi ${iconClass}"></i> ${status}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('detalhe_observacoes').innerText = info.observacoes || 'Nenhuma observação registrada.';
+            document.getElementById('modalVerDetalhes').style.display = 'flex';
+        }
+    </script>
+    
+
+    <!-- MODAL EDITAR ITEM CHECKLIST -->
+    <div class="modal-fundo" id="modalEditarItemChecklist" style="display: none; z-index: 10001;">
+        <div class="modal-box" style="width: 400px; padding: 25px;">
+            <div class="modal-header" style="margin-bottom: 20px;">
+                <h3>Editar Item</h3>
+                <button type="button" onclick="fecharModal('modalEditarItemChecklist')"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form onsubmit="submeterEdicaoItemChecklist(event)">
+                <input type="hidden" id="edit_item_familia">
+                <input type="hidden" id="edit_item_nome_antigo">
+                <div class="modal-input" style="margin-bottom: 20px;">
+                    <label style="font-weight: bold; margin-bottom: 8px; display: block;">Nome do Item:</label>
+                    <input type="text" id="edit_item_nome_novo" required style="width: 100%; padding: 12px; border: 1px solid var(--corBorda); border-radius: 8px; outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="fecharModal('modalEditarItemChecklist')" style="background: var(--corFundo2); color: var(--corTxt2); border: 1px solid var(--corBorda); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">Cancelar</button>
+                    <button type="submit" style="background: var(--corDestaque); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">Salvar <i class="bi bi-check-lg"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function submeterEdicaoItemChecklist(e) {
+            e.preventDefault();
+            const familia = document.getElementById('edit_item_familia').value;
+            const nomeAntigo = document.getElementById('edit_item_nome_antigo').value;
+            const novoNome = document.getElementById('edit_item_nome_novo').value.trim();
+            
+            if (!novoNome || novoNome === nomeAntigo) {
+                fecharModal('modalEditarItemChecklist');
+                return;
+            }
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ acao: 'editar_item_checklist', ajax: '1', nome_antigo: nomeAntigo, nome_novo: novoNome, familia: familia })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (window.ITENS_CHECKLIST[familia]) {
+                        const idx = window.ITENS_CHECKLIST[familia].indexOf(nomeAntigo);
+                        if (idx !== -1) window.ITENS_CHECKLIST[familia][idx] = novoNome;
+                    }
+                    renderizarItensGerenciamento();
+                    fecharModal('modalEditarItemChecklist');
+                    showToast('Item atualizado com sucesso!', 'success');
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            });
+        }
+    </script>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL EXPORTAR RELATÓRIO EXCEL -->
+    <!-- ========================================================================= -->
+    <div class="modal-fundo" id="modalExportacaoExcel" style="display: none;">
+        <div class="modal-box" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Exportar Relatório</h3>
+                <button type="button" onclick="fecharModalExportacao()"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-exportar-excel" onsubmit="enviarExportacao(event)">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="export_data_inicio" style="display:block; margin-bottom: 5px;">Data Inicial:</label>
+                        <input type="date" id="export_data_inicio" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3);">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="export_data_fim" style="display:block; margin-bottom: 5px;">Data Final:</label>
+                        <input type="date" id="export_data_fim" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--corBorda); background: var(--corFundo); color: var(--corTxt3);">
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" onclick="fecharModalExportacao()" style="background: var(--corFundo); color: var(--corTxt3); border: 1px solid var(--corBorda); padding: 10px 15px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                        <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                            <i class="bi bi-download"></i> Baixar Arquivo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalExportacao() {
+            document.getElementById('modalExportacaoExcel').style.display = 'flex';
+        }
+
+        function fecharModalExportacao() {
+            document.getElementById('modalExportacaoExcel').style.display = 'none';
+        }
+
+        function enviarExportacao(event) {
+            event.preventDefault();
+            const inicio = document.getElementById('export_data_inicio').value;
+            const fim = document.getElementById('export_data_fim').value;
+            window.location.href = '?action=exportar_excel&data_inicio=' + inicio + '&data_fim=' + fim;
+            fecharModalExportacao();
+        }
+    </script>
+
 </body>
 </html>

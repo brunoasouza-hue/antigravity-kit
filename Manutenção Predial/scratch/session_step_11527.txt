@@ -1,0 +1,39 @@
+Created At: 2026-06-02T14:10:18Z
+Completed At: 2026-06-02T14:10:18Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/start_test_server.js`
+Total Lines: 2251
+Total Bytes: 110262
+Showing lines 2190 to 2220
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+2190:     }
+2191: 
+2192:     // Roteador padrão de visualização de Telas (.php)
+2193:     let phpViewFile = '';
+2194:     
+2195:     if (pathname === '/' || pathname === '/public' || pathname === '/public/' || pathname === '/public/index.php') {
+2196:         phpViewFile = path.join(__dirname, 'public', 'index.php');
+2197:     } else if (pathname.includes('/public/views/')) {
+2198:         const viewName = pathname.substring(pathname.lastIndexOf('/') + 1);
+2199:         phpViewFile = path.join(__dirname, 'public', 'views', viewName);
+2200:     }
+2201: 
+2202:     if (phpViewFile && fs.existsSync(phpViewFile)) {
+2203:         // Bloqueia rotas internas caso não esteja logado
+2204:         if (pathname.includes('/public/views/') && !session.usuario_id) {
+2205:             redirect('/public/index.php');
+2206:             return;
+2207:         }
+2208: 
+2209:         // Restringe a tela de análise apenas para perfil "Gestor"
+2210:         if (pathname.includes('dashboard_analise.php') && session.usuario_nivel !== 'Gestor') {
+2211:             session.alerta_erro = "Acesso negado: Seu perfil não possui permissão para acessar esta área.";
+2212:             redirect('/public/views/home.php');
+2213:             return;
+2214:         }
+2215: 
+2216:         // Compila o PHP e envia resposta HTML pura
+2217:         try {
+2218:             const compiledHtml = compilePhp(phpViewFile, session, queryParams);
+2219:             res.writeHead(200, {
+2220:                 'Content-Type': 'text/html; charset=utf-8',
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

@@ -1,0 +1,41 @@
+Created At: 2026-06-02T14:14:33Z
+Completed At: 2026-06-02T14:14:33Z
+File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/scratch/step_11202.txt`
+Total Lines: 40
+Total Bytes: 4159
+Showing lines 1 to 40
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: Created At: 2026-06-02T13:08:29Z
+2: Completed At: 2026-06-02T13:08:29Z
+3: File Path: `file:///c:/Users/Instrutor/OneDrive%20-%20SESISENAISP%20-%20Corporativo/PESSOAL/Documents/ANTIGRAVITY/Manuten%C3%A7%C3%A3o%20Predial/public/views/corretivas.php`
+4: Total Lines: 1317
+5: Total Bytes: 83503
+6: Showing lines 235 to 315
+7: The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+8: 235:             </div>
+9: 236:             
+10: 237:             <div class="tabela-wrapper" style="overflow-x: auto; background: var(--corFundo); border-radius: 12px; border: 1px solid var(--corBorda);">
+11: 238:                 <table class="tabela-main" style="width: 100%; border-collapse: collapse;">
+12: 239:                     <thead style="position: sticky; top: 0; z-index: 10; background: #B91C1C; color: #fff;">
+13: 240:                         <tr>
+14: 241:                             <th style="padding: 15px; width: 12%; white-space: nowrap;">Ordem</th>
+15: 242:                             <th style="padding: 15px; width: 30%;">Local e Problema</th>
+16: 243:                             <th style="padding: 15px; width: 20%; white-space: nowrap;">Envolvidos</th>
+17: 244:                             <th style="padding: 15px; width: 15%; text-align: center; white-space: nowrap;">Status</th>
+18: 245:   
+<truncated 832 bytes>
+                                <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00E676; border: none; color: white; padding: 6px; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-check-lg"></i></button>
+28: 305:                                                 <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 6px; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><i class="bi bi-trash-fill"></i></button>
+29: 306:                                             </div>
+30: 307:                                         <?php else: ?>
+31: 308:                                             <button class="btn-visualizar" type="button" title="Abrir O.S." onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Abrir ➔</button>
+32: 309:                                         <?php endif; ?>
+33: 310:                                     </td>
+34: 311:                                 </tr>
+35: 312:                             <?php endforeach; ?>
+36: 313:                     </tbody>
+37: 314:                 </table>
+38: 315:             </div>
+39: The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+40: 
+The above content shows the entire, complete file contents of the requested file.
