@@ -321,49 +321,53 @@ $dataAtual = date('d/m/Y');
                 <table class="tabela-main" style="width: 100%; border-collapse: collapse;">
                     <thead style="position: sticky; top: 0; z-index: 10; background: #B91C1C; color: #fff;">
                         <tr>
-                            <th style="padding: 15px; width: 8%; white-space: nowrap;">ID</th>
-                            <th style="padding: 15px; width: 15%; white-space: nowrap;">Solicitante</th>
-                            <th style="padding: 15px; width: 15%; white-space: nowrap;">Ambiente</th>
-                            <th style="padding: 15px; white-space: nowrap;">Descrição do Problema</th>
-                            <th style="padding: 15px; width: 10%; white-space: nowrap;">Tipo</th>
-                            <th style="padding: 15px; width: 15%; white-space: nowrap;">Executor Atual</th>
-                            <th style="padding: 15px; width: 12%; white-space: nowrap;">Abertura</th>
-                            <th style="padding: 15px; text-align: center; width: 10%; white-space: nowrap;">Status</th>
-                            <th style="padding: 15px; text-align: center; width: 10%; white-space: nowrap;">Ações</th>
+                            <th style="padding: 12px; width: 8%; white-space: nowrap;">ID</th>
+                            <th style="padding: 12px; width: 22%; white-space: nowrap;">Solicitante / Abertura</th>
+                            <th style="padding: 12px; width: 15%; white-space: nowrap;">Ambiente</th>
+                            <th style="padding: 12px; white-space: nowrap;">Descrição do Problema</th>
+                            <th style="padding: 12px; width: 22%; white-space: nowrap;">Executor / Tipo</th>
+                            <th style="padding: 12px; text-align: center; width: 12%; white-space: nowrap;">Status</th>
+                            <th style="padding: 12px; text-align: center; width: 10%; white-space: nowrap;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-os-body">
                         <?php if (empty($ordensServico)): ?>
                             <tr id="linha-vazia">
-                                <td colspan="9" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhuma ordem de serviço registrada.</td>
+                                <td colspan="7" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhuma ordem de serviço registrada.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($ordensServico as $os): ?>
                                 <?php $status = $os->getStatus(); ?>
                                 <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo $os->getStatus(); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s; cursor: pointer;" class="linha-tabela-os" onclick="visualizarOS(<?php echo $os->getId(); ?>)">
-                                    <td style="padding: 15px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#<?php echo $os->getId(); ?></td>
+                                    <td style="padding: 12px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#<?php echo $os->getId(); ?></td>
                                     
-                                    <td style="padding: 15px; font-weight: bold; color: #B91C1C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?></td>
-                                    
-                                    <td style="padding: 15px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?></td>
-                                    
-                                    <td style="padding: 15px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="<?php echo htmlspecialchars($os->getDescricaoProblema()); ?>"><?php echo htmlspecialchars($os->getDescricaoProblema()); ?></td>
-                                    
-                                    <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap;"><span class="badge-tipo"><?php echo htmlspecialchars($os->getTipoExecucao()); ?></span></td>
-                                    
-                                    <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getExecutorNome() ?? 'Não Atribuído'); ?>">
-                                        <?php if ($os->getExecutorNome()): ?>
-                                            <?php echo htmlspecialchars($os->getExecutorNome()); ?>
-                                        <?php else: ?>
-                                            <span style="color: #999; font-style: italic;">Não Atribuído</span>
-                                        <?php endif; ?>
+                                    <td style="padding: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                                        <div style="font-weight: bold; color: #B91C1C;" title="<?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?>">
+                                            <?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?>
+                                        </div>
+                                        <div style="font-size: 11px; color: var(--corTxt2); margin-top: 3px;">
+                                            <i class="bi bi-clock"></i> <?php echo date('d/m/Y H:i', strtotime($os->getDataAbertura() ?? '')); ?>
+                                        </div>
                                     </td>
                                     
-                                    <td style="padding: 15px; font-size: 14px; color: var(--corTxt2); white-space: nowrap;">
-                                        <?php echo date('d/m/Y H:i', strtotime($os->getDataAbertura() ?? '')); ?>
+                                    <td style="padding: 12px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?></td>
+                                    
+                                    <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="<?php echo htmlspecialchars($os->getDescricaoProblema()); ?>"><?php echo htmlspecialchars($os->getDescricaoProblema()); ?></td>
+                                    
+                                    <td style="padding: 12px; white-space: nowrap;">
+                                        <div style="font-weight: 500; color: var(--corTxt2); overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getExecutorNome() ?? 'Não Atribuído'); ?>">
+                                            <?php if ($os->getExecutorNome()): ?>
+                                                <?php echo htmlspecialchars($os->getExecutorNome()); ?>
+                                            <?php else: ?>
+                                                <span style="color: #999; font-style: italic;">Não Atribuído</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div style="margin-top: 3px;">
+                                            <span class="badge-tipo" style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.05); color: var(--corTxt2); font-weight: bold; display: inline-block;"><?php echo htmlspecialchars($os->getTipoExecucao()); ?></span>
+                                        </div>
                                     </td>
                                     
-                                    <td style="padding: 15px; text-align: center; white-space: nowrap;">
+                                    <td style="padding: 12px; text-align: center; white-space: nowrap;">
                                         <?php if ($status === 'Pendente'): ?>
                                             <span style="background-color: rgba(255, 193, 7, 0.12); color: #ffc107; border: 1px solid #ffc107; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;">Pendente</span>
                                         <?php elseif ($status === 'Aguardando Aceite'): ?>
@@ -377,7 +381,7 @@ $dataAtual = date('d/m/Y');
                                         <?php endif; ?>
                                     </td>
                                     
-                                    <td style="padding: 15px; text-align: center; white-space: nowrap;" onclick="event.stopPropagation()">
+                                    <td style="padding: 12px; text-align: center; white-space: nowrap;" onclick="event.stopPropagation()">
                                         <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
                                             <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
                                             <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
@@ -752,15 +756,29 @@ $dataAtual = date('d/m/Y');
             const execNome = data.executor_nome ? data.executor_nome : '<span style="color: #999; font-style: italic;">Não Atribuído</span>';
 
             return `
-                <td style="padding: 15px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#${data.id}</td>
-                <td style="padding: 15px; font-weight: bold; color: #B91C1C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.solicitante_nome || 'N/D'}">${data.solicitante_nome || 'N/D'}</td>
-                <td style="padding: 15px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.ambiente_nome || 'N/D'}">${data.ambiente_nome || 'N/D'}</td>
-                <td style="padding: 15px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="${data.descricao_problema}">${data.descricao_problema}</td>
-                <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap;"><span class="badge-tipo">${data.tipo_execucao}</span></td>
-                <td style="padding: 15px; font-weight: 500; color: var(--corTxt2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.executor_nome || 'Não Atribuído'}">${execNome}</td>
-                <td style="padding: 15px; font-size: 13px; color: var(--corTxt2); white-space: nowrap;">${data.data_abertura}</td>
-                <td style="padding: 15px; text-align: center; white-space: nowrap;">${renderStatusBadge(data.status)}</td>
-                <td style="padding: 15px; text-align: center; white-space: nowrap;" onclick="event.stopPropagation()">
+                <td style="padding: 12px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#${data.id}</td>
+                
+                <td style="padding: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                    <div style="font-weight: bold; color: #B91C1C;" title="${data.solicitante_nome || 'N/D'}">${data.solicitante_nome || 'N/D'}</div>
+                    <div style="font-size: 11px; color: var(--corTxt2); margin-top: 3px;">
+                        <i class="bi bi-clock"></i> ${data.data_abertura}
+                    </div>
+                </td>
+                
+                <td style="padding: 12px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.ambiente_nome || 'N/D'}">${data.ambiente_nome || 'N/D'}</td>
+                
+                <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="${data.descricao_problema}">${data.descricao_problema}</td>
+                
+                <td style="padding: 12px; white-space: nowrap;">
+                    <div style="font-weight: 500; color: var(--corTxt2); overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.executor_nome || 'Não Atribuído'}">${execNome}</div>
+                    <div style="margin-top: 3px;">
+                        <span class="badge-tipo" style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.05); color: var(--corTxt2); font-weight: bold; display: inline-block;">${data.tipo_execucao}</span>
+                    </div>
+                </td>
+                
+                <td style="padding: 12px; text-align: center; white-space: nowrap;">${renderStatusBadge(data.status)}</td>
+                
+                <td style="padding: 12px; text-align: center; white-space: nowrap;" onclick="event.stopPropagation()">
                     <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
                         ${renderActionsHtml(data.id, data.status)}
                     </div>
@@ -1725,7 +1743,7 @@ $dataAtual = date('d/m/Y');
                     if (!linhaVazia) {
                         const tr = document.createElement('tr');
                         tr.id = 'linha-vazia';
-                        tr.innerHTML = `<td colspan="10" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum chamado corresponde aos filtros.</td>`;
+                        tr.innerHTML = `<td colspan="7" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum chamado corresponde aos filtros.</td>`;
                         tbody.appendChild(tr);
                     }
                 } else {
