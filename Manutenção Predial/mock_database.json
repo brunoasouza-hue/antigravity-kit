@@ -3595,6 +3595,19 @@
             "status": "Pendente",
             "data_abertura": "2026-06-08 14:23:19",
             "data_fechamento": null
+        },
+        {
+            "id": 77,
+            "solicitante_id": 19,
+            "gestor_id": 2,
+            "executor_atual_id": 20,
+            "ambiente_id": 20770004,
+            "prioridade": "Média",
+            "descricao_problema": "Parede com trincos\\n\\n[Conclusão do Executor em 08/06/2026 11:29]: Reparo feito\\n\\n[Recusado pelo Solicitante em 08/06/2026 11:30]: Serviço ruim\\n\\n[Conclusão do Executor em 08/06/2026 11:30]: Reparo refeito\\n\\n[Aprovado pelo Solicitante em 08/06/2026 11:31]",
+            "tipo_execucao": "Interna",
+            "status": "Concluída",
+            "data_abertura": "2026-06-08 14:26:35",
+            "data_fechamento": "2026-06-08 14:31:17"
         }
     ],
     "inspecoes_mensais": [
@@ -3784,6 +3797,15 @@
             "status_etapa": "Abertura Oficial",
             "observacao_etapa": "O.S. registrada. Prioridade definida como: Baixa",
             "data_tramite": "2026-06-08 14:23:19"
+        },
+        {
+            "id": 20,
+            "os_id": 77,
+            "origem_usuario_id": 19,
+            "destino_usuario_id": null,
+            "status_etapa": "Abertura Oficial",
+            "observacao_etapa": "O.S. registrada. Prioridade definida como: Média",
+            "data_tramite": "2026-06-08 14:26:35"
         }
     ],
     "itens_checklist": {
