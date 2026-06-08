@@ -1908,7 +1908,7 @@ const server = http.createServer((req, res) => {
                     }
 
                     const id = parseInt(postParams.id);
-                    const execId = parseInt(postParams.executor_atual_id);
+                    const execId = parseInt(postParams.executor_id || postParams.executor_atual_id);
                     const tipo = postParams.tipo_execucao || 'Interna';
 
                     const idx = db.ordens_servico.findIndex(o => o.id === id);
@@ -1969,7 +1969,7 @@ const server = http.createServer((req, res) => {
                 if (acao === 'tramitar_os') {
                     const id = parseInt(postParams.os_id);
                     const obs = (postParams.nova_observacao || '').trim();
-                    const newExecId = parseInt(postParams.executor_atual_id);
+                    const newExecId = parseInt(postParams.executor_id || postParams.executor_atual_id);
                     const idx = db.ordens_servico.findIndex(o => o.id === id);
 
                     if (idx === -1) return respondJson(false, "Ordem de serviço não localizada.");

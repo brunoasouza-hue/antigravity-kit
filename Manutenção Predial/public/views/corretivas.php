@@ -1322,20 +1322,23 @@ $dataAtual = date('d/m/Y');
 
         // Executa a alteração do status da O.S. via AJAX (POST)
         function alterarStatusOS(id, action, extraParams = {}) {
-            const formData = new FormData();
-            formData.append('acao', action);
-            formData.append('action', action);
-            formData.append('id', id);
-            formData.append('ajax', '1');
+            const params = new URLSearchParams();
+            params.append('acao', action);
+            params.append('action', action);
+            params.append('id', id);
+            params.append('ajax', '1');
 
             for (const [key, value] of Object.entries(extraParams)) {
-                formData.append(key, value);
+                params.append(key, value);
             }
 
             fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: formData
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
+                body: params.toString()
             })
             .then(res => res.json())
             .then(data => {
