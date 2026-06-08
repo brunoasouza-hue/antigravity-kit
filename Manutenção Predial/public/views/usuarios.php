@@ -166,9 +166,14 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
                 </thead>
                 <tbody>
                     <?php foreach ($usuarios as $u): ?>
-                    <tr style="border-bottom: 1px solid var(--corBorda);">
+                    <tr style="border-bottom: 1px solid var(--corBorda); <?php echo $u->getStatus() === 'Inativo' ? 'opacity: 0.6;' : ''; ?>">
                         <td style="padding: 15px; color: var(--corTxt2);">#<?php echo $u->getId(); ?></td>
-                        <td style="padding: 15px; font-weight: 600; color: var(--corTxt1);"><?php echo htmlspecialchars($u->getNome()); ?></td>
+                        <td style="padding: 15px; font-weight: 600; color: var(--corTxt1);">
+                            <?php echo htmlspecialchars($u->getNome()); ?>
+                            <?php if ($u->getStatus() === 'Inativo'): ?>
+                                <span style="background: rgba(220, 53, 69, 0.1); color: #dc3545; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 6px; font-weight: normal; vertical-align: middle; border: 1px solid rgba(220, 53, 69, 0.2);"><i class="bi bi-person-x-fill"></i> Inativo</span>
+                            <?php endif; ?>
+                        </td>
                         <td style="padding: 15px; color: var(--corTxt2);"><?php echo htmlspecialchars($u->getEmail()); ?></td>
                         <td style="padding: 15px; max-width: 250px;">
                             <?php 
@@ -197,12 +202,26 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
                             <span style="font-weight: 500;"><?php echo htmlspecialchars($u->getNivelAcesso()); ?></span>
                         </td>
                         <td style="padding: 15px; text-align: center;">
-                            <?php $vinculosArr = $u->getAmbientesVinculados(); ?>
-                            <button onclick="abrirModalEditar(<?php echo $u->getId(); ?>, '<?php echo addslashes($u->getNome()); ?>', '<?php echo addslashes($u->getNivelAcesso()); ?>', [<?php echo implode(',', $vinculosArr ?: []); ?>])" 
-                                style="background: var(--corDestaque); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;">
-                                <i class="bi bi-pencil-square"></i> Editar
-                            </button>
-                        </td>ss="badge" style="background: rgba(108,117,125,0.1); color: #6c757d; padding: 5px 10px; border-radius: 12px; font-size: 12px;"><i class="bi bi-shield-lock"></i> Cadastrado</span>
+                            <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+                                <?php $vinculosArr = $u->getAmbientesVinculados(); ?>
+                                <button onclick="abrirModalEditar(<?php echo $u->getId(); ?>, '<?php echo addslashes($u->getNome()); ?>', '<?php echo addslashes($u->getNivelAcesso()); ?>', [<?php echo implode(',', $vinculosArr ?: []); ?>])" 
+                                    style="background: var(--corDestaque); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </button>
+                                <?php if ($u->getId() !== $_SESSION['usuario_id']): ?>
+                                    <?php if ($u->getStatus() === 'Ativo'): ?>
+                                        <button onclick="alterarStatusUsuario(<?php echo $u->getId(); ?>, 'Inativo')" 
+                                            style="background: #dc3545; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;">
+                                            <i class="bi bi-person-x-fill"></i> Desativar
+                                        </button>
+                                    <?php else: ?>
+                                        <button onclick="alterarStatusUsuario(<?php echo $u->getId(); ?>, 'Ativo')" 
+                                            style="background: #28a745; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;">
+                                            <i class="bi bi-person-check-fill"></i> Ativar
+                                        </button>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -267,11 +286,14 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
         <div class="modal-box">
             <button type="button" onclick="document.getElementById('modalEditarUsuario').style.display='none'" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;"><i class="bi bi-x-lg"></i></button>
             <h2 style="margin: 0 0 20px 0; color: var(--corBase); font-size: 22px;">Editar Usuário</h2>
-            <p id="edit-user-name" style="font-size: 15px; color: #333; margin-bottom: 20px; font-weight: bold;"></p>
-            
             <form action="../../src/Controllers/UsuarioController.php" method="POST">
                 <input type="hidden" name="acao" value="editar_usuario">
                 <input type="hidden" name="id" id="edit-user-id" value="">
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px;">Nome do Usuário:</label>
+                    <input type="text" name="nome" id="edit-user-name" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; background: #fff; box-sizing: border-box; color: var(--corTxt3);">
+                </div>
                 
                 <div style="margin-bottom: 15px;">
                     <label style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px;">Nível de Acesso:</label>
@@ -390,7 +412,7 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
 
     function abrirModalEditar(id, nome, nivel, vinculos) {
         document.getElementById('edit-user-id').value = id;
-        document.getElementById('edit-user-name').innerText = "Usuário: " + nome;
+        document.getElementById('edit-user-name').value = nome;
         document.getElementById('edit-nivel-acesso').value = nivel;
         
         ambientesSelecionados = [];
@@ -411,7 +433,22 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
         atualizarListaAmbientes();
         document.getElementById('modalEditarUsuario').style.display = 'flex';
     }
+
+    function alterarStatusUsuario(id, status) {
+        const msg = status === 'Inativo' ? 'desativar' : 'ativar';
+        if (confirm(`Tem certeza que deseja ${msg} este usuário?`)) {
+            document.getElementById('status-user-id').value = id;
+            document.getElementById('status-user-value').value = status;
+            document.getElementById('form-status-usuario').submit();
+        }
+    }
     </script>
+
+    <form id="form-status-usuario" action="../../src/Controllers/UsuarioController.php" method="POST" style="display:none;">
+        <input type="hidden" name="acao" value="alterar_status">
+        <input type="hidden" name="id" id="status-user-id" value="">
+        <input type="hidden" name="status" id="status-user-value" value="">
+    </form>
 
     <script src="../assets/js/scripts.js" defer></script>
 </body>

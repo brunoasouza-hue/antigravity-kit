@@ -15,6 +15,7 @@ class Usuario {
     private string $nivel_acesso;
     private ?string $data_criacao = null;
     private array $ambientes_vinculados = [];
+    private string $status;
     private PDO $db;
 
     public function __construct(
@@ -24,7 +25,8 @@ class Usuario {
         string $nivel_acesso = 'Solicitante',
         ?int $id = null,
         ?string $data_criacao = null,
-        array $ambientes_vinculados = []
+        array $ambientes_vinculados = [],
+        string $status = 'Ativo'
     ) {
         $this->nome = $nome;
         $this->email = $email;
@@ -33,6 +35,7 @@ class Usuario {
         $this->id = $id;
         $this->data_criacao = $data_criacao;
         $this->ambientes_vinculados = $ambientes_vinculados;
+        $this->status = $status;
         $this->db = Database::getConnection();
     }
 
@@ -52,6 +55,13 @@ class Usuario {
     public function getDataCriacao(): ?string { return $this->data_criacao; }
     public function getAmbientesVinculados(): array { return $this->ambientes_vinculados; }
     public function setAmbientesVinculados(array $ambientes): void { $this->ambientes_vinculados = $ambientes; }
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $status): void {
+        $statusValidos = ['Ativo', 'Inativo'];
+        if (in_array($status, $statusValidos, true)) {
+            $this->status = $status;
+        }
+    }
 
     /**
      * Autentica o usuário pelo e-mail e senha.
@@ -66,7 +76,7 @@ class Usuario {
         $stmt->execute(['email' => strtolower(trim($email))]);
         $row = $stmt->fetch();
 
-        if ($row && password_verify($senha, $row['senha'])) {
+        if ($row && password_verify($senha, $row['senha']) && ($row['status'] ?? 'Ativo') === 'Ativo') {
             return new self(
                 $row['nome'],
                 $row['email'],
@@ -74,7 +84,8 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : []
+                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                $row['status'] ?? 'Ativo'
             );
         }
 
@@ -91,14 +102,14 @@ class Usuario {
             // Inserção de novo usuário
             // Criptografa a senha antes de salvar
             $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO usuarios (nome, email, senha, nivel_acesso, ambientes_vinculados) VALUES (:nome, :email, :senha, :nivel_acesso, :ambientes_vinculados)";
+            $sql = "INSERT INTO usuarios (nome, email, senha, nivel_acesso, status, ambientes_vinculados) VALUES (:nome, :email, :senha, :nivel_acesso, :status, :ambientes_vinculados)";
             $stmt = $this->db->prepare($sql);
             $success = $stmt->execute([
                 'nome' => $this->nome,
                 'email' => $this->email,
                 'senha' => $senhaHash,
                 'nivel_acesso' => $this->nivel_acesso,
-                'ambientes_vinculados' => json_encode($this->ambientes_vinculados),
+                'status' => $this->status,
                 'ambientes_vinculados' => json_encode($this->ambientes_vinculados)
             ]);
             if ($success) {
@@ -107,12 +118,14 @@ class Usuario {
             }
         } else {
             // Atualização de usuário existente (sem alterar a senha diretamente por aqui)
-            $sql = "UPDATE usuarios SET nome = :nome, email = :email, nivel_acesso = :nivel_acesso, ambientes_vinculados = :ambientes_vinculados WHERE id = :id";
+            $sql = "UPDATE usuarios SET nome = :nome, email = :email, nivel_acesso = :nivel_acesso, status = :status, ambientes_vinculados = :ambientes_vinculados WHERE id = :id";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 'nome' => $this->nome,
                 'email' => $this->email,
                 'nivel_acesso' => $this->nivel_acesso,
+                'status' => $this->status,
+                'ambientes_vinculados' => json_encode($this->ambientes_vinculados),
                 'id' => $this->id
             ]);
         }
@@ -160,7 +173,8 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : []
+                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                $row['status'] ?? 'Ativo'
             );
         }
         return null;
@@ -186,7 +200,8 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : []
+                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                $row['status'] ?? 'Ativo'
             );
         }
         return null;
@@ -209,7 +224,8 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : []
+                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                $row['status'] ?? 'Ativo'
             );
         }
         return $usuarios;
@@ -234,7 +250,8 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : []
+                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                $row['status'] ?? 'Ativo'
             );
         }
         return $usuarios;

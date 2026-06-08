@@ -341,7 +341,16 @@ $dataAtual = date('d/m/Y');
                     </p>
                 </a>
 
-                <!-- 3. Gestão de Ambientes (Apenas Gestor) -->
+                <!-- 3. Dashboard (Todos os usuários) -->
+                <a href="./dashboard.php" class="home-card">
+                    <div class="home-card-icon-box" style="background: rgba(251, 192, 45, 0.08); color: #fbc02d; border: 1px solid rgba(251, 192, 45, 0.1);">
+                        <i class="bi bi-speedometer2"></i>
+                    </div>
+                    <h4 class="home-card-title">Dashboard</h4>
+                    <p class="home-card-desc">Acompanhar indicadores gerenciais unificados, gráficos de status, tendência, ranking e fluxo de ordens de serviço em tempo real.</p>
+                </a>
+
+                <!-- 4. Gestão de Ambientes (Apenas Gestor) -->
                 <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
                     <a href="./ambientes.php" class="home-card">
                         <div class="home-card-icon-box">
@@ -351,7 +360,7 @@ $dataAtual = date('d/m/Y');
                         <p class="home-card-desc">Cadastrar novas salas e blocos, inativar salas obsoletas e gerenciar a infraestrutura física.</p>
                     </a>
 
-                    <!-- 4. Gestão de Usuários (Apenas Gestor) -->
+                    <!-- 5. Gestão de Usuários (Apenas Gestor) -->
                     <a href="./usuarios.php" class="home-card">
                         <div class="home-card-icon-box">
                             <i class="bi bi-file-earmark-person-fill"></i>
@@ -361,7 +370,7 @@ $dataAtual = date('d/m/Y');
                     </a>
                 <?php endif; ?>
 
-                <!-- 5. Inspeções de Segurança (Todos os usuários) -->
+                <!-- 6. Inspeções de Segurança (Todos os usuários) -->
                 <a href="./inspecoes_seguranca.php" class="home-card">
                     <div class="home-card-icon-box" style="background: rgba(252, 35, 35, 0.1); color: #fc2323;">
                         <i class="bi bi-shield-fill-check"></i>
@@ -370,7 +379,7 @@ $dataAtual = date('d/m/Y');
                     <p class="home-card-desc">Realizar vistorias preventivas de segurança predial, checar extintores, rotas de fuga e conformidade das normas regulamentadoras.</p>
                 </a>
 
-                <!-- 6. Meu Perfil (Todos os usuários) -->
+                <!-- 7. Meu Perfil (Todos os usuários) -->
                 <a href="./perfil.php" class="home-card">
                     <div class="home-card-icon-box">
                         <i class="bi bi-person-fill"></i>

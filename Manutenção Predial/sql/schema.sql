@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email VARCHAR(100) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     nivel_acesso ENUM('Solicitante', 'Gestor', 'Executor') NOT NULL,
+    status ENUM('Ativo', 'Inativo') NOT NULL DEFAULT 'Ativo',
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

@@ -47,8 +47,14 @@ class UsuarioController {
             case 'criar':
                 $this->criarUsuario();
                 break;
+            case 'editar_usuario':
+                $this->editarUsuario();
+                break;
             case 'alterar_nivel':
                 $this->alterarNivel();
+                break;
+            case 'alterar_status':
+                $this->alterarStatus();
                 break;
             default:
                 $this->retornarResposta(false, "Ação inválida.");
@@ -93,6 +99,59 @@ class UsuarioController {
         }
     }
 
+    private function editarUsuario(): void {
+        $id = (int)($_POST['id'] ?? 0);
+        $nome = trim($_POST['nome'] ?? '');
+        $nivelAcesso = trim($_POST['nivel_acesso'] ?? '');
+        $ambientesPost = $_POST['ambientes_vinculados'] ?? [];
+
+        if ($id <= 0) {
+            $this->retornarResposta(false, "ID de usuário inválido.");
+        }
+
+        if (empty($nome)) {
+            $this->retornarResposta(false, "O nome do usuário não pode ser vazio.");
+        }
+
+        $usuario = Usuario::buscarPorId($id);
+        if ($usuario === null) {
+            $this->retornarResposta(false, "Usuário não localizado no banco de dados.");
+        }
+
+        // Bloquear alteração do próprio nível se for o único admin, ou rebaixamento próprio
+        if ($id === (int)$_SESSION['usuario_id'] && $nivelAcesso !== 'Administrador') {
+            $this->retornarResposta(false, "Você não pode alterar seu próprio nível de acesso por segurança.");
+        }
+
+        $usuario->setNome($nome);
+        
+        $niveisPermitidos = ['Solicitante', 'Gestor', 'Executor', 'Administrador'];
+        if (in_array($nivelAcesso, $niveisPermitidos, true)) {
+            $usuario->setNivelAcesso($nivelAcesso);
+        }
+
+        // Filtra e normaliza os ambientes vinculados
+        $ambientesVinculados = [];
+        if (is_array($ambientesPost)) {
+            foreach ($ambientesPost as $ambId) {
+                if ((int)$ambId > 0) {
+                    $ambientesVinculados[] = (int)$ambId;
+                }
+            }
+        }
+        $usuario->setAmbientesVinculados($ambientesVinculados);
+
+        try {
+            if ($usuario->salvar()) {
+                $this->retornarResposta(true, "Dados do usuário " . $usuario->getNome() . " atualizados com sucesso!");
+            } else {
+                $this->retornarResposta(false, "Falha ao salvar as alterações no banco de dados.");
+            }
+        } catch (PDOException $e) {
+            $this->retornarResposta(false, "Erro de Banco de Dados: " . $e->getMessage());
+        }
+    }
+
     private function alterarNivel(): void {
         $id = (int)($_POST['id'] ?? 0);
         $novoNivel = trim($_POST['nivel_acesso'] ?? '');
@@ -123,6 +182,46 @@ class UsuarioController {
                 $this->retornarResposta(true, "Nível de acesso de " . $usuario->getNome() . " atualizado para " . $novoNivel . " com sucesso!", [
                     'id' => $usuario->getId(),
                     'nivel_acesso' => $usuario->getNivelAcesso()
+                ]);
+            } else {
+                $this->retornarResposta(false, "Falha ao salvar as alterações no banco de dados.");
+            }
+        } catch (PDOException $e) {
+            $this->retornarResposta(false, "Erro de Banco de Dados: " . $e->getMessage());
+        }
+    }
+
+    private function alterarStatus(): void {
+        $id = (int)($_POST['id'] ?? 0);
+        $novoStatus = trim($_POST['status'] ?? '');
+
+        if ($id <= 0) {
+            $this->retornarResposta(false, "ID de usuário inválido.");
+        }
+
+        $statusValidos = ['Ativo', 'Inativo'];
+        if (!in_array($novoStatus, $statusValidos, true)) {
+            $this->retornarResposta(false, "Status selecionado é inválido.");
+        }
+
+        $usuario = Usuario::buscarPorId($id);
+        if ($usuario === null) {
+            $this->retornarResposta(false, "Usuário não localizado no banco de dados.");
+        }
+
+        // Bloquear desativação do próprio usuário logado
+        if ($id === (int)$_SESSION['usuario_id']) {
+            $this->retornarResposta(false, "Você não pode desativar sua própria conta.");
+        }
+
+        $usuario->setStatus($novoStatus);
+        
+        try {
+            if ($usuario->salvar()) {
+                $msg = $novoStatus === 'Inativo' ? 'desativado' : 'ativado';
+                $this->retornarResposta(true, "Usuário " . $usuario->getNome() . " " . $msg . " com sucesso!", [
+                    'id' => $usuario->getId(),
+                    'status' => $usuario->getStatus()
                 ]);
             } else {
                 $this->retornarResposta(false, "Falha ao salvar as alterações no banco de dados.");

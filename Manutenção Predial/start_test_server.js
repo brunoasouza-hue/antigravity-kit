@@ -837,8 +837,8 @@ function evaluatePhpCondition(condStr, session, localContext = {}) {
         .replace(/\$usuarioId/g, 'session.usuario_id')
         .replace(/\$status/g, 'localContext.status')
         .replace(/\$pesquisa/g, 'localContext.pesquisa')
-        .replace(/\$alertaSucesso/g, 'session.alerta_sucesso')
-        .replace(/\$alertaErro/g, 'session.alerta_erro')
+        .replace(/\$alertaSucesso/g, 'localContext.alertaSucesso')
+        .replace(/\$alertaErro/g, 'localContext.alertaErro')
         .replace(/\$erro/g, 'localContext.erro')
         .replace(/\$ordensServico/g, 'localContext.currentOS')
         .replace(/\$ambientesAtivos/g, '(localContext.ambientes ? localContext.ambientes.filter(a => a.status === "Ativo") : [])')
@@ -907,6 +907,69 @@ function compileLoops(html, session, dbContext) {
     
     return html.replace(foreachRegex, (match, collectionExpr, itemVar, body) => {
         const collectionName = collectionExpr.trim();
+        if (collectionName === 'usuarios') {
+            let rendered = '';
+            const list = dbContext.usuarios || [];
+            const ambs = dbContext.ambientes || [];
+            list.forEach(u => {
+                const vinculos = u.ambientes_vinculados || [];
+                let badges = '';
+                if (vinculos.length === 0) {
+                    badges = '<span style="color: #aaa; font-style: italic; font-size: 13px;">Nenhum vínculo</span>';
+                } else {
+                    vinculos.forEach(vId => {
+                        const amb = ambs.find(a => a.id === vId);
+                        const ambNome = amb ? amb.nome_ambiente : `Desconhecido (#${vId})`;
+                        badges += `<span class="badge-ambiente">${escapeHtml(ambNome)}</span> `;
+                    });
+                }
+                
+                const isInactive = u.status === 'Inativo';
+                const rowStyle = isInactive ? 'opacity: 0.6;' : '';
+                const nameBadge = isInactive ? '<span style="background: rgba(220, 53, 69, 0.1); color: #dc3545; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 6px; font-weight: normal; vertical-align: middle; border: 1px solid rgba(220, 53, 69, 0.2);"><i class="bi bi-person-x-fill"></i> Inativo</span>' : '';
+                
+                const actionButton = u.id !== session.usuario_id ? (
+                    isInactive ? `
+                        <button onclick="alterarStatusUsuario(${u.id}, 'Ativo')" 
+                            style="background: #28a745; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;">
+                            <i class="bi bi-person-check-fill"></i> Ativar
+                        </button>
+                    ` : `
+                        <button onclick="alterarStatusUsuario(${u.id}, 'Inativo')" 
+                            style="background: #dc3545; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;">
+                            <i class="bi bi-person-x-fill"></i> Desativar
+                        </button>
+                    `
+                ) : '';
+
+                rendered += `
+                    <tr style="border-bottom: 1px solid var(--corBorda); ${rowStyle}">
+                        <td style="padding: 15px; color: var(--corTxt2);">#${u.id}</td>
+                        <td style="padding: 15px; font-weight: 600; color: var(--corTxt1);">
+                            ${escapeHtml(u.nome)}${nameBadge}
+                        </td>
+                        <td style="padding: 15px; color: var(--corTxt2);">${escapeHtml(u.email)}</td>
+                        <td style="padding: 15px; max-width: 250px;">
+                            ${badges}
+                        </td>
+                        <td style="padding: 15px;">
+                            <span style="font-weight: 500;">${escapeHtml(u.nivel_acesso)}</span>
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+                                <button onclick="abrirModalEditar(${u.id}, '${escapeHtml(u.nome).replace(/'/g, "\\'")}', '${escapeHtml(u.nivel_acesso)}', [${vinculos.join(',')}])" 
+                                    style="background: var(--corDestaque); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </button>
+                                ${actionButton}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            return rendered;
+        }
+
         let items = [];
         if (collectionName === 'ambientes') items = dbContext.ambientes || [];
         else if (collectionName === 'ambientesPag') items = dbContext.ambientes || [];
@@ -1073,12 +1136,32 @@ function compileVariables(html, context) {
         { regex: /<\?php\s+echo\s+htmlspecialchars\(\s*\$alertaErro\s*\)\s*;?\s*\?>/g, val: escapeHtml(context.alertaErro) },
         { regex: /<\?php\s+echo\s+htmlspecialchars\(\s*\$erro\s*\)\s*;?\s*\?>/g, val: escapeHtml(context.erro) },
         { regex: /<\?php\s+echo\s+BASE_URL\s*;?\s*\?>/g, val: '' },
-        { regex: /BASE_URL\s*\.\s*['\"](.*?)['\"]/g, val: `'$1'` }
+        { regex: /BASE_URL\s*\.\s*['\"](.*?)['\"]/g, val: `'$1'` },
+        { regex: /<\?=\s*\$ambientes_afetados\s*\?>/g, val: context.ambientes_afetados !== undefined ? context.ambientes_afetados : '0' },
+        { regex: /<\?=\s*\$os_concluidas_mes\s*\?>/g, val: context.os_concluidas_mes !== undefined ? context.os_concluidas_mes : '0' },
+        { regex: /<\?=\s*\$preventivas_mes\s*\?>/g, val: context.preventivas_mes !== undefined ? context.preventivas_mes : '0' },
+        { regex: /<\?=\s*\$os_pendentes\s*\?>/g, val: context.os_pendentes !== undefined ? context.os_pendentes : '0' }
     ];
     
     echos.forEach(e => {
         html = html.replace(e.regex, e.val);
     });
+
+    if (context.dadosStatus !== undefined) {
+        html = html.replace(/<\?php\s+echo\s+json_encode\(\s*\$dadosStatus\s*,\s*JSON_UNESCAPED_UNICODE\s*\)\s*;?\s*\?>/g, JSON.stringify(context.dadosStatus));
+    }
+    if (context.dadosTendencia !== undefined) {
+        html = html.replace(/<\?php\s+echo\s+json_encode\(\s*\$dadosTendencia\s*,\s*JSON_UNESCAPED_UNICODE\s*\)\s*;?\s*\?>/g, JSON.stringify(context.dadosTendencia));
+    }
+    if (context.dadosRanking !== undefined) {
+        html = html.replace(/<\?php\s+echo\s+json_encode\(\s*\$dadosRanking\s*,\s*JSON_UNESCAPED_UNICODE\s*\)\s*;?\s*\?>/g, JSON.stringify(context.dadosRanking));
+    }
+    if (context.dadosFluxo !== undefined) {
+        html = html.replace(/<\?php\s+echo\s+json_encode\(\s*\$dadosFluxo\s*,\s*JSON_UNESCAPED_UNICODE\s*\)\s*;?\s*\?>/g, JSON.stringify(context.dadosFluxo));
+    }
+    if (context.dadosCarga !== undefined) {
+        html = html.replace(/<\?php\s+echo\s+json_encode\(\s*\$dadosCarga\s*,\s*JSON_UNESCAPED_UNICODE\s*\)\s*;?\s*\?>/g, JSON.stringify(context.dadosCarga));
+    }
     
     // Tratamento de variáveis estatísticas do Gestor (dashboard_analise.php)
     if (context.dashboard_analise) {
@@ -1118,7 +1201,7 @@ function compilePhp(filePath, session, getParams = {}) {
     const checklists = db.checklists || [];
     const ordensServico = db.ordens_servico || [];
     const usuarios = db.usuarios || [];
-    const executores = usuarios.filter(u => u.nivel_acesso === 'Executor');
+    const executores = usuarios.filter(u => u.nivel_acesso === 'Executor').sort((a, b) => a.nome.localeCompare(b.nome));
 
     const totalAmbientes = ambientes.length;
     const totalAtivos = activeAmbientes.length;
@@ -1216,57 +1299,126 @@ function compilePhp(filePath, session, getParams = {}) {
         currentOS.sort((a, b) => b.id - a.id);
     }
 
-    if (filePath.endsWith('dashboard_analise.php')) {
-        // Métricas rápidas superior
-        const totalAbertas = ordensServico.filter(os => ["Pendente", "Em Execução", "Aguardando Validação"].includes(os.status)).length;
-        const totalPendentes = ordensServico.filter(os => os.status === "Pendente").length;
+    if (filePath.endsWith('dashboard.php') || filePath.endsWith('dashboard_analise.php')) {
+        const curMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         
-        const curMonth = now.getMonth() + 1;
-        const curYear = now.getFullYear();
-        const totalPreventivasMes = checklists.filter(c => {
-            const d = new Date(c.data_inspecao);
-            return (d.getMonth() + 1) === curMonth && d.getFullYear() === curYear;
-        }).length;
+        // 1. Ambientes com falhas
+        const ambientes_afetados = [...new Set(ordensServico.filter(os => !["Concluída", "FINALIZADO", "Recusada"].includes(os.status) && os.ambiente_id).map(os => os.ambiente_id))].length;
+        
+        // 2. O.S. Concluídas no Mês
+        const os_concluidas_mes = ordensServico.filter(os => ["Concluída", "FINALIZADO"].includes(os.status) && os.data_abertura.startsWith(curMonthStr)).length;
+        
+        // 3. Preventivas no Mês
+        const preventivas_mes = checklists.filter(c => c.data_inspecao.startsWith(curMonthStr)).length;
+        
+        // 4. O.S. Pendentes
+        const os_pendentes = ordensServico.filter(os => !["Concluída", "FINALIZADO", "Recusada"].includes(os.status)).length;
 
-        // Histórico dos últimos 6 meses
+        // Gráfico 1: Status das O.S.
+        const statusCounts = {};
+        ordensServico.forEach(os => {
+            statusCounts[os.status] = (statusCounts[os.status] || 0) + 1;
+        });
+        const dadosStatus = {
+            labels: Object.keys(statusCounts),
+            data: Object.values(statusCounts)
+        };
+
+        // Gráfico 2: Tendência mensal (Linha) - Corretiva vs Preventiva (12 meses)
         const mesesNomesPt = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const labelsMeses = [];
-        const dataPreventivas = [];
-        const dataCorretivas = [];
-
-        for (let i = 5; i >= 0; i--) {
+        const dadosTendencia = { labels: [], corretivas: [], preventivas: [] };
+        for (let i = 11; i >= 0; i--) {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
             const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            labelsMeses.push(`${mesesNomesPt[d.getMonth()]}/${String(d.getFullYear()).substring(2)}`);
+            dadosTendencia.labels.push(ym);
             
             const prevsCount = checklists.filter(c => c.data_inspecao.startsWith(ym)).length;
-            const corrsCount = ordensServico.filter(os => os.data_abertura.startsWith(ym)).length;
+            const corrsCount = ordensServico.filter(os => (os.tipo === 'Corretivo' || !os.tipo) && os.data_abertura.startsWith(ym)).length;
+            const prevsOSCount = ordensServico.filter(os => os.tipo === 'Preventivo' && os.data_abertura.startsWith(ym)).length;
             
-            dataPreventivas.push(prevsCount);
-            dataCorretivas.push(corrsCount);
+            dadosTendencia.preventivas.push(prevsCount + prevsOSCount);
+            dadosTendencia.corretivas.push(corrsCount);
         }
 
-        const totalInterna = ordensServico.filter(os => os.tipo_execucao === "Interna").length;
-        const totalTerceirizada = ordensServico.filter(os => os.tipo_execucao === "Terceirizada").length;
-
-        // Ranking de Ambientes Críticos
+        // Gráfico 3: Ranking de Ambientes Críticos
         const counts = {};
         ordensServico.forEach(os => {
             counts[os.ambiente_id] = (counts[os.ambiente_id] || 0) + 1;
         });
-
-        rankingAmbientes = Object.keys(counts).map(aid => {
+        const ranking = Object.keys(counts).map(aid => {
             const amb = ambientes.find(a => a.id == aid) || {};
             return {
                 nome: amb.nome_ambiente || `Ambiente #${aid}`,
                 total: counts[aid]
             };
         });
-        
-        rankingAmbientes.sort((a, b) => b.total - a.total);
-        rankingAmbientes = rankingAmbientes.slice(0, 5);
-        
-        maxOS = rankingAmbientes.length > 0 ? Math.max(...rankingAmbientes.map(r => r.total)) : 1;
+        ranking.sort((a, b) => b.total - a.total);
+        const top10Ranking = ranking.slice(0, 10);
+        const dadosRanking = {
+            labels: top10Ranking.map(r => r.nome),
+            data: top10Ranking.map(r => r.total)
+        };
+
+        // Gráfico 4: Fluxo Entradas vs Saídas no mês atual
+        const abertasMes = ordensServico.filter(os => os.data_abertura.startsWith(curMonthStr)).length;
+        const concluidasMes = ordensServico.filter(os => ["Concluída", "FINALIZADO"].includes(os.status) && os.data_abertura.startsWith(curMonthStr)).length;
+        const dadosFluxo = {
+            labels: ['Abertas no Mês', 'Concluídas no Mês'],
+            abertas: abertasMes,
+            concluidas: concluidasMes
+        };
+
+        // Gráfico 5: Carga de trabalho por executor
+        const cargaCounts = {};
+        ordensServico.forEach(os => {
+            if (!["Concluída", "FINALIZADO"].includes(os.status) && os.executor_atual_id) {
+                cargaCounts[os.executor_atual_id] = (cargaCounts[os.executor_atual_id] || 0) + 1;
+            }
+        });
+        const cargaList = Object.keys(cargaCounts).map(uid => {
+            const u = usuarios.find(user => user.id == uid) || {};
+            return {
+                nome: u.nome || `Executor #${uid}`,
+                total: cargaCounts[uid]
+            };
+        });
+        cargaList.sort((a, b) => b.total - a.total);
+        const top10Carga = cargaList.slice(0, 10);
+        const dadosCarga = {
+            labels: top10Carga.map(c => c.nome),
+            data: top10Carga.map(c => c.total)
+        };
+
+        // Hydrate context with dashboard variables
+        context.ambientes_afetados = ambientes_afetados;
+        context.os_concluidas_mes = os_concluidas_mes;
+        context.preventivas_mes = preventivas_mes;
+        context.os_pendentes = os_pendentes;
+        context.dadosStatus = dadosStatus;
+        context.dadosTendencia = dadosTendencia;
+        context.dadosRanking = dadosRanking;
+        context.dadosFluxo = dadosFluxo;
+        context.dadosCarga = dadosCarga;
+
+        // Histórico dos últimos 6 meses para dashboard_analise.php (compatibility)
+        const totalAbertas = ordensServico.filter(os => ["Pendente", "Em Execução", "Aguardando Validação"].includes(os.status)).length;
+        const totalPendentes = ordensServico.filter(os => os.status === "Pendente").length;
+        const totalPreventivasMes = checklists.filter(c => {
+            const d = new Date(c.data_inspecao);
+            return (d.getMonth() + 1) === (now.getMonth() + 1) && d.getFullYear() === now.getFullYear();
+        }).length;
+        const labelsMeses = [];
+        const dataPreventivas = [];
+        const dataCorretivas = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            labelsMeses.push(`${mesesNomesPt[d.getMonth()]}/${String(d.getFullYear()).substring(2)}`);
+            dataPreventivas.push(checklists.filter(c => c.data_inspecao.startsWith(ym)).length);
+            dataCorretivas.push(ordensServico.filter(os => os.data_abertura.startsWith(ym)).length);
+        }
+        const totalInterna = ordensServico.filter(os => os.tipo_execucao === "Interna").length;
+        const totalTerceirizada = ordensServico.filter(os => os.tipo_execucao === "Terceirizada").length;
 
         dashboard_analise = {
             totalAbertas,
@@ -1277,19 +1429,23 @@ function compilePhp(filePath, session, getParams = {}) {
             dataCorretivas,
             totalInterna,
             totalTerceirizada,
-            rankingAmbientes
+            rankingAmbientes: ranking.slice(0, 5)
         };
     }
 
     const dbContext = {
         ambientes: filteredAmbientes,
+        usuarios,
         currentChecklists,
         currentOS,
         executores,
         rankingAmbientes,
         maxOS,
         pesquisa,
-        dashboard_analise
+        dashboard_analise,
+        erro: context.erro,
+        alertaErro: context.alertaErro,
+        alertaSucesso: context.alertaSucesso
     };
 
     // Compilação em cascata (Loops -> Condicionais em múltiplas rodadas para resolver aninhamento -> Variáveis)
@@ -1586,6 +1742,11 @@ const server = http.createServer((req, res) => {
                 
                 const user = db.usuarios.find(u => u.email === email && u.senha === senha);
                 if (user) {
+                    if (user.status === 'Inativo') {
+                        session.erro = "Esta conta foi desativada pelo administrador.";
+                        redirect('/public/index.php');
+                        return;
+                    }
                     session.usuario_id = user.id;
                     session.usuario_nome = user.nome;
                     session.usuario_email = user.email;
@@ -1843,9 +2004,106 @@ const server = http.createServer((req, res) => {
                     if (idx !== -1) {
                         db.usuarios[idx].nivel_acesso = nv;
                         saveDatabase(db);
-                        return respondJson(true, 'Nível atualizado!', db.usuarios[idx]);
+                        return respondJson(true, 'Nível updated!', db.usuarios[idx]);
                     }
                     return respondJson(false, 'Usuário não encontrado.');
+                }
+            }
+
+            // CONTROLLER: UsuarioController
+            if (pathname.includes('/src/Controllers/UsuarioController.php')) {
+                const acao = postParams.acao;
+                if (acao === 'criar') {
+                    const nome = (postParams.nome || '').trim();
+                    const email = (postParams.email || '').trim();
+                    const nivel = postParams.nivel_acesso || 'Solicitante';
+                    
+                    let ambSelecionados = [];
+                    if (postParams['ambientes_vinculados[]']) {
+                        const raw = postParams['ambientes_vinculados[]'];
+                        ambSelecionados = Array.isArray(raw) ? raw.map(Number) : [Number(raw)];
+                    }
+                    
+                    if (!nome || !email) {
+                        session.alerta_erro = "Nome e e-mail são obrigatórios.";
+                        redirect('/public/views/usuarios.php');
+                        return;
+                    }
+                    
+                    const exists = db.usuarios.some(u => u.email.toLowerCase() === email.toLowerCase());
+                    if (exists) {
+                        session.alerta_erro = "Já existe um usuário cadastrado com este e-mail.";
+                        redirect('/public/views/usuarios.php');
+                        return;
+                    }
+                    
+                    const newId = db.usuarios.length > 0 ? Math.max(...db.usuarios.map(u => u.id)) + 1 : 1;
+                    const newUser = {
+                        id: newId,
+                        nome,
+                        email,
+                        senha: 'senai123',
+                        nivel_acesso: nivel,
+                        data_criacao: new Date().toISOString(),
+                        ambientes_vinculados: ambSelecionados
+                    };
+                    
+                    db.usuarios.push(newUser);
+                    saveDatabase(db);
+                    
+                    session.alerta_sucesso = "Usuário criado com sucesso. A senha padrão é 'senai123'.";
+                    redirect('/public/views/usuarios.php');
+                    return;
+                }
+                
+                if (acao === 'editar_usuario' || acao === 'alterar_nivel') {
+                    const uid = parseInt(postParams.id) || 0;
+                    const nome = postParams.nome;
+                    const nivel = postParams.nivel_acesso;
+                    
+
+                    let ambSelecionados = [];
+                    if (postParams['ambientes_vinculados[]']) {
+                        const raw = postParams['ambientes_vinculados[]'];
+                        ambSelecionados = Array.isArray(raw) ? raw.map(Number) : [Number(raw)];
+                    }
+
+                    const idx = db.usuarios.findIndex(u => u.id === uid);
+                    if (idx !== -1) {
+                        if (nome) db.usuarios[idx].nome = nome;
+                        if (nivel) db.usuarios[idx].nivel_acesso = nivel;
+                        db.usuarios[idx].ambientes_vinculados = ambSelecionados;
+                        saveDatabase(db);
+                        session.alerta_sucesso = "Usuário atualizado com sucesso!";
+                        redirect('/public/views/usuarios.php');
+                        return;
+                    }
+                    session.alerta_erro = "Usuário não encontrado.";
+                    redirect('/public/views/usuarios.php');
+                    return;
+                }
+
+                if (acao === 'alterar_status') {
+                    const uid = parseInt(postParams.id);
+                    const status = postParams.status;
+                    
+                    if (uid === session.usuario_id) {
+                        session.alerta_erro = "Você não pode desativar sua própria conta.";
+                        redirect('/public/views/usuarios.php');
+                        return;
+                    }
+                    
+                    const idx = db.usuarios.findIndex(u => u.id === uid);
+                    if (idx !== -1) {
+                        db.usuarios[idx].status = status;
+                        saveDatabase(db);
+                        session.alerta_sucesso = `Usuário ${status === 'Inativo' ? 'desativado' : 'ativado'} com sucesso!`;
+                        redirect('/public/views/usuarios.php');
+                        return;
+                    }
+                    session.alerta_erro = "Usuário não encontrado.";
+                    redirect('/public/views/usuarios.php');
+                    return;
                 }
             }
 

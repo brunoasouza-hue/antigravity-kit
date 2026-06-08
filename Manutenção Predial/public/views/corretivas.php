@@ -665,6 +665,7 @@ $dataAtual = date('d/m/Y');
             }, $executores), JSON_HEX_APOS);
         ?>';
         const executoresDisponiveis = rawExecutores.trim() !== '' ? JSON.parse(rawExecutores) : [];
+        executoresDisponiveis.sort((a, b) => a.nome.localeCompare(b.nome));
 
         // Transições Suaves - Fecha Modais clicando fora no fundo do dialog
         window.onclick = function(event) {
