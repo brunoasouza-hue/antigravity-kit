@@ -2562,6 +2562,147 @@ const server = http.createServer((req, res) => {
         });
     }
 
+    // INTERCEPTADOR DE EXPORTAÇÃO DE RELATÓRIO EXCEL (CSV)
+    if (pathname.includes('/public/views/preventivas.php') && queryParams.action === 'exportar_excel') {
+        if (session.usuario_nivel === 'Solicitante') {
+            res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+            res.end('Acesso negado.');
+            return;
+        }
+        
+        const db = initDatabase();
+        const checklists = db.checklists || [];
+        const ambientes = db.ambientes || [];
+        const usuarios = db.usuarios || [];
+        const inspecoes = db.inspecoes_mensais || [];
+
+        const start = queryParams.data_inicio || '1970-01-01';
+        const end = queryParams.data_fim || '9999-12-31';
+
+        const filtered = checklists.filter(c => {
+            const date = c.data_inspecao || '';
+            return date >= start && date <= end;
+        });
+
+        res.writeHead(200, {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': 'attachment; filename=relatorio_preventivas.csv'
+        });
+
+        // BOM UTF-8
+        res.write(Buffer.from([0xEF, 0xBB, 0xBF]));
+        res.write('ID Checklist;Ambiente;Data Inspeção;Técnico Responsável;Status da Inspeção Mensal\r\n');
+
+        filtered.forEach(c => {
+            const amb = ambientes.find(a => a.id === c.ambiente_id)?.nome_ambiente || 'Desconhecido';
+            const tech = usuarios.find(u => u.id === c.responsavel_id)?.nome || 'N/D';
+            const insp = inspecoes.find(i => i.id === c.inspecao_mensal_id);
+            const status = insp ? insp.status : 'N/D';
+            
+            const row = [
+                c.id,
+                amb,
+                c.data_inspecao ? c.data_inspecao.split('-').reverse().join('/') : '',
+                tech,
+                status
+            ].join(';');
+            res.write(row + '\r\n');
+        });
+        res.end();
+        return;
+    }
+
+    if (pathname.includes('/public/views/corretivas.php') && queryParams.action === 'exportar_excel') {
+        if (session.usuario_nivel !== 'Gestor') {
+            res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+            res.end('Acesso negado.');
+            return;
+        }
+
+        const db = initDatabase();
+        const ordensServico = db.ordens_servico || [];
+        const ambientes = db.ambientes || [];
+        const usuarios = db.usuarios || [];
+
+        const filtroAno = queryParams.filtro_ano || '';
+        const filtroStatus = queryParams.filtro_status || '';
+
+        let filtered = [...ordensServico];
+
+        if (filtroAno) {
+            filtered = filtered.filter(os => {
+                if (!os.data_abertura) return false;
+                const year = os.data_abertura.includes('-') ? os.data_abertura.substring(0, 4) : os.data_abertura.split(' ')[0].split('/')[2];
+                return year === filtroAno;
+            });
+        }
+
+        if (filtroStatus) {
+            filtered = filtered.filter(os => {
+                if (filtroStatus === 'pendentes') {
+                    return ['Pendente', 'Aguardando Aceite', 'Aguardando Validação'].includes(os.status);
+                } else if (filtroStatus === 'em-execucao') {
+                    return os.status === 'Em Execução';
+                } else if (filtroStatus === 'finalizadas') {
+                    return os.status === 'Concluída';
+                } else {
+                    return os.status === filtroStatus;
+                }
+            });
+        }
+
+        // Ordenar por ID decrescente
+        filtered.sort((a, b) => b.id - a.id);
+
+        res.writeHead(200, {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': 'attachment; filename=relatorio_corretivas.csv'
+        });
+
+        // BOM UTF-8
+        res.write(Buffer.from([0xEF, 0xBB, 0xBF]));
+        res.write('ID O.S.;Solicitante;Data Abertura;Ambiente;Descrição do Problema;Executor;Tipo de Execução;Status;Data Fechamento\r\n');
+
+        filtered.forEach(os => {
+            const sol = usuarios.find(u => u.id === os.solicitante_id)?.nome || 'N/D';
+            const amb = ambientes.find(a => a.id === os.ambiente_id)?.nome_ambiente || 'N/D';
+            const exec = usuarios.find(u => u.id === os.executor_atual_id)?.nome || 'Não Atribuído';
+            
+            const formatDateStr = (dateStr) => {
+                if (!dateStr) return '';
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return dateStr;
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${day}/${month}/${year} ${hours}:${minutes}`;
+            };
+
+            const dataAb = formatDateStr(os.data_abertura);
+            const dataFech = os.status === 'Concluída' && os.data_fechamento ? formatDateStr(os.data_fechamento) : '';
+
+            // Clean description and other fields to avoid CSV break
+            const desc = (os.descricao_problema || '').replace(/"/g, '""').replace(/\r?\n/g, ' ');
+
+            const row = [
+                '#' + os.id,
+                sol,
+                dataAb,
+                amb,
+                `"${desc}"`,
+                exec,
+                os.tipo_execucao || '',
+                os.status,
+                dataFech
+            ].join(';');
+            res.write(row + '\r\n');
+        });
+        res.end();
+        return;
+    }
+
     // Roteador padrão de visualização de Telas (.php)
     let phpViewFile = '';
     

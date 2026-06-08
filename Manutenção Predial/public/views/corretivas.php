@@ -19,6 +19,97 @@ $usuarioId = (int)$_SESSION['usuario_id'];
 $usuarioNome = $_SESSION['usuario_nome'] ?? 'Usuário';
 $usuarioNivel = $_SESSION['usuario_nivel'] ?? 'Solicitante';
 
+// =========================================================================
+// EXPORTAÇÃO DE RELATÓRIO PARA EXCEL (CSV)
+// =========================================================================
+if (isset($_GET['action']) && $_GET['action'] === 'exportar_excel' && $usuarioNivel === 'Gestor') {
+    $filtroAno = $_GET['filtro_ano'] ?? '';
+    $filtroStatus = $_GET['filtro_status'] ?? '';
+
+    // Conexão e Busca
+    $db = \Database::getConnection();
+    
+    $where = [];
+    $params = [];
+    
+    if ($filtroAno) {
+        $where[] = "YEAR(os.data_abertura) = :ano";
+        $params[':ano'] = (int)$filtroAno;
+    }
+    
+    if ($filtroStatus) {
+        if ($filtroStatus === 'pendentes') {
+            $where[] = "os.status IN ('Pendente', 'Aguardando Aceite', 'Aguardando Validação')";
+        } elseif ($filtroStatus === 'em-execucao') {
+            $where[] = "os.status = 'Em Execução'";
+        } elseif ($filtroStatus === 'finalizadas') {
+            $where[] = "os.status = 'Concluída'";
+        } else {
+            $where[] = "os.status = :status";
+            $params[':status'] = $filtroStatus;
+        }
+    }
+    
+    $whereSql = "";
+    if (count($where) > 0) {
+        $whereSql = "WHERE " . implode(" AND ", $where);
+    }
+    
+    $sql = "
+        SELECT 
+            os.id,
+            sol.nome AS solicitante,
+            os.data_abertura,
+            amb.nome_ambiente AS ambiente,
+            os.descricao_problema,
+            exec.nome AS executor,
+            os.tipo_execucao,
+            os.status,
+            os.data_fechamento
+        FROM ordens_servico os
+        LEFT JOIN usuarios sol ON os.solicitante_id = sol.id
+        LEFT JOIN ambientes amb ON os.ambiente_id = amb.id
+        LEFT JOIN usuarios exec ON os.executor_id = exec.id
+        $whereSql
+        ORDER BY os.id DESC
+    ";
+    
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Headers de Download CSV
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=relatorio_corretivas.csv');
+
+    // Abertura do Stream e Escrita do CSV (delimitador ;)
+    $output = fopen('php://output', 'w');
+    // Adiciona o BOM do UTF-8 para o Excel reconhecer acentuação corretamente
+    fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+    fputcsv($output, ['ID O.S.', 'Solicitante', 'Data Abertura', 'Ambiente', 'Descrição do Problema', 'Executor', 'Tipo de Execução', 'Status', 'Data Fechamento'], ';');
+
+    foreach ($resultados as $row) {
+        $dataAb_br = $row['data_abertura'] ? date('d/m/Y H:i', strtotime($row['data_abertura'])) : '';
+        $dataFech_br = $row['data_fechamento'] ? date('d/m/Y H:i', strtotime($row['data_fechamento'])) : '';
+        
+        fputcsv($output, [
+            '#' . $row['id'],
+            $row['solicitante'] ?? 'N/D',
+            $dataAb_br,
+            $row['ambiente'] ?? 'N/D',
+            $row['descricao_problema'],
+            $row['executor'] ?? 'Não Atribuído',
+            $row['tipo_execucao'] ?? '',
+            $row['status'],
+            $dataFech_br
+        ], ';');
+    }
+
+    fclose($output);
+    exit;
+}
+// =========================================================================
+
 // Roteamento de Logout local
 if (isset($_GET['logout'])) {
     $auth = new AuthController();
@@ -242,9 +333,16 @@ $dataAtual = date('d/m/Y');
                 </select>
             </div>
             
-            <button class="btn-page-action" onclick="abrirModalAbertura()" style="background: var(--corBase); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold;">
-                <i class="bi bi-plus-lg"></i> Abrir Nova O.S.
-            </button>
+            <div style="display: flex; gap: 10px;">
+                <?php if ($usuarioNivel === 'Gestor'): ?>
+                    <button class="btn-page-action" onclick="abrirModalExportar()" style="background: #28a745; color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold;">
+                        <i class="bi bi-file-earmark-spreadsheet-fill"></i> Exportar Planilha
+                    </button>
+                <?php endif; ?>
+                <button class="btn-page-action" onclick="abrirModalAbertura()" style="background: var(--corBase); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold;">
+                    <i class="bi bi-plus-lg"></i> Abrir Nova O.S.
+                </button>
+            </div>
         </div>
 
         <!-- TABS DE FILTRO DE STATUS (ESTILO PREMIUM E MICRO-ANIMADO) -->
@@ -668,6 +766,57 @@ $dataAtual = date('d/m/Y');
         </div>
     </div>
 
+    <!-- =========================================================================
+         6. MODAL DE EXPORTAÇÃO DE O.S. (GESTOR)
+         ========================================================================= -->
+    <?php if ($usuarioNivel === 'Gestor'): ?>
+        <div class="modal-fundo" id="modalExportar" style="display: none;">
+            <div class="modal-box" style="backdrop-filter: blur(20px); border: 1px solid var(--corBorda); width: 450px;">
+                <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
+                    <h3>Exportar Ordens de Serviço</h3>
+                    <button onclick="fecharModal('modalExportar')"><i class="bi bi-x-lg"></i></button>
+                </div>
+                
+                <form class="modal-form" id="form-exportar" style="padding-top: 15px;" onsubmit="submeterExportacao(event)">
+                    <div class="modal-input" style="margin-bottom: 15px;">
+                        <label for="export_filtro_ano" style="font-weight: bold; display: block; margin-bottom: 8px;">Filtrar por Ano:</label>
+                        <div class="input-wrapper">
+                            <select id="export_filtro_ano" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                                <option value="">Todos os anos</option>
+                                <?php foreach ($anos as $ano): ?>
+                                    <option value="<?php echo $ano; ?>"><?php echo $ano; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-input" style="margin-bottom: 20px;">
+                        <label for="export_filtro_status" style="font-weight: bold; display: block; margin-bottom: 8px;">Filtrar por Status:</label>
+                        <div class="input-wrapper">
+                            <select id="export_filtro_status" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--corBorda); outline: none; background: var(--corFundo); color: var(--corTxt3);">
+                                <option value="">Todos os status</option>
+                                <option value="pendentes">Pendentes (Pendente / Aguardando Aceite / Aguardando Validação)</option>
+                                <option value="em-execucao">Em Execução</option>
+                                <option value="finalizadas">Finalizadas (Concluída)</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Aguardando Aceite">Aguardando Aceite</option>
+                                <option value="Em Execução">Em Execução</option>
+                                <option value="Aguardando Validação">Aguardando Validação</option>
+                                <option value="Concluída">Concluída</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="border-top: 1px solid var(--corBorda); padding-top: 15px; display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn-confirmar-full confirmar" style="background: #28a745; color:#fff; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; cursor:pointer; display: flex; align-items: center; gap: 8px;">
+                            <i class="bi bi-download"></i> Baixar Planilha CSV
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- JAVASCRIPT GERAL DA TELA DE OS CORRETIVAS -->
     <script>
         function formatarNewlines(str) {
@@ -684,6 +833,18 @@ $dataAtual = date('d/m/Y');
                 return partes[2] || '';
             }
             return '';
+        }
+
+        function abrirModalExportar() {
+            document.getElementById('modalExportar').style.display = 'flex';
+        }
+
+        function submeterExportacao(event) {
+            event.preventDefault();
+            const ano = document.getElementById('export_filtro_ano').value;
+            const status = document.getElementById('export_filtro_status').value;
+            window.location.href = `?action=exportar_excel&filtro_ano=${ano}&filtro_status=${status}`;
+            fecharModal('modalExportar');
         }
 
         // Variáveis de Sessão globais blindadas contra SyntaxError
