@@ -294,26 +294,27 @@ $dataAtual = date('d/m/Y');
                 transition: all 0.25s ease;
             }
         </style>
-        <div class="status-tabs-container" style="display: flex; gap: 10px; margin-top: 15px; border-bottom: 1px solid var(--corBorda); padding-bottom: 12px; overflow-x: auto; scrollbar-width: none; width: 100%;">
-            <button type="button" class="status-tab" data-filter="pendentes">
-                <i class="bi bi-hourglass-split"></i> Pendentes <span class="badge-count" id="count-pendentes">0</span>
-            </button>
-            <button type="button" class="status-tab" data-filter="em-execucao">
-                <i class="bi bi-gear-fill"></i> Em Execução <span class="badge-count" id="count-execucao">0</span>
-            </button>
-            <button type="button" class="status-tab" data-filter="finalizadas">
-                <i class="bi bi-check2-all"></i> Finalizadas <span class="badge-count" id="count-finalizadas">0</span>
-            </button>
-            <button type="button" class="status-tab" data-filter="todos">
-                <i class="bi bi-list-task"></i> Todos <span class="badge-count" id="count-todos">0</span>
-            </button>
-        </div>
-
         <!-- TABELA DE ORDENS DE SERVIÇO -->
         <div class="tabela-bg2" style="margin-top: 20px;">
-            <div class="tabela-titulo" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                <i class="bi bi-wrench" style="font-size: 1.5rem; color: var(--corBase);"></i>
-                <h2>Ordens de Serviço Corretivas</h2>
+            <div class="tabela-titulo" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-wrench" style="font-size: 1.5rem; color: var(--corBase);"></i>
+                    <h2 style="margin: 0; white-space: nowrap;">Ordens de Serviço Corretivas</h2>
+                </div>
+                <div class="status-tabs-container" style="display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none;">
+                    <button type="button" class="status-tab" data-filter="pendentes">
+                        <i class="bi bi-hourglass-split"></i> Pendentes <span class="badge-count" id="count-pendentes">0</span>
+                    </button>
+                    <button type="button" class="status-tab" data-filter="em-execucao">
+                        <i class="bi bi-gear-fill"></i> Em Execução <span class="badge-count" id="count-execucao">0</span>
+                    </button>
+                    <button type="button" class="status-tab" data-filter="finalizadas">
+                        <i class="bi bi-check2-all"></i> Finalizadas <span class="badge-count" id="count-finalizadas">0</span>
+                    </button>
+                    <button type="button" class="status-tab" data-filter="todos">
+                        <i class="bi bi-list-task"></i> Todos <span class="badge-count" id="count-todos">0</span>
+                    </button>
+                </div>
             </div>
             
             <div class="tabela-wrapper" style="overflow-x: auto; background: var(--corFundo); border-radius: 12px; border: 1px solid var(--corBorda);">
@@ -339,7 +340,7 @@ $dataAtual = date('d/m/Y');
                         <?php else: ?>
                             <?php foreach ($ordensServico as $os): ?>
                                 <?php $status = $os->getStatus(); ?>
-                                <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo htmlspecialchars($status); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s; cursor: pointer;" class="linha-tabela-os" onclick="visualizarOS(<?php echo $os->getId(); ?>)">
+                                <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo $os->getStatus(); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s; cursor: pointer;" class="linha-tabela-os" onclick="visualizarOS(<?php echo $os->getId(); ?>)">
                                     <td style="padding: 15px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#<?php echo $os->getId(); ?></td>
                                     
                                     <td style="padding: 15px; font-weight: bold; color: #B91C1C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getSolicitanteNome() ?? 'N/D'); ?></td>
