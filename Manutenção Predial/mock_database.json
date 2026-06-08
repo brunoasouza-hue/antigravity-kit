@@ -3582,6 +3582,19 @@
             "status": "Em Execução",
             "data_abertura": "2026-06-01 11:31:49",
             "data_fechamento": null
+        },
+        {
+            "id": 76,
+            "solicitante_id": 19,
+            "gestor_id": null,
+            "executor_atual_id": null,
+            "ambiente_id": 20770001,
+            "prioridade": "Baixa",
+            "descricao_problema": "Luz queimada na recepção",
+            "tipo_execucao": "Interna",
+            "status": "Pendente",
+            "data_abertura": "2026-06-08 14:23:19",
+            "data_fechamento": null
         }
     ],
     "inspecoes_mensais": [
@@ -3762,6 +3775,15 @@
             "status_etapa": "Aguardando Aceite",
             "observacao_etapa": "Encaminhado para Bruno Alves de Souza",
             "data_tramite": "2026-06-08 11:04:34"
+        },
+        {
+            "id": 19,
+            "os_id": 76,
+            "origem_usuario_id": 19,
+            "destino_usuario_id": null,
+            "status_etapa": "Abertura Oficial",
+            "observacao_etapa": "O.S. registrada. Prioridade definida como: Baixa",
+            "data_tramite": "2026-06-08 14:23:19"
         }
     ],
     "itens_checklist": {

@@ -711,12 +711,15 @@ $dataAtual = date('d/m/Y');
             }
 
             const form = document.getElementById('form-abertura');
-            const formData = new FormData(form);
+            const formData = new URLSearchParams(new FormData(form));
             formData.append('ajax', '1');
 
             fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
                 body: formData
             })
             .then(res => res.json())
@@ -813,12 +816,15 @@ $dataAtual = date('d/m/Y');
         function submeterDespacho(event) {
             event.preventDefault();
             const form = document.getElementById('form-despacho');
-            const formData = new FormData(form);
+            const formData = new URLSearchParams(new FormData(form));
             formData.append('ajax', '1');
 
             fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
                 body: formData
             })
             .then(res => res.json())
@@ -900,12 +906,15 @@ $dataAtual = date('d/m/Y');
             }
 
             const form = document.getElementById('form-finalizacao');
-            const formData = new FormData(form);
+            const formData = new URLSearchParams(new FormData(form));
             formData.append('ajax', '1');
 
             fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
                 body: formData
             })
             .then(res => res.json())
@@ -993,12 +1002,15 @@ $dataAtual = date('d/m/Y');
             document.getElementById('validacao_decisao').value = decisao;
 
             const form = document.getElementById('form-validacao');
-            const formData = new FormData(form);
+            const formData = new URLSearchParams(new FormData(form));
             formData.append('ajax', '1');
 
             fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
                 body: formData
             })
             .then(res => res.json())

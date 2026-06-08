@@ -931,6 +931,7 @@ function compileLoops(html, session, dbContext) {
                 { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$${itemVar}->getId\\(\\)\\s*;?\\s*\\?>`, 'g'), val: item.id },
                 { regex: new RegExp(`<?=\\s*\\\$${itemVar}->getId\\(\\)\\s*\\?>`, 'g'), val: item.id },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getNomeAmbiente\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.nome_ambiente || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getNomeBlocoSala\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.nome_ambiente || '') },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+addslashes\\(\\s*\\\$${itemVar}->getNomeAmbiente\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: (item.nome_ambiente || '').replace(/'/g, "\\'") },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$${itemVar}->getStatus\\(\\)\\s*;?\\s*\\?>`, 'g'), val: item.status },
                 
