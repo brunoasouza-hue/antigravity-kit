@@ -1054,6 +1054,7 @@ function compileVariables(html, context) {
     const echos = [
         { regex: /<\?=\s*isset\(\$_SESSION\['usuario_id'\]\).*?:\s*['\"]?null['\"]?\s*\?>/g, val: context.usuarioId || '1' },
         { regex: /<\?php\s+echo\s+\$_SESSION\['usuario_id'\]\s*\?\?\s*['\"]?null['\"]?\s*;?\s*\?>/g, val: context.usuarioId || '1' },
+        { regex: /<\?php\s+echo\s+\$_SESSION\['usuario_id'\]\s*\?\?\s*0\s*;?\s*\?>/g, val: context.usuarioId !== undefined ? context.usuarioId : 0 },
         { regex: /<\?php\s+echo\s+\$_SESSION\['usuario_nivel'\]\s*\?\?\s*['\"].*?['\"]\s*;?\s*\?>/g, val: context.usuarioNivel || 'Gestor' },
         { regex: /<\?php\s+echo\s+\$usuarioNivel\s*;?\s*\?>/g, val: context.usuarioNivel || 'Gestor' },
         { regex: /<\?=\s*\$_SESSION\['usuario_nivel'\]\s*\?\?\s*['\"].*?['\"]\s*\?>/g, val: context.usuarioNivel || 'Gestor' },
