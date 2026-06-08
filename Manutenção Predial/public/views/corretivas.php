@@ -220,11 +220,9 @@ $dataAtual = date('d/m/Y');
                 </div>
             </div>
             
-            <?php if ($usuarioNivel === 'Solicitante' || $usuarioNivel === 'Gestor'): ?>
-                <button class="btn-page-action" onclick="abrirModalAbertura()" style="background: var(--corBase); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold;">
-                    <i class="bi bi-plus-lg"></i> Abrir Nova O.S.
-                </button>
-            <?php endif; ?>
+            <button class="btn-page-action" onclick="abrirModalAbertura()" style="background: var(--corBase); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold;">
+                <i class="bi bi-plus-lg"></i> Abrir Nova O.S.
+            </button>
         </div>
 
         <!-- TABELA DE ORDENS DE SERVIÇO -->
@@ -313,7 +311,6 @@ $dataAtual = date('d/m/Y');
     <!-- =========================================================================
          1. MODAL DE ABERTURA DE O.S. (SOLICITANTE)
          ========================================================================= -->
-    <?php if ($usuarioNivel === 'Solicitante' || $usuarioNivel === 'Gestor'): ?>
         <div class="modal-fundo" id="modalAbertura" style="display: none;">
             <div class="modal-box" style="backdrop-filter: blur(20px); border: 1px solid var(--corBorda);">
                 <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
@@ -368,7 +365,6 @@ $dataAtual = date('d/m/Y');
                 </form>
             </div>
         </div>
-    <?php endif; ?>
 
     <!-- =========================================================================
          2. MODAL DE DESPACHO DE O.S. (GESTOR)
@@ -743,9 +739,11 @@ $dataAtual = date('d/m/Y');
                     novaLinha.style.cssText = 'border-bottom: 1px solid var(--corBorda); transition: 0.2s;';
                     
                     const nivel = '<?php echo $usuarioNivel; ?>';
+                    novaLinha.style.cursor = 'pointer';
                     if (nivel === 'Gestor') {
-                        novaLinha.style.cursor = 'pointer';
                         novaLinha.onclick = () => abrirModalDespacho(data.data.id);
+                    } else {
+                        novaLinha.onclick = () => visualizarOS(data.data.id);
                     }
 
                     novaLinha.innerHTML = renderRowHtml({
