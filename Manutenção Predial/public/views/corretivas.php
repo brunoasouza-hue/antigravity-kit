@@ -352,7 +352,7 @@ $dataAtual = date('d/m/Y');
                                     
                                     <td style="padding: 12px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?></td>
                                     
-                                    <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="<?php echo htmlspecialchars($os->getDescricaoProblema()); ?>"><?php echo htmlspecialchars($os->getDescricaoProblema()); ?></td>
+                                    <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: pre-line; word-break: break-word; min-width: 150px; max-width: 300px;" title="<?php echo htmlspecialchars(str_replace('\n', "\n", $os->getDescricaoProblema())); ?>"><?php echo htmlspecialchars(str_replace('\n', "\n", $os->getDescricaoProblema())); ?></td>
                                     
                                     <td style="padding: 12px; white-space: nowrap;">
                                         <div style="font-weight: 500; color: var(--corTxt2); overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getExecutorNome() ?? 'Não Atribuído'); ?>">
@@ -648,6 +648,11 @@ $dataAtual = date('d/m/Y');
 
     <!-- JAVASCRIPT GERAL DA TELA DE OS CORRETIVAS -->
     <script>
+        function formatarNewlines(str) {
+            if (!str) return '';
+            return str.replace(/\\n/g, '\n');
+        }
+
         // Variáveis de Sessão globais blindadas contra SyntaxError
         const usuarioLogadoId = parseInt('<?php echo $_SESSION['usuario_id'] ?? 0; ?>') || 0;
         const nivelUsuarioAtual = '<?php echo $_SESSION['usuario_nivel'] ?? ''; ?>';
@@ -767,7 +772,7 @@ $dataAtual = date('d/m/Y');
                 
                 <td style="padding: 12px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.ambiente_nome || 'N/D'}">${data.ambiente_nome || 'N/D'}</td>
                 
-                <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="${data.descricao_problema}">${data.descricao_problema}</td>
+                <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: pre-line; word-break: break-word; min-width: 150px; max-width: 300px;" title="${(data.descricao_problema || '').replace(/"/g, '&quot;').replace(/\\n/g, '\n')}">${formatarNewlines(data.descricao_problema)}</td>
                 
                 <td style="padding: 12px; white-space: nowrap;">
                     <div style="font-weight: 500; color: var(--corTxt2); overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.executor_nome || 'Não Atribuído'}">${execNome}</div>
@@ -908,7 +913,7 @@ $dataAtual = date('d/m/Y');
                 if (res.success) {
                     document.getElementById('despacho_id').value = res.data.id;
                     document.getElementById('despacho_id_display').innerText = res.data.id;
-                    document.getElementById('despacho_descricao_display').innerText = res.data.descricao_problema;
+                    document.getElementById('despacho_descricao_display').innerText = formatarNewlines(res.data.descricao_problema);
                     document.getElementById('modalDespacho').style.display = 'flex';
                 } else {
                     showToast(res.message, 'danger');
@@ -989,7 +994,7 @@ $dataAtual = date('d/m/Y');
                 if (res.success) {
                     document.getElementById('finalizacao_id').value = res.data.id;
                     document.getElementById('finalizacao_id_display').innerText = res.data.id;
-                    document.getElementById('finalizacao_descricao_display').innerText = res.data.descricao_problema;
+                    document.getElementById('finalizacao_descricao_display').innerText = formatarNewlines(res.data.descricao_problema);
                     document.getElementById('modalFinalizacao').style.display = 'flex';
                 } else {
                     showToast(res.message, 'danger');
@@ -1078,7 +1083,7 @@ $dataAtual = date('d/m/Y');
                 if (res.success) {
                     document.getElementById('validacao_id').value = res.data.id;
                     document.getElementById('validacao_id_display').innerText = res.data.id;
-                    document.getElementById('validacao_historico_display').innerText = res.data.descricao_problema;
+                    document.getElementById('validacao_historico_display').innerText = formatarNewlines(res.data.descricao_problema);
                     document.getElementById('modalValidacao').style.display = 'flex';
                 } else {
                     showToast(res.message, 'danger');
@@ -1181,7 +1186,7 @@ $dataAtual = date('d/m/Y');
                     document.getElementById('vis_executor').innerText = os.executor_nome ? os.executor_nome : 'Não designado';
                     document.getElementById('vis_tipo').innerText = os.tipo_execucao;
                     document.getElementById('vis_status').innerHTML = renderStatusBadge(os.status);
-                    document.getElementById('vis_descricao').innerText = os.descricao_problema;
+                    document.getElementById('vis_descricao').innerText = formatarNewlines(os.descricao_problema);
 
                     // 3. Normalização de dados para controle da Máquina de Estados
                     const statusOS = (os.status || '').trim().toUpperCase();
@@ -1518,7 +1523,7 @@ $dataAtual = date('d/m/Y');
                         document.getElementById('lbl_tram_ambiente').innerText = os.ambiente;
                         document.getElementById('lbl_tram_abertura').innerText = os.data_abertura;
                         document.getElementById('lbl_tram_status').innerText = os.status;
-                        document.getElementById('lbl_tram_desc').innerText = os.descricao;
+                        document.getElementById('lbl_tram_desc').innerText = formatarNewlines(os.descricao);
                         
                         // Renderiza o histórico
                         let histHtml = '';
@@ -1526,7 +1531,7 @@ $dataAtual = date('d/m/Y');
                             data.historico.forEach(h => {
                                 histHtml += `<div style="border-bottom: 1px solid #ddd; padding: 8px 0;">
                                     <div style="font-size: 11px; color: #888;">${h.data_formatada} - ${h.origem_nome} &rarr; ${h.status_etapa}</div>
-                                    <div style="font-size: 13px; color: #444; margin-top: 4px;">${h.observacao_etapa}</div>
+                                    <div style="font-size: 13px; color: #444; margin-top: 4px; white-space: pre-line;">${formatarNewlines(h.observacao_etapa)}</div>
                                 </div>`;
                             });
                         } else {

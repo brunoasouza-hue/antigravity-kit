@@ -2084,7 +2084,7 @@ const server = http.createServer((req, res) => {
                     }
 
                     const dataStr = formatDate(new Date().toISOString(), true);
-                    db.ordens_servico[idx].descricao_problema += `\\n\\n[Conclusão do Executor em ${dataStr}]: ${relato}`;
+                    db.ordens_servico[idx].descricao_problema += `\n\n[Conclusão do Executor em ${dataStr}]: ${relato}`;
                     db.ordens_servico[idx].status = 'Aguardando Validação';
 
                     saveDatabase(db);
@@ -2112,9 +2112,9 @@ const server = http.createServer((req, res) => {
                     db.ordens_servico[idx].status = 'Concluída';
                     db.ordens_servico[idx].data_fechamento = new Date().toISOString().replace('T', ' ').substring(0, 19);
                     if (obs) {
-                        db.ordens_servico[idx].descricao_problema += `\\n\\n[Aprovado pelo Solicitante em ${dataStr}]: ${obs}`;
+                        db.ordens_servico[idx].descricao_problema += `\n\n[Aprovado pelo Solicitante em ${dataStr}]: ${obs}`;
                     } else {
-                        db.ordens_servico[idx].descricao_problema += `\\n\\n[Aprovado pelo Solicitante em ${dataStr}]`;
+                        db.ordens_servico[idx].descricao_problema += `\n\n[Aprovado pelo Solicitante em ${dataStr}]`;
                     }
 
                     saveDatabase(db);
@@ -2142,7 +2142,7 @@ const server = http.createServer((req, res) => {
 
                     const dataStr = formatDate(new Date().toISOString(), true);
                     db.ordens_servico[idx].status = 'Em Execução';
-                    db.ordens_servico[idx].descricao_problema += `\\n\\n[Recusado pelo Solicitante em ${dataStr}]: ${obs}`;
+                    db.ordens_servico[idx].descricao_problema += `\n\n[Recusado pelo Solicitante em ${dataStr}]: ${obs}`;
 
                     saveDatabase(db);
                     return respondJson(true, "Serviço recusado! Retornado ao executor em execução.", {
