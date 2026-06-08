@@ -352,7 +352,7 @@ $dataAtual = date('d/m/Y');
                                     
                                     <td style="padding: 12px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?>"><?php echo htmlspecialchars($os->getAmbienteNome() ?? 'N/D'); ?></td>
                                     
-                                    <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: pre-line; word-break: break-word; min-width: 150px; max-width: 300px;" title="<?php echo htmlspecialchars(str_replace('\n', "\n", $os->getDescricaoProblema())); ?>"><?php echo htmlspecialchars(str_replace('\n', "\n", $os->getDescricaoProblema())); ?></td>
+                                    <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: pre-line; word-break: break-word; min-width: 150px; max-width: 300px;" title="<?php echo htmlspecialchars($os->getDescricaoProblema()); ?>"><?php echo htmlspecialchars($os->getDescricaoProblema()); ?></td>
                                     
                                     <td style="padding: 12px; white-space: nowrap;">
                                         <div style="font-weight: 500; color: var(--corTxt2); overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="<?php echo htmlspecialchars($os->getExecutorNome() ?? 'Não Atribuído'); ?>">
