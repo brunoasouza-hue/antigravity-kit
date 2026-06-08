@@ -1010,6 +1010,7 @@ function compileLoops(html, session, dbContext) {
                 { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getExecutorNome\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.executor_nome || 'Não Atribuído') },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getGestorNome\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.gestor_nome || 'Pendente') },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+date\\(\\s*['"]d/m/Y H:i['"]\\s*,\\s*strtotime\\(\\s*\\\$${itemVar}->getDataAbertura\\(\\)\\s*(?:\\?\\?\\s*['"].*?['"]\\s*)?\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: formatDate(item.data_abertura, true) },
+                { regex: new RegExp('<\\?php\\s+echo\\s+substr\\(\\s*\\\$' + itemVar + '->getDataAbertura\\(\\)\\s*(?:\\?\\?\\s*[\'"].*?[\'"]\\s*)?\\s*,\\s*0\\s*,\\s*4\\s*\\)\\s*;?\\s*\\?>', 'g'), val: item.data_abertura ? (item.data_abertura.includes('-') ? item.data_abertura.substring(0, 4) : item.data_abertura.split(' ')[0].split('/')[2]) : '' },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+date\\(\\s*['"]d/m/Y H:i['"]\\s*,\\s*strtotime\\(\\s*\\\$${itemVar}->getDataFechamento\\(\\)\\s*(?:\\?\\?\\s*['"].*?['"]\\s*)?\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: formatDate(item.data_fechamento, true) },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+(?:htmlspecialchars\\(\\s*)?\\\$${itemVar}->getDescricaoProblema\\(\\)\\s*(?:\\))?\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.descricao_problema || '') },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+(?:htmlspecialchars\\(\\s*)?\\\$${itemVar}->getTipoExecucao\\(\\)\\s*(?:\\))?\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.tipo_execucao || '') },
@@ -1297,6 +1298,27 @@ function compilePhp(filePath, session, getParams = {}) {
             currentOS = currentOS.filter(os => os.executor_atual_id === session.usuario_id || os.solicitante_id === session.usuario_id);
         }
         currentOS.sort((a, b) => b.id - a.id);
+
+        // Compute unique years from currentOS
+        const years = [...new Set(currentOS.map(os => {
+            if (!os.data_abertura) return null;
+            if (os.data_abertura.includes('-')) {
+                return os.data_abertura.substring(0, 4);
+            } else if (os.data_abertura.includes('/')) {
+                const partes = os.data_abertura.split(' ')[0].split('/');
+                return partes[2] || null;
+            }
+            return null;
+        }).filter(Boolean))];
+        years.sort((a, b) => b - a); // descending order
+        
+        let yearsOptionsHtml = '';
+        years.forEach(year => {
+            yearsOptionsHtml += `<option value="${year}">${year}</option>`;
+        });
+        
+        const anosRegex = /<!-- SELECT_ANOS_BLOQUEIO -->[\s\S]*?<!-- FIM_SELECT_ANOS_BLOQUEIO -->/g;
+        html = html.replace(anosRegex, yearsOptionsHtml);
     }
 
     if (filePath.endsWith('dashboard.php') || filePath.endsWith('dashboard_analise.php')) {
@@ -1452,6 +1474,63 @@ function compilePhp(filePath, session, getParams = {}) {
     html = compileLoops(html, session, dbContext);
     html = compileConditionals(html, session, dbContext);
     html = compileVariables(html, { ...context, dashboard_analise, executores: dbContext.executores });
+
+    // ── Gerador Direto de Notificações na Home ─────────────────────────────
+    if (filePath.endsWith('home.php')) {
+        const userId = session.usuario_id || 0;
+        const userNivel = session.usuario_nivel || 'Solicitante';
+        let pendenciasCount = 0;
+        let alertaMensagem = '';
+        let bannerIcon = 'bi-exclamation-triangle-fill';
+        let bannerColor = '#f59e0b';
+        let bannerBg = 'rgba(245, 158, 11, 0.08)';
+        let bannerBorder = 'rgba(245, 158, 11, 0.3)';
+
+        if (userNivel === 'Gestor' || userNivel === 'Administrador') {
+            const pendentes = ordensServico.filter(os => os.status === 'Pendente');
+            pendenciasCount = pendentes.length;
+            alertaMensagem = `Você possui ${pendenciasCount} Ordem(ns) de Serviço pendente(s) de despacho.`;
+        } else if (userNivel === 'Executor') {
+            const pendentes = ordensServico.filter(os => os.status === 'Aguardando Aceite' && os.executor_atual_id === userId);
+            pendenciasCount = pendentes.length;
+            alertaMensagem = `Você possui ${pendenciasCount} Ordem(ns) de Serviço aguardando o seu aceite.`;
+            bannerIcon = 'bi-info-circle-fill';
+            bannerColor = '#3b82f6';
+            bannerBg = 'rgba(59, 130, 246, 0.08)';
+            bannerBorder = 'rgba(59, 130, 246, 0.3)';
+        } else if (userNivel === 'Solicitante') {
+            const pendentes = ordensServico.filter(os => os.status === 'Aguardando Validação' && os.solicitante_id === userId);
+            pendenciasCount = pendentes.length;
+            alertaMensagem = `Você possui ${pendenciasCount} Ordem(ns) de Serviço aguardando a sua validação.`;
+            bannerIcon = 'bi-question-circle-fill';
+            bannerColor = '#10b981';
+            bannerBg = 'rgba(16, 185, 129, 0.08)';
+            bannerBorder = 'rgba(16, 185, 129, 0.3)';
+        }
+
+        let bannerHtml = '';
+        if (pendenciasCount > 0) {
+            bannerHtml = `
+            <div style="background: ${bannerBg}; border: 1px solid ${bannerBorder}; padding: 20px; border-radius: 16px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: var(--sombra); transition: all 0.3s ease;" class="notificacao-banner">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="background: ${bannerBg}; border: 1px solid ${bannerBorder}; color: ${bannerColor}; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                        <i class="bi ${bannerIcon}"></i>
+                    </div>
+                    <div>
+                        <strong style="color: ${bannerColor}; display: block; font-size: 15px; margin-bottom: 3px; font-family: 'TASA Orbiter', sans-serif;">Atenção: Ação Requerida</strong>
+                        <span style="color: var(--corTxt3); font-size: 14px; opacity: 0.9;">${alertaMensagem}</span>
+                    </div>
+                </div>
+                <a href="./corretivas.php" style="background: ${bannerColor}; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 13.5px; transition: 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 8px;" class="notificacao-btn">
+                    Ver chamados <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            `;
+        }
+
+        const notifRegex = /<!-- NOTIFICACOES_PENDENTES_BLOQUEIO -->[\s\S]*?<!-- FIM_NOTIFICACOES_PENDENTES_BLOQUEIO -->/g;
+        html = html.replace(notifRegex, bannerHtml);
+    }
 
     // ── Gerador Direto da Tabela de Ambientes ──────────────────────────────
     if (filePath.endsWith('ambientes.php')) {

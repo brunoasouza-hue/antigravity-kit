@@ -218,6 +218,28 @@ $dataAtual = date('d/m/Y');
                     <i class="bi bi-search" style="color: var(--corTxt2); margin-right: 8px;"></i>
                     <input type="text" id="pesquisa" placeholder="Filtrar por sala, solicitante, executor ou status..." style="border: none; background: transparent; width: 100%; padding: 10px 0; color: var(--corTxt3); outline: none;">
                 </div>
+                <!-- Filtro de Ano -->
+                <select id="filtro_ano" style="background: var(--corFundo); border: 1px solid var(--corBorda); border-radius: 10px; padding: 10px 15px; color: var(--corTxt3); outline: none; font-weight: bold; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-1px)';" onmouseout="this.style.transform='none';">
+                    <option value="">Todos os anos</option>
+                    <!-- SELECT_ANOS_BLOQUEIO -->
+                    <?php
+                    $anos = [];
+                    foreach ($ordensServico as $os_ano) {
+                        $dataAb = $os_ano->getDataAbertura();
+                        if ($dataAb) {
+                            $ano = substr($dataAb, 0, 4);
+                            if ($ano && !in_array($ano, $anos)) {
+                                $anos[] = $ano;
+                            }
+                        }
+                    }
+                    rsort($anos);
+                    foreach ($anos as $ano) {
+                        echo '<option value="' . htmlspecialchars($ano) . '">' . htmlspecialchars($ano) . '</option>';
+                    }
+                    ?>
+                    <!-- FIM_SELECT_ANOS_BLOQUEIO -->
+                </select>
             </div>
             
             <button class="btn-page-action" onclick="abrirModalAbertura()" style="background: var(--corBase); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold;">
@@ -338,7 +360,7 @@ $dataAtual = date('d/m/Y');
                         <?php else: ?>
                             <?php foreach ($ordensServico as $os): ?>
                                 <?php $status = $os->getStatus(); ?>
-                                <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo $os->getStatus(); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s; cursor: pointer;" class="linha-tabela-os" onclick="visualizarOS(<?php echo $os->getId(); ?>)">
+                                <tr id="row-<?php echo $os->getId(); ?>" data-status="<?php echo $os->getStatus(); ?>" data-ano="<?php echo substr($os->getDataAbertura() ?? '', 0, 4); ?>" style="border-bottom: 1px solid var(--corBorda); transition: 0.2s; cursor: pointer;" class="linha-tabela-os" onclick="visualizarOS(<?php echo $os->getId(); ?>)">
                                     <td style="padding: 12px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#<?php echo $os->getId(); ?></td>
                                     
                                     <td style="padding: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
@@ -653,6 +675,17 @@ $dataAtual = date('d/m/Y');
             return str.replace(/\\n/g, '\n');
         }
 
+        function extrairAno(dateStr) {
+            if (!dateStr) return '';
+            if (dateStr.includes('-')) {
+                return dateStr.substring(0, 4);
+            } else if (dateStr.includes('/')) {
+                const partes = dateStr.split(' ')[0].split('/');
+                return partes[2] || '';
+            }
+            return '';
+        }
+
         // Variáveis de Sessão globais blindadas contra SyntaxError
         const usuarioLogadoId = parseInt('<?php echo $_SESSION['usuario_id'] ?? 0; ?>') || 0;
         const nivelUsuarioAtual = '<?php echo $_SESSION['usuario_nivel'] ?? ''; ?>';
@@ -858,6 +891,7 @@ $dataAtual = date('d/m/Y');
                     novaLinha.id = `row-${data.data.id}`;
                     novaLinha.className = 'linha-tabela-os';
                     novaLinha.setAttribute('data-status', data.data.status);
+                    novaLinha.setAttribute('data-ano', extrairAno(data.data.data_abertura));
                     novaLinha.style.cssText = 'border-bottom: 1px solid var(--corBorda); transition: 0.2s;';
                     
                     const nivel = '<?php echo $usuarioNivel; ?>';
@@ -1710,6 +1744,7 @@ $dataAtual = date('d/m/Y');
             
             window.atualizarFiltros = function() {
                 const searchVal = (document.getElementById('pesquisa')?.value || '').toLowerCase().trim();
+                const anoVal = document.getElementById('filtro_ano')?.value || '';
                 const linhas = document.querySelectorAll('.linha-tabela-os');
                 let visiveis = 0;
                 
@@ -1721,19 +1756,23 @@ $dataAtual = date('d/m/Y');
 
                 linhas.forEach(linha => {
                     const status = (linha.getAttribute('data-status') || '').trim();
+                    const ano = (linha.getAttribute('data-ano') || '').trim();
                     const textContent = linha.textContent.toLowerCase();
                     
                     const matchesSearch = !searchVal || textContent.includes(searchVal);
+                    const matchesYear = !anoVal || ano === anoVal;
 
                     // Categorias lógicas das abas
                     const isPendente = status === 'Pendente' || status === 'Aguardando Aceite' || status === 'Aguardando Validação';
                     const isExecucao = status === 'Em Execução';
                     const isFinalizada = status === 'Concluída';
 
-                    if (isPendente) countPendentes++;
-                    if (isExecucao) countExecucao++;
-                    if (isFinalizada) countFinalizadas++;
-                    countTodos++;
+                    if (matchesSearch && matchesYear) {
+                        if (isPendente) countPendentes++;
+                        if (isExecucao) countExecucao++;
+                        if (isFinalizada) countFinalizadas++;
+                        countTodos++;
+                    }
 
                     let matchesFilter = false;
                     if (activeFilter === 'todos') {
@@ -1746,7 +1785,7 @@ $dataAtual = date('d/m/Y');
                         matchesFilter = isFinalizada;
                     }
 
-                    if (matchesSearch && matchesFilter) {
+                    if (matchesSearch && matchesYear && matchesFilter) {
                         linha.style.display = '';
                         visiveis++;
                     } else {
@@ -1785,6 +1824,11 @@ $dataAtual = date('d/m/Y');
             const inputPesquisa = document.getElementById('pesquisa');
             if (inputPesquisa) {
                 inputPesquisa.addEventListener('input', window.atualizarFiltros);
+            }
+
+            const selectFiltroAno = document.getElementById('filtro_ano');
+            if (selectFiltroAno) {
+                selectFiltroAno.addEventListener('change', window.atualizarFiltros);
             }
 
             // Inicialização e clique das abas de status
