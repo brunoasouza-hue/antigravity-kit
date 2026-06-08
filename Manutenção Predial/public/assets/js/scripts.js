@@ -148,7 +148,8 @@ window.onload = () => {
         });
     }
 
-    // Inserção Dinâmica do Botão Hamburger (Mobile/Tablet)
+    // Inserção Dinâmica do Botão Hamburger (Mobile/Tablet) desativada a pedido do usuário
+    /*
     const divHeader = document.querySelector('.div-header');
     const isHomePage = window.location.pathname.endsWith('home.php') || document.querySelector('.home-cards-grid');
     if (divHeader && !document.getElementById('mobile-sidebar-toggle') && !isHomePage) {
@@ -166,6 +167,7 @@ window.onload = () => {
             body.classList.toggle('sidebar-open');
         });
     }
+    */
 
     // Backdrop/Scrim dinâmico para a sidebar no mobile
     if (!document.querySelector('.sidebar-backdrop')) {
