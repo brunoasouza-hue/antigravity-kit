@@ -225,6 +225,90 @@ $dataAtual = date('d/m/Y');
             </button>
         </div>
 
+        <!-- TABS DE FILTRO DE STATUS (ESTILO PREMIUM E MICRO-ANIMADO) -->
+        <style>
+            .status-tab {
+                background: var(--corFundo);
+                border: 1px solid var(--corBorda);
+                color: var(--corTxt2);
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 16px;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 13.5px;
+                cursor: pointer;
+                outline: none;
+                white-space: nowrap;
+            }
+            .status-tab:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+            .status-tab.active[data-filter="pendentes"] {
+                border-color: #f59e0b !important;
+                background-color: rgba(245, 158, 11, 0.08) !important;
+                color: #f59e0b !important;
+            }
+            .status-tab.active[data-filter="pendentes"] .badge-count {
+                background-color: #f59e0b !important;
+                color: #fff !important;
+            }
+            .status-tab.active[data-filter="em-execucao"] {
+                border-color: #3b82f6 !important;
+                background-color: rgba(59, 130, 246, 0.08) !important;
+                color: #3b82f6 !important;
+            }
+            .status-tab.active[data-filter="em-execucao"] .badge-count {
+                background-color: #3b82f6 !important;
+                color: #fff !important;
+            }
+            .status-tab.active[data-filter="finalizadas"] {
+                border-color: #10b981 !important;
+                background-color: rgba(16, 185, 129, 0.08) !important;
+                color: #10b981 !important;
+            }
+            .status-tab.active[data-filter="finalizadas"] .badge-count {
+                background-color: #10b981 !important;
+                color: #fff !important;
+            }
+            .status-tab.active[data-filter="todos"] {
+                border-color: #6b7280 !important;
+                background-color: rgba(107, 114, 128, 0.08) !important;
+                color: #6b7280 !important;
+            }
+            .status-tab.active[data-filter="todos"] .badge-count {
+                background-color: #6b7280 !important;
+                color: #fff !important;
+            }
+            .badge-count {
+                background-color: rgba(0, 0, 0, 0.05);
+                color: var(--corTxt2);
+                font-size: 11px;
+                font-weight: bold;
+                border-radius: 20px;
+                padding: 2px 8px;
+                margin-left: 4px;
+                transition: all 0.25s ease;
+            }
+        </style>
+        <div class="status-tabs-container" style="display: flex; gap: 10px; margin-top: 15px; border-bottom: 1px solid var(--corBorda); padding-bottom: 12px; overflow-x: auto; scrollbar-width: none; width: 100%;">
+            <button type="button" class="status-tab" data-filter="pendentes">
+                <i class="bi bi-hourglass-split"></i> Pendentes <span class="badge-count" id="count-pendentes">0</span>
+            </button>
+            <button type="button" class="status-tab" data-filter="em-execucao">
+                <i class="bi bi-gear-fill"></i> Em Execução <span class="badge-count" id="count-execucao">0</span>
+            </button>
+            <button type="button" class="status-tab" data-filter="finalizadas">
+                <i class="bi bi-check2-all"></i> Finalizadas <span class="badge-count" id="count-finalizadas">0</span>
+            </button>
+            <button type="button" class="status-tab" data-filter="todos">
+                <i class="bi bi-list-task"></i> Todos <span class="badge-count" id="count-todos">0</span>
+            </button>
+        </div>
+
         <!-- TABELA DE ORDENS DE SERVIÇO -->
         <div class="tabela-bg2" style="margin-top: 20px;">
             <div class="tabela-titulo" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
@@ -739,6 +823,7 @@ $dataAtual = date('d/m/Y');
                     const novaLinha = document.createElement('tr');
                     novaLinha.id = `row-${data.data.id}`;
                     novaLinha.className = 'linha-tabela-os';
+                    novaLinha.setAttribute('data-status', data.data.status);
                     novaLinha.style.cssText = 'border-bottom: 1px solid var(--corBorda); transition: 0.2s;';
                     
                     const nivel = '<?php echo $usuarioNivel; ?>';
@@ -766,6 +851,10 @@ $dataAtual = date('d/m/Y');
                     setTimeout(() => {
                         novaLinha.style.backgroundColor = '';
                     }, 1000);
+
+                    if (window.atualizarFiltros) {
+                        window.atualizarFiltros();
+                    }
 
                 } else {
                     showToast(data.message, 'danger');
@@ -845,11 +934,13 @@ $dataAtual = date('d/m/Y');
                         .then(rData => {
                             if (rData.success) {
                                 row.innerHTML = renderRowHtml(rData.data);
+                                row.setAttribute('data-status', rData.data.status);
                                 // Remove link de click da linha já despachada
                                 row.onclick = null;
                                 row.style.cursor = '';
                                 row.style.backgroundColor = 'rgba(0, 123, 255, 0.08)';
                                 setTimeout(() => row.style.backgroundColor = '', 1000);
+                                if (window.atualizarFiltros) window.atualizarFiltros();
                             }
                         });
                     }
@@ -933,10 +1024,12 @@ $dataAtual = date('d/m/Y');
                         .then(rData => {
                             if (rData.success) {
                                 row.innerHTML = renderRowHtml(rData.data);
+                                row.setAttribute('data-status', rData.data.status);
                                 row.onclick = null;
                                 row.style.cursor = '';
                                 row.style.backgroundColor = 'rgba(23, 162, 184, 0.08)';
                                 setTimeout(() => row.style.backgroundColor = '', 1000);
+                                if (window.atualizarFiltros) window.atualizarFiltros();
                             }
                         });
                     }
@@ -1029,9 +1122,11 @@ $dataAtual = date('d/m/Y');
                         .then(rData => {
                             if (rData.success) {
                                 row.innerHTML = renderRowHtml(rData.data);
+                                row.setAttribute('data-status', rData.data.status);
                                 const isAprovado = decisao === 'aprovar';
                                 row.style.backgroundColor = isAprovado ? 'rgba(40, 167, 69, 0.08)' : 'rgba(252, 35, 35, 0.08)';
                                 setTimeout(() => row.style.backgroundColor = '', 1000);
+                                if (window.atualizarFiltros) window.atualizarFiltros();
                             }
                         });
                     }
@@ -1366,10 +1461,12 @@ $dataAtual = date('d/m/Y');
                         .then(rData => {
                             if (rData.success) {
                                 row.innerHTML = renderRowHtml(rData.data);
+                                row.setAttribute('data-status', rData.data.status);
                                 row.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
                                 setTimeout(() => {
                                     row.style.backgroundColor = '';
                                 }, 1000);
+                                if (window.atualizarFiltros) window.atualizarFiltros();
                             }
                         });
                     } else {
@@ -1560,41 +1657,133 @@ $dataAtual = date('d/m/Y');
                 });
             }
 
-            // Filtro visual rápido na tabela utilizando o input de pesquisa principal
-            const inputPesquisa = document.getElementById('pesquisa');
-            if (inputPesquisa) {
-                inputPesquisa.addEventListener('input', function() {
-                    const termo = this.value.toLowerCase().trim();
-                    const linhas = document.querySelectorAll('.linha-tabela-os');
-                    let visiveis = 0;
+            // Filtro visual rápido na tabela com suporte a abas de status
+            let activeFilter = 'pendentes'; // O inicial sempre será com as pendentes para aprovação
+            
+            window.atualizarFiltros = function() {
+                const searchVal = (document.getElementById('pesquisa')?.value || '').toLowerCase().trim();
+                const linhas = document.querySelectorAll('.linha-tabela-os');
+                let visiveis = 0;
+                
+                // Contadores para os badges das abas
+                let countPendentes = 0;
+                let countExecucao = 0;
+                let countFinalizadas = 0;
+                let countTodos = 0;
 
-                    linhas.forEach(linha => {
-                        const texto = linha.textContent.toLowerCase();
-                        if (termo === '' || texto.includes(termo)) {
-                            linha.style.display = '';
-                            visiveis++;
-                        } else {
-                            linha.style.display = 'none';
-                        }
-                    });
+                linhas.forEach(linha => {
+                    const status = (linha.getAttribute('data-status') || '').trim();
+                    const textContent = linha.textContent.toLowerCase();
+                    
+                    const matchesSearch = !searchVal || textContent.includes(searchVal);
 
-                    // Se a tabela ficou vazia após o filtro
-                    const tbody = document.getElementById('tabela-os-body');
-                    const linhaVazia = document.getElementById('linha-vazia');
-                    if (visiveis === 0) {
-                        if (!linhaVazia) {
-                            const tr = document.createElement('tr');
-                            tr.id = 'linha-vazia';
-                            tr.innerHTML = `<td colspan="10" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum chamado corresponde aos filtros.</td>`;
-                            tbody.appendChild(tr);
-                        }
+                    // Categorias lógicas das abas
+                    const isPendente = status === 'Pendente' || status === 'Aguardando Aceite' || status === 'Aguardando Validação';
+                    const isExecucao = status === 'Em Execução';
+                    const isFinalizada = status === 'Concluída';
+
+                    if (isPendente) countPendentes++;
+                    if (isExecucao) countExecucao++;
+                    if (isFinalizada) countFinalizadas++;
+                    countTodos++;
+
+                    let matchesFilter = false;
+                    if (activeFilter === 'todos') {
+                        matchesFilter = true;
+                    } else if (activeFilter === 'pendentes') {
+                        matchesFilter = isPendente;
+                    } else if (activeFilter === 'em-execucao') {
+                        matchesFilter = isExecucao;
+                    } else if (activeFilter === 'finalizadas') {
+                        matchesFilter = isFinalizada;
+                    }
+
+                    if (matchesSearch && matchesFilter) {
+                        linha.style.display = '';
+                        visiveis++;
                     } else {
-                        if (linhaVazia) {
-                            linhaVazia.remove();
-                        }
+                        linha.style.display = 'none';
                     }
                 });
+
+                // Atualiza contadores visuais
+                const badgePendentes = document.getElementById('count-pendentes');
+                const badgeExecucao = document.getElementById('count-execucao');
+                const badgeFinalizadas = document.getElementById('count-finalizadas');
+                const badgeTodos = document.getElementById('count-todos');
+
+                if (badgePendentes) badgePendentes.innerText = countPendentes;
+                if (badgeExecucao) badgeExecucao.innerText = countExecucao;
+                if (badgeFinalizadas) badgeFinalizadas.innerText = countFinalizadas;
+                if (badgeTodos) badgeTodos.innerText = countTodos;
+
+                // Se a tabela ficou vazia após o filtro
+                const tbody = document.getElementById('tabela-os-body');
+                const linhaVazia = document.getElementById('linha-vazia');
+                if (visiveis === 0) {
+                    if (!linhaVazia) {
+                        const tr = document.createElement('tr');
+                        tr.id = 'linha-vazia';
+                        tr.innerHTML = `<td colspan="10" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum chamado corresponde aos filtros.</td>`;
+                        tbody.appendChild(tr);
+                    }
+                } else {
+                    if (linhaVazia) {
+                        linhaVazia.remove();
+                    }
+                }
+            };
+
+            const inputPesquisa = document.getElementById('pesquisa');
+            if (inputPesquisa) {
+                inputPesquisa.addEventListener('input', window.atualizarFiltros);
             }
+
+            // Inicialização e clique das abas de status
+            const tabs = document.querySelectorAll('.status-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.style.backgroundColor = '';
+                        t.style.color = 'var(--corTxt2)';
+                        t.style.borderColor = 'var(--corBorda)';
+                    });
+                    
+                    this.classList.add('active');
+                    activeFilter = this.getAttribute('data-filter');
+                    
+                    if (activeFilter === 'pendentes') {
+                        this.style.backgroundColor = 'rgba(245, 158, 11, 0.08)';
+                        this.style.color = '#f59e0b';
+                        this.style.borderColor = '#f59e0b';
+                    } else if (activeFilter === 'em-execucao') {
+                        this.style.backgroundColor = 'rgba(59, 130, 246, 0.08)';
+                        this.style.color = '#3b82f6';
+                        this.style.borderColor = '#3b82f6';
+                    } else if (activeFilter === 'finalizadas') {
+                        this.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+                        this.style.color = '#10b981';
+                        this.style.borderColor = '#10b981';
+                    } else if (activeFilter === 'todos') {
+                        this.style.backgroundColor = 'rgba(107, 114, 128, 0.08)';
+                        this.style.color = '#6b7280';
+                        this.style.borderColor = '#6b7280';
+                    }
+
+                    window.atualizarFiltros();
+                });
+            });
+
+            // Ativa a aba inicial default (Pendentes)
+            const defaultTab = document.querySelector('.status-tab[data-filter="pendentes"]');
+            if (defaultTab) {
+                defaultTab.classList.add('active');
+                defaultTab.style.backgroundColor = 'rgba(245, 158, 11, 0.08)';
+                defaultTab.style.color = '#f59e0b';
+                defaultTab.style.borderColor = '#f59e0b';
+            }
+            window.atualizarFiltros();
         });
     </script>
 
