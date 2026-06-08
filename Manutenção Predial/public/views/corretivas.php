@@ -760,6 +760,15 @@ $dataAtual = date('d/m/Y');
         function renderRowHtml(data) {
             const execNome = data.executor_nome ? data.executor_nome : '<span style="color: #999; font-style: italic;">Não Atribuído</span>';
 
+            const descFormatada = formatarNewlines(data.descricao_problema);
+            let descExibida = descFormatada;
+            let descTitle = descFormatada;
+            if (data.status === 'Concluída') {
+                const descPartes = descFormatada.split(/\r?\n\s*\[/);
+                descExibida = descPartes[0];
+                descTitle = descPartes[0];
+            }
+
             return `
                 <td style="padding: 12px; font-weight: bold; color: var(--corTxt2); white-space: nowrap;">#${data.id}</td>
                 
@@ -772,7 +781,7 @@ $dataAtual = date('d/m/Y');
                 
                 <td style="padding: 12px; font-weight: bold; color: var(--corDestaque); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.ambiente_nome || 'N/D'}">${data.ambiente_nome || 'N/D'}</td>
                 
-                <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: pre-line; word-break: break-word; min-width: 150px; max-width: 300px;" title="${(data.descricao_problema || '').replace(/"/g, '&quot;').replace(/\\n/g, '\n')}">${formatarNewlines(data.descricao_problema)}</td>
+                <td style="padding: 12px; font-size: 14px; color: var(--corTxt3); white-space: pre-line; word-break: break-word; min-width: 150px; max-width: 300px;" title="${descTitle.replace(/"/g, '&quot;')}">${descExibida}</td>
                 
                 <td style="padding: 12px; white-space: nowrap;">
                     <div style="font-weight: 500; color: var(--corTxt2); overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${data.executor_nome || 'Não Atribuído'}">${execNome}</div>
@@ -1618,6 +1627,20 @@ $dataAtual = date('d/m/Y');
         // VALIDADDORES EM TEMPO REAL CONTRA PALAVRA 'VAZIO' E NOME DO CAMPO
         // =========================================================================
         document.addEventListener('DOMContentLoaded', () => {
+            // Trunca descrições de OS finalizadas (Concluída) na tabela no carregamento inicial
+            document.querySelectorAll('.linha-tabela-os').forEach(row => {
+                const status = (row.getAttribute('data-status') || '').trim();
+                if (status === 'Concluída') {
+                    const descCell = row.cells[3];
+                    if (descCell) {
+                        const fullDesc = descCell.innerText || descCell.textContent || '';
+                        const descPartes = fullDesc.split(/\r?\n\s*\[/);
+                        descCell.innerText = descPartes[0];
+                        descCell.setAttribute('title', descPartes[0]);
+                    }
+                }
+            });
+
             const inputsVal = [
                 { id: 'abrir_descricao_problema', erroId: 'abrir_erro' },
                 { id: 'finalizacao_relato', erroId: 'finalizacao_erro' },
