@@ -199,3 +199,37 @@ INSERT INTO ambientes (id, nome_ambiente) VALUES (20770104, 'LABTIB') ON DUPLICA
 INSERT INTO ambientes (id, nome_ambiente) VALUES (20770105, 'SESIFERNAND') ON DUPLICATE KEY UPDATE nome_ambiente=nome_ambiente;
 INSERT INTO ambientes (id, nome_ambiente) VALUES (20770106, 'CONSTCIVIL') ON DUPLICATE KEY UPDATE nome_ambiente=nome_ambiente;
 
+
+-- =========================================================================
+-- 5. TABELA DE INSPEÇÕES GERAIS EM QUADROS E PAINEIS (SESSÕES)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS inspecoes_geral (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    unidade VARCHAR(100) NOT NULL,
+    data_inspecao DATE NOT NULL,
+    responsavel_id INT NOT NULL,
+    observacoes TEXT DEFAULT NULL,
+    status ENUM('Em Andamento', 'Encerrada') NOT NULL DEFAULT 'Em Andamento',
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (responsavel_id) REFERENCES usuarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- =========================================================================
+-- 6. TABELA DE INSPEÇÕES VISUAIS EM QUADROS E PAINEIS ELÉTRICOS (RH-064-FR009)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS inspecoes_painel (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    inspecao_geral_id INT DEFAULT NULL,
+    unidade VARCHAR(100) NOT NULL,
+    setor VARCHAR(100) NOT NULL,
+    quadro_tag VARCHAR(100) NOT NULL,
+    data_inspecao DATE NOT NULL,
+    responsavel_id INT NOT NULL,
+    observacoes TEXT DEFAULT NULL,
+    itens JSON NOT NULL,
+    status_geral ENUM('Conforme', 'Não Conforme') NOT NULL DEFAULT 'Conforme',
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (inspecao_geral_id) REFERENCES inspecoes_geral(id) ON DELETE CASCADE,
+    FOREIGN KEY (responsavel_id) REFERENCES usuarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+

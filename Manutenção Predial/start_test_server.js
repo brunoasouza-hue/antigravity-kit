@@ -706,7 +706,8 @@ function initDatabase() {
         }
 ],
         checklists: [],
-        ordens_servico: []
+        ordens_servico: [],
+        inspecoes_painel: []
     };
 
     // Geração de histórico estatístico para os últimos 6 meses (garante Chart.js perfeito)
@@ -843,9 +844,13 @@ function evaluatePhpCondition(condStr, session, localContext = {}) {
         .replace(/\$ordensServico/g, 'localContext.currentOS')
         .replace(/\$ambientesAtivos/g, '(localContext.ambientes ? localContext.ambientes.filter(a => a.status === "Ativo") : [])')
         .replace(/\$executores/g, 'localContext.executores')
+        .replace(/\$inspecaoGeralAtiva/g, 'localContext.inspecaoGeralAtiva')
+        .replace(/\$inspecoesGeral/g, 'localContext.inspecoesGeral')
         .replace(/empty\((.*?)\)/g, '( !$1 || (Array.isArray($1) && $1.length === 0) )')
         .replace(/!empty\((.*?)\)/g, '( $1 && (!Array.isArray($1) || $1.length > 0) )')
         .replace(/isset\((.*?)\)/g, '( typeof $1 !== "undefined" && $1 !== null )')
+        .replace(/\$num/g, 'localContext.num')
+        .replace(/\$desc/g, 'localContext.desc')
         .replace(/\$os->getExecutorNome\(\)/g, '(localContext.item && localContext.item.executor_nome && localContext.item.executor_nome !== "Não Atribuído")');
     
     try {
@@ -975,12 +980,42 @@ function compileLoops(html, session, dbContext) {
         else if (collectionName === 'ambientesPag') items = dbContext.ambientes || [];
         else if (collectionName === 'ambientesAtivos') items = (dbContext.ambientes || []).filter(a => a.status === 'Ativo');
         else if (collectionName === 'checklists') items = dbContext.currentChecklists || [];
+        else if (collectionName === 'inspecoesPainel') items = dbContext.inspecoesPainel || [];
+        else if (collectionName === 'inspecoesGeral') items = (dbContext.inspecoesGeral || []).filter(ig => ig.status === 'Encerrada');
+        else if (collectionName === 'setoresAtivos') {
+            const ativa = (dbContext.inspecoesGeral || []).find(ig => ig.status === 'Em Andamento');
+            items = ativa ? (dbContext.inspecoesPainel || []).filter(ip => ip.inspecao_geral_id === ativa.id) : [];
+        }
         else if (collectionName === 'ambsFaltantes') items = (dbContext.inspecaoAtiva && dbContext.inspecaoAtiva.faltantes) || [];
         else if (collectionName === 'ambsVerificados') items = (dbContext.inspecaoAtiva && dbContext.inspecaoAtiva.verificados) || [];
         else if (collectionName === 'historicoInspecoes') items = dbContext.historicoInspecoes || [];
         else if (collectionName === 'executores') items = dbContext.executores || [];
         else if (collectionName === 'ordensServico') items = dbContext.currentOS || [];
         else if (collectionName === 'rankingAmbientes') items = dbContext.rankingAmbientes || [];
+        else if (collectionName === 'itensVerificacao') {
+            items = [
+                { num: 1, desc: "O quadro de distribuição elétrica está instalado em local de fácil acesso?" },
+                { num: 2, desc: "O quadro de distribuição elétrica e componentes estão instalados adequadamente? (altura de acesso, influencias externas, local)" },
+                { num: 3, desc: "O quadro de distribuição elétrica é mantido desobstruído para operações e manutenções?" },
+                { num: 4, desc: "Existe algum tipo de material combustível ou inflamável próximo ao quadro de distribuição elétrica?" },
+                { num: 5, desc: "As sinalizações de advertência e de identificação do quadro de distribuição encontram-se em bom estado de conservação e legível?" },
+                { num: 6, desc: "O quadro de distribuição possibilita a utilização de bloqueio NR-10 (fechadura, trava) para os casos de serviços de manutenção?" },
+                { num: 7, desc: "O estado de conservação geral do invólucro do quadro de distribuição está adequado? (limpeza, ferrugem, amassado)" },
+                { num: 8, desc: "O quadro de distribuição elétrica possui proteção contra contato com as \"partes vivas\"? (sobre porta, placa de material isolante ou metálico)" },
+                { num: 9, desc: "Se o quadro de distribuição elétrica for de material metálico, o mesmo possui aterramento de equipotencialização das partes móveis (portas e sobre porta)?" },
+                { num: 10, desc: "Existe identificação dos circuitos do quadro de distribuição (TAG)? (ex:Tom. Sala 1, Ilum. Banh 2)" },
+                { num: 11, desc: "Existe diagrama (desenho dos circuitos) dos quadros de distribuição elétrica?" },
+                { num: 12, desc: "Se SIM, onde se encontram localizados?" },
+                { num: 13, desc: "O quadro de distribuição elétrica possui todos os condutores (fios, cabos) isolados e em bom estado de conservação? (ressecamento, isolação, queimadura)" },
+                { num: 14, desc: "O quadro de distribuição elétrica possui todos os condutores (fios, cabos) organizados? (emaranhados, fora de canaletas, esticados)" },
+                { num: 15, desc: "O quadro de distribuição elétrica possui disjuntor ou chave geral para abertura do circuito com carga? (\"chave faca tipo-seca\" não são dispositivos de abertura com carga)" },
+                { num: 16, desc: "Existem objetos e/ou outros tipos de circuitos dentro do quadro de distribuição elétrica? (ex: telefônica, dados, equipamentos de segurança contra incêndio e outros objetos)" },
+                { num: 17, desc: "O quadro de distribuição elétrica possui proteção contra sobrecorrentes e curto-circuitos em bom estado de conservação (ex: disjuntores e/ou fusíveis)?" },
+                { num: 18, desc: "Os circuitos (tomadas/chuveiros) em locais úmidos e/ou molhados, alimentados pelo quadro de distribuição possuem proteção diferencial residual (DR) para choques elétricos?" },
+                { num: 19, desc: "O quadro de distribuição elétrica possui dispositivo de proteção contra surto (DPS) para proteção contra descargas atmosféricas e sobretensões na rede elétrica?" },
+                { num: 20, desc: "Os dispositivos de proteção contra surtos (DPS) instalados no quadro de distribuição estão em bom estado de conservação e funcionais?" }
+            ];
+        }
         
         if (!items || items.length === 0) return '';
         
@@ -1019,7 +1054,16 @@ function compileLoops(html, session, dbContext) {
                 { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$idx\\s*\\+\\s*1\\s*;?\\s*\\?>`, 'g'), val: idx + 1 },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$item\\['nome'\\]\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.nome || '') },
                 { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$item\\['total'\\]\\s*;?\\s*\\?>`, 'g'), val: item.total || 0 },
-                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$percentual\\s*;?\\s*\\?>`, 'g'), val: (item.total / dbContext.maxOS * 100) || 0 }
+                { regex: new RegExp(`<\\?php\\s+echo\\s+\\\$percentual\\s*;?\\s*\\?>`, 'g'), val: (item.total / dbContext.maxOS * 100) || 0 },
+
+                // InspecaoPainel
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getUnidade\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.unidade || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getSetor\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.setor || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getQuadroTag\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.quadro_tag || '') },
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getStatusGeral\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.status_geral || '') },
+                
+                // InspecaoGeral
+                { regex: new RegExp(`<\\?php\\s+echo\\s+htmlspecialchars\\(\\s*\\\$${itemVar}->getStatus\\(\\)\\s*\\)\\s*;?\\s*\\?>`, 'g'), val: escapeHtml(item.status || '') }
             ];
             
             getterMatches.forEach(m => {
@@ -1096,6 +1140,54 @@ function compileLoops(html, session, dbContext) {
                 });
                 itemHtml = itemHtml.replace(new RegExp(`onclick="visualizarDetalhes\\(.*?\\)"`, 's'), `onclick="visualizarDetalhes(${escapeHtmlAttr(detailsJson)})"`);
             }
+
+            if (collectionName === 'inspecoesPainel') {
+                const detailsJson = JSON.stringify({
+                    id: item.id,
+                    unidade: item.unidade,
+                    setor: item.setor,
+                    quadro_tag: item.quadro_tag,
+                    data_inspecao: formatDate(item.data_inspecao),
+                    responsavel_nome: item.responsavel_nome || 'N/A',
+                    status_geral: item.status_geral,
+                    observacoes: item.observacoes || '',
+                    itens: item.itens // JSON string
+                });
+                itemHtml = itemHtml.replace(new RegExp(`onclick="visualizarDetalhes\\(.*?\\)"`, 's'), `onclick="visualizarDetalhes(${escapeHtmlAttr(detailsJson)})"`);
+                itemHtml = itemHtml.replace(new RegExp(`onclick="exportarPDF\\(.*?\\)"`, 's'), `onclick="exportarPDF(${escapeHtmlAttr(detailsJson)})"`);
+            }
+
+            if (collectionName === 'inspecoesGeral') {
+                const subItens = (dbContext.inspecoesPainel || []).filter(ip => ip.inspecao_geral_id === item.id);
+                itemHtml = itemHtml.replace(/<\?php\s+echo\s+count\(\s*\\\$ins->buscarItensPainel\(\)\s*\)\s*;?\s*\?>/g, subItens.length);
+                itemHtml = itemHtml.replace(/<\?=\s*count\(\s*\\\$ins->buscarItensPainel\(\)\s*\)\s*\?>/g, subItens.length);
+                
+                const detailsJson = JSON.stringify({
+                    id: item.id,
+                    unidade: item.unidade,
+                    data_inspecao: formatDate(item.data_inspecao),
+                    responsavel_nome: item.responsavel_nome || 'N/A',
+                    observacoes: item.observacoes || '',
+                    setores: subItens.map(si => ({
+                        id: si.id,
+                        setor: si.setor,
+                        quadro_tag: si.quadro_tag,
+                        status_geral: si.status_geral,
+                        observacoes: si.observacoes || '',
+                        itens: si.itens
+                    }))
+                });
+                itemHtml = itemHtml.replace(new RegExp(`onclick="visualizarDetalhesGeral\\(.*?\\)"`, 's'), `onclick="visualizarDetalhesGeral(${escapeHtmlAttr(detailsJson)})"`);
+            }
+            
+            if (collectionName === 'itensVerificacao') {
+                itemHtml = itemHtml.replace(/<\?=\s*\$num\s*\?>/g, item.num);
+                itemHtml = itemHtml.replace(/<\?php\s+echo\s+\$num\s*;?\s*\?>/g, item.num);
+                itemHtml = itemHtml.replace(/<\?=\s*\$desc\s*\?>/g, escapeHtml(item.desc));
+                itemHtml = itemHtml.replace(/<\?php\s+echo\s+\$desc\s*;?\s*\?>/g, escapeHtml(item.desc));
+                localContext.num = item.num;
+                localContext.desc = item.desc;
+            }
             
             // Compila blocos condicionais dentro do item do loop
             for (let i = 0; i < 3; i++) {
@@ -1141,12 +1233,26 @@ function compileVariables(html, context) {
         { regex: /<\?=\s*\$ambientes_afetados\s*\?>/g, val: context.ambientes_afetados !== undefined ? context.ambientes_afetados : '0' },
         { regex: /<\?=\s*\$os_concluidas_mes\s*\?>/g, val: context.os_concluidas_mes !== undefined ? context.os_concluidas_mes : '0' },
         { regex: /<\?=\s*\$preventivas_mes\s*\?>/g, val: context.preventivas_mes !== undefined ? context.preventivas_mes : '0' },
-        { regex: /<\?=\s*\$os_pendentes\s*\?>/g, val: context.os_pendentes !== undefined ? context.os_pendentes : '0' }
+        { regex: /<\?=\s*\$os_pendentes\s*\?>/g, val: context.os_pendentes !== undefined ? context.os_pendentes : '0' },
+        { regex: /<\?php\s+echo\s+json_encode\(\s*\$inspecaoGeralAtiva\s*\)\s*;?\s*\?>/g, val: JSON.stringify(context.inspecaoGeralAtiva || null) }
     ];
     
     echos.forEach(e => {
         html = html.replace(e.regex, e.val);
     });
+
+    if (context.inspecaoGeralAtiva) {
+        const ig = context.inspecaoGeralAtiva;
+        const rawDate = ig.data_inspecao || '';
+        const formattedDate = rawDate.split('-').reverse().join('/');
+        html = html.replace(/<\?php\s+echo\s+htmlspecialchars\(\s*\$inspecaoGeralAtiva->getUnidade\(\)\s*\)\s*;?\s*\?>/g, escapeHtml(ig.unidade || ''));
+        html = html.replace(/<\?php\s+echo\s+htmlspecialchars\(\s*addslashes\(\s*\$inspecaoGeralAtiva->getUnidade\(\)\s*\)\s*\)\s*;?\s*\?>/g, escapeHtml((ig.unidade || '').replace(/'/g, "\\'")));
+        html = html.replace(/<\?php\s+echo\s+htmlspecialchars\(\s*addslashes\(\s*\\\$inspecaoGeralAtiva->getUnidade\(\)\s*\)\s*\)\s*;?\s*\?>/g, escapeHtml((ig.unidade || '').replace(/'/g, "\\'")));
+        html = html.replace(/<\?php\s+echo\s+date\(\s*['"]d\/m\/Y['"]\s*,\s*strtotime\(\s*\$inspecaoGeralAtiva->getDataInspecao\(\)\s*\)\s*\)\s*;?\s*\?>/g, formattedDate);
+        html = html.replace(/<\?php\s+echo\s+htmlspecialchars\(\s*\$inspecaoGeralAtiva->getResponsavelNome\(\)\s*(\?\?\s*['"].*?['"])*\s*\)\s*;?\s*\?>/g, escapeHtml(ig.responsavel_nome || 'N/D'));
+        html = html.replace(/<\?php\s+echo\s+\$inspecaoGeralAtiva->getId\(\)\s*;?\s*\?>/g, ig.id);
+        html = html.replace(/<\?php\s+echo\s+\$inspecaoGeralAtiva->getDataInspecao\(\)\s*;?\s*\?>/g, rawDate);
+    }
 
     if (context.dadosStatus !== undefined) {
         html = html.replace(/<\?php\s+echo\s+json_encode\(\s*\$dadosStatus\s*,\s*JSON_UNESCAPED_UNICODE\s*\)\s*;?\s*\?>/g, JSON.stringify(context.dadosStatus));
@@ -1203,6 +1309,21 @@ function compilePhp(filePath, session, getParams = {}) {
     const ordensServico = db.ordens_servico || [];
     const usuarios = db.usuarios || [];
     const executores = usuarios.filter(u => u.nivel_acesso === 'Executor').sort((a, b) => a.nome.localeCompare(b.nome));
+    const inspecoesGeral = (db.inspecoes_geral || []).map(ig => {
+        const resp = usuarios.find(u => u.id === ig.responsavel_id) || {};
+        return {
+            ...ig,
+            responsavel_nome: resp.nome || 'N/D'
+        };
+    });
+    const inspecaoGeralAtiva = inspecoesGeral.find(ig => ig.status === 'Em Andamento');
+    const inspecoesPainel = (db.inspecoes_painel || []).map(ip => {
+        const resp = usuarios.find(u => u.id === ip.responsavel_id) || {};
+        return {
+            ...ip,
+            responsavel_nome: resp.nome || 'N/D'
+        };
+    });
 
     const totalAmbientes = ambientes.length;
     const totalAtivos = activeAmbientes.length;
@@ -1234,7 +1355,8 @@ function compilePhp(filePath, session, getParams = {}) {
         alertaSucesso: session.alerta_sucesso || '',
         alertaErro: session.alerta_erro || '',
         erro: session.erro || '',
-        BASE_URL: ''
+        BASE_URL: '',
+        inspecaoGeralAtiva: inspecaoGeralAtiva
     };
 
     // Limpa alertas após o consumo de render
@@ -1465,10 +1587,19 @@ function compilePhp(filePath, session, getParams = {}) {
         maxOS,
         pesquisa,
         dashboard_analise,
+        inspecoesPainel,
+        inspecoesGeral,
+        inspecaoGeralAtiva,
         erro: context.erro,
         alertaErro: context.alertaErro,
         alertaSucesso: context.alertaSucesso
     };
+
+    // Para injetar variáveis dinâmicas de inspeções gerais na view
+    if (filePath.endsWith('inspecoes_seguranca.php')) {
+        context.inspecoesGeral = inspecoesGeral.filter(ig => ig.status === 'Encerrada');
+        context.inspecaoGeralAtiva = inspecaoGeralAtiva;
+    }
 
     // Compilação em cascata (Loops -> Condicionais em múltiplas rodadas para resolver aninhamento -> Variáveis)
     html = compileLoops(html, session, dbContext);
@@ -1805,6 +1936,7 @@ const server = http.createServer((req, res) => {
         req.on('data', chunk => { body += chunk; });
         req.on('end', () => {
             const postParams = querystring.parse(body);
+            console.log(`[DEBUG SERV MOCK] POST - Path: "${pathname}", Acao: "${postParams.acao}"`);
             const isAjax = postParams.ajax === '1' || req.headers['x-requested-with'] === 'XMLHttpRequest';
 
             // Bloqueio literal contra a palavra "VAZIO" (case-insensitive) em qualquer parâmetro
@@ -2069,6 +2201,174 @@ const server = http.createServer((req, res) => {
                     db.checklists.splice(idx, 1);
                     saveDatabase(db);
                     return respondJson(true, `Registro de inspeção preventiva #${id} removido com sucesso!`, { id });
+                }
+            }
+
+            // VIEW: Inspeções de Segurança (Quadro Elétrico)
+            if (pathname.includes('/public/views/inspecoes_seguranca.php')) {
+                const acao = postParams.acao;
+
+                if (acao === 'iniciar_inspecao_geral') {
+                    const unidade = (postParams.unidade || 'SENAI').trim();
+                    const dataInspecao = (postParams.data_inspecao || '').trim();
+
+                    if (!dataInspecao) {
+                        return respondJson(false, "Preencha a data da inspeção geral.");
+                    }
+
+                    if (!db.inspecoes_geral) db.inspecoes_geral = [];
+
+                    // Verifica se já existe uma sessão em andamento
+                    const ativa = db.inspecoes_geral.find(ig => ig.status === 'Em Andamento');
+                    if (ativa) {
+                        return respondJson(false, "Já existe uma inspeção geral em andamento. Encerre-a antes de iniciar outra.");
+                    }
+
+                    const newGeral = {
+                        id: db.inspecoes_geral.length > 0 ? Math.max(...db.inspecoes_geral.map(ig => ig.id)) + 1 : 1,
+                        unidade: unidade,
+                        data_inspecao: dataInspecao,
+                        responsavel_id: session.usuario_id,
+                        observacoes: null,
+                        status: 'Em Andamento',
+                        data_criacao: new Date().toISOString().replace('T', ' ').substring(0, 19)
+                    };
+
+                    db.inspecoes_geral.push(newGeral);
+                    saveDatabase(db);
+                    
+                    const respUser = db.usuarios.find(u => u.id === session.usuario_id) || {};
+                    newGeral.responsavel_nome = respUser.nome || 'N/D';
+
+                    return respondJson(true, "Inspeção Geral iniciada com sucesso!", newGeral);
+                }
+
+                if (acao === 'salvar_inspecao') {
+                    const inspecaoId = postParams.inspecao_id && postParams.inspecao_id !== '' ? parseInt(postParams.inspecao_id) : null;
+                    const inspecaoGeralId = postParams.inspecao_geral_id ? parseInt(postParams.inspecao_geral_id) : null;
+                    const unidade = (postParams.unidade || 'SENAI').trim();
+                    const setor = (postParams.setor || '').trim();
+                    const quadroTag = (postParams.quadro_tag || '').trim();
+                    const dataInspecao = (postParams.data_inspecao || '').trim();
+                    const obs = (postParams.observacoes || '').trim();
+
+                    if (!setor || !quadroTag || !dataInspecao) {
+                        return respondJson(false, "Preencha todos os campos obrigatórios (Setor, Identificação do Quadro, Data).");
+                    }
+
+                    // Processar os 20 itens de inspeção
+                    const itensArr = {};
+                    let statusGeral = 'Conforme';
+
+                    for (let i = 1; i <= 20; i++) {
+                        const status = postParams[`item_${i}_status`] || 'NA';
+                        const itemData = {
+                            status: status
+                        };
+
+                        if (status === 'NC') {
+                            statusGeral = 'Não Conforme';
+                            const obsNc = (postParams[`item_${i}_obs_nc`] || '').trim();
+                            const fotoNc = (postParams[`item_${i}_foto_base64`] || '').trim();
+
+                            if (!obsNc || !fotoNc) {
+                                return respondJson(false, `Erro: O item ${i} está marcado como 'Não Conforme', portanto a foto e a observação são obrigatórias.`);
+                            }
+
+                            itemData.obs_nc = obsNc;
+                            itemData.foto_nc = fotoNc;
+                        }
+
+                        if (i === 5) {
+                            itemData.detalhes = {
+                                advertencia: postParams.item_5_adv === '1' || postParams.item_5_adv === 'on' ? 1 : 0,
+                                identificacao: postParams.item_5_ident === '1' || postParams.item_5_ident === 'on' ? 1 : 0,
+                                nivel_tensao: postParams.item_5_tensao === '1' || postParams.item_5_tensao === 'on' ? 1 : 0
+                            };
+                        } else if (i === 6) {
+                            itemData.detalhes = {
+                                cadeado: postParams.item_6_cadeado === '1' || postParams.item_6_cadeado === 'on' ? 1 : 0,
+                                chave: postParams.item_6_chave === '1' || postParams.item_6_chave === 'on' ? 1 : 0
+                            };
+                        } else if (i === 10) {
+                            itemData.eficiente = postParams.item_10_eficiente || '';
+                        } else if (i === 11) {
+                            itemData.atualizado = postParams.item_11_atualizado || '';
+                        } else if (i === 12) {
+                            itemData.localizacao = (postParams.item_12_localizacao || '').trim();
+                        } else if (i === 20) {
+                            itemData.detalhes = {
+                                conservacao: postParams.item_20_conservacao === '1' || postParams.item_20_conservacao === 'on' ? 1 : 0,
+                                funcional: postParams.item_20_funcional === '1' || postParams.item_20_funcional === 'on' ? 1 : 0
+                            };
+                        }
+
+                        itensArr[`item_${i}`] = itemData;
+                    }
+
+                    if (!db.inspecoes_painel) db.inspecoes_painel = [];
+
+                    const newInspecao = {
+                        id: db.inspecoes_painel.length > 0 ? Math.max(...db.inspecoes_painel.map(ip => ip.id)) + 1 : 1,
+                        inspecao_geral_id: inspecaoGeralId,
+                        unidade: unidade,
+                        setor: setor,
+                        quadro_tag: quadroTag,
+                        data_inspecao: dataInspecao,
+                        responsavel_id: session.usuario_id,
+                        observacoes: obs || null,
+                        itens: JSON.stringify(itensArr),
+                        status_geral: statusGeral,
+                        data_criacao: new Date().toISOString().replace('T', ' ').substring(0, 19)
+                    };
+
+                    db.inspecoes_painel.push(newInspecao);
+                    saveDatabase(db);
+                    
+                    const respUser = db.usuarios.find(u => u.id === session.usuario_id) || {};
+                    newInspecao.responsavel_nome = respUser.nome || 'N/D';
+
+                    return respondJson(true, "Inspeção de setor registrada com sucesso!", newInspecao);
+                }
+
+                if (acao === 'encerrar_inspecao_geral') {
+                    const inspecaoGeralId = parseInt(postParams.inspecao_geral_id);
+                    const obs = (postParams.observacoes || '').trim();
+
+                    if (!inspecaoGeralId) {
+                        return respondJson(false, "ID da inspeção geral não informado.");
+                    }
+
+                    if (!db.inspecoes_geral) db.inspecoes_geral = [];
+                    const idx = db.inspecoes_geral.findIndex(ig => ig.id === inspecaoGeralId);
+                    if (idx === -1) return respondJson(false, "Inspeção geral não localizada.");
+
+                    db.inspecoes_geral[idx].status = 'Encerrada';
+                    db.inspecoes_geral[idx].observacoes = obs || null;
+                    
+                    saveDatabase(db);
+                    return respondJson(true, "Inspeção Geral encerrada com sucesso!");
+                }
+
+                if (acao === 'excluir') {
+                    if (session.usuario_nivel !== 'Gestor') {
+                        return respondJson(false, "Acesso negado: Apenas gestores podem excluir registros.");
+                    }
+
+                    const id = parseInt(postParams.id);
+                    if (!db.inspecoes_geral) db.inspecoes_geral = [];
+                    const idx = db.inspecoes_geral.findIndex(ig => ig.id === id);
+                    if (idx === -1) return respondJson(false, "Registro não localizado.");
+
+                    db.inspecoes_geral.splice(idx, 1);
+                    
+                    // Exclusão em cascata das sub-inspeções
+                    if (db.inspecoes_painel) {
+                        db.inspecoes_painel = db.inspecoes_painel.filter(ip => ip.inspecao_geral_id !== id);
+                    }
+
+                    saveDatabase(db);
+                    return respondJson(true, `Registro de inspeção geral #${id} removido com sucesso!`, { id });
                 }
             }
 
@@ -2562,6 +2862,31 @@ const server = http.createServer((req, res) => {
         });
     }
 
+    // AJAX: Buscar detalhes de uma inspeção geral por id (com seus setores)
+    if (pathname === '/public/views/inspecoes_seguranca.php' && queryParams.acao === 'buscar_detalhes_geral_ajax') {
+        const id = parseInt(queryParams.id);
+        const db = initDatabase();
+        const ig = (db.inspecoes_geral || []).find(i => i.id === id);
+        
+        if (!ig) return respondJson(false, "Inspeção geral não localizada.");
+        
+        const resp = db.usuarios.find(u => u.id === ig.responsavel_id) || {};
+        ig.responsavel_nome = resp.nome || 'N/D';
+        
+        const subItens = (db.inspecoes_painel || []).filter(ip => ip.inspecao_geral_id === id).map(ip => {
+            const r = db.usuarios.find(u => u.id === ip.responsavel_id) || {};
+            return {
+                ...ip,
+                responsavel_nome: r.nome || 'N/D'
+            };
+        });
+
+        return respondJson(true, "Dados carregados com sucesso!", {
+            geral: ig,
+            setores: subItens
+        });
+    }
+
     // INTERCEPTADOR DE EXPORTAÇÃO DE RELATÓRIO EXCEL (CSV)
     if (pathname.includes('/public/views/preventivas.php') && queryParams.action === 'exportar_excel') {
         if (session.usuario_nivel === 'Solicitante') {
@@ -2661,7 +2986,7 @@ const server = http.createServer((req, res) => {
 
         // BOM UTF-8
         res.write(Buffer.from([0xEF, 0xBB, 0xBF]));
-        res.write('ID O.S.;Solicitante;Data Abertura;Ambiente;Descrição do Problema;Executor;Tipo de Execução;Status;Data Fechamento\r\n');
+        res.write('ID O.S.;Solicitante;Data Abertura;Ambiente;Descrição do Problema;Histórico;Executor;Tipo de Execução;Status;Data Fechamento\r\n');
 
         filtered.forEach(os => {
             const sol = usuarios.find(u => u.id === os.solicitante_id)?.nome || 'N/D';
@@ -2683,8 +3008,19 @@ const server = http.createServer((req, res) => {
             const dataAb = formatDateStr(os.data_abertura);
             const dataFech = os.status === 'Concluída' && os.data_fechamento ? formatDateStr(os.data_fechamento) : '';
 
-            // Clean description and other fields to avoid CSV break
-            const desc = (os.descricao_problema || '').replace(/"/g, '""').replace(/\r?\n/g, ' ');
+            // Separate description from history logs
+            const fullDesc = os.descricao_problema || '';
+            const splitIdx = fullDesc.search(/\n\n\[/);
+            let descOnly, histOnly;
+            if (splitIdx !== -1) {
+                descOnly = fullDesc.substring(0, splitIdx).trim();
+                histOnly = fullDesc.substring(splitIdx).trim();
+            } else {
+                descOnly = fullDesc.trim();
+                histOnly = '';
+            }
+            const desc = descOnly.replace(/"/g, '""').replace(/\r?\n/g, ' ');
+            const hist = histOnly.replace(/"/g, '""').replace(/\r?\n/g, ' ');
 
             const row = [
                 '#' + os.id,
@@ -2692,6 +3028,7 @@ const server = http.createServer((req, res) => {
                 dataAb,
                 amb,
                 `"${desc}"`,
+                `"${hist}"`,
                 exec,
                 os.tipo_execucao || '',
                 os.status,
