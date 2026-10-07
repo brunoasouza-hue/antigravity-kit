@@ -99,20 +99,22 @@ class Ambiente {
 
         if (!$existe) {
             // Inserção
-            $sql = "INSERT INTO ambientes (id, nome_ambiente, status) VALUES (:id, :nome_ambiente, :status)";
+            $sql = "INSERT INTO ambientes (id, nome_ambiente, status, familia) VALUES (:id, :nome_ambiente, :status, :familia)";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 'id' => $this->id,
                 'nome_ambiente' => $this->nome_ambiente,
-                'status' => $this->status
+                'status' => $this->status,
+                'familia' => $this->familia
             ]);
         } else {
             // Atualização
-            $sql = "UPDATE ambientes SET nome_ambiente = :nome_ambiente, status = :status WHERE id = :id";
+            $sql = "UPDATE ambientes SET nome_ambiente = :nome_ambiente, status = :status, familia = :familia WHERE id = :id";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 'nome_ambiente' => $this->nome_ambiente,
                 'status' => $this->status,
+                'familia' => $this->familia,
                 'id' => $this->id
             ]);
         }
@@ -218,5 +220,32 @@ class Ambiente {
             );
         }
         return $ambientes;
+    }
+
+    /** Lista ambientes ativos explicitamente vinculados ao usuÃ¡rio. */
+    public static function listarAtivosVinculados(int $usuarioId): array {
+        $db = Database::getConnection();
+        $stmt = $db->prepare("SELECT a.* FROM ambientes a
+            INNER JOIN usuario_ambiente ua ON ua.ambiente_id = a.id
+            WHERE ua.usuario_id = :usuario_id AND a.status = 'Ativo'
+            ORDER BY a.id ASC");
+        $stmt->execute(['usuario_id' => $usuarioId]);
+        $ambientes = [];
+        while ($row = $stmt->fetch()) {
+            $ambientes[] = new self($row['nome_ambiente'], $row['status'], $row['familia'] ?? 'Geral', (int)$row['id']);
+        }
+        return $ambientes;
+    }
+
+    /** Confere a associaÃ§Ã£o persistida, sem inferir vÃ­nculos por nome ou famÃ­lia. */
+    public static function usuarioPossuiVinculo(int $usuarioId, int $ambienteId): bool {
+        $stmt = Database::getConnection()->prepare(
+            "SELECT 1 FROM usuario_ambiente ua
+             INNER JOIN ambientes a ON a.id = ua.ambiente_id
+             WHERE ua.usuario_id = :usuario_id AND ua.ambiente_id = :ambiente_id
+               AND a.status = 'Ativo' LIMIT 1"
+        );
+        $stmt->execute(['usuario_id' => $usuarioId, 'ambiente_id' => $ambienteId]);
+        return $stmt->fetchColumn() !== false;
     }
 }

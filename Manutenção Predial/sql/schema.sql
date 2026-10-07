@@ -117,7 +117,7 @@ INSERT IGNORE INTO usuarios (nome, email, senha, nivel_acesso) VALUES ('Rafael F
 INSERT IGNORE INTO usuarios (nome, email, senha, nivel_acesso) VALUES ('Rogerio Monteiro da Silva', 'rogerio.silva@escola.com', '$2y$10$U228o/lq1Q7n6lP2tT/Eae/T1XUeTj.lYVfG9d4t.F37yT7V42qK6', 'Executor');
 
 -- SEEDING DE AMBIENTES
-INSERT INTO ambientes (id, nome_ambiente) VALUES (20770001, 'RECPÇÃO') ON DUPLICATE KEY UPDATE nome_ambiente=nome_ambiente;
+INSERT INTO ambientes (id, nome_ambiente) VALUES (20770001, 'RECEPÇÃO') ON DUPLICATE KEY UPDATE nome_ambiente=nome_ambiente;
 INSERT INTO ambientes (id, nome_ambiente) VALUES (20770002, 'COORDPEDAG') ON DUPLICATE KEY UPDATE nome_ambiente=nome_ambiente;
 INSERT INTO ambientes (id, nome_ambiente) VALUES (20770003, 'COORDRELAIND') ON DUPLICATE KEY UPDATE nome_ambiente=nome_ambiente;
 INSERT INTO ambientes (id, nome_ambiente) VALUES (20770004, 'SECRETARIA') ON DUPLICATE KEY UPDATE nome_ambiente=nome_ambiente;

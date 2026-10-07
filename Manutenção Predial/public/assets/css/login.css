@@ -139,6 +139,28 @@
     transform: scale(1.05);
 }
 
+.login-title {
+    font-family: "TASA Orbiter", sans-serif;
+    color: var(--text-primary);
+    font-size: 1.6rem;
+    font-weight: 800;
+    text-align: center;
+    margin-top: -15px;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.login-title::after {
+    content: "";
+    display: block;
+    width: 45px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--senai-red), var(--senai-red-dark));
+    margin: 8px auto 0 auto;
+    border-radius: 2px;
+}
+
 /* Inputs Section */
 .div-inputs-chefe {
     display: flex;

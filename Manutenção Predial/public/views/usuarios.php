@@ -5,6 +5,8 @@ require_once __DIR__ . '/../../src/Models/Ambiente.php';
 
 // Proteção de Rota - Administrador e Gestor
 AuthController::exigirNivelAcesso(['Administrador', 'Gestor']);
+$dataAtual = date('d/m/Y');
+$csrfUsuarios = AuthController::tokenCsrf();
 
 // Busca dados
 $usuarios = Usuario::listarTodos();
@@ -65,7 +67,7 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
         <button id="fechar-nav"><i class="bi bi-arrow-left-circle-fill"></i></button>
     </div>
     <div class="div-img">
-        <img src="../assets/img/senailogo2.png" alt="Logo Senai" id="senai-logo2" style="width: 80%;">
+        <img src="<?php echo BASE_URL; ?>/public/assets/img/senailogo2.png" alt="Logo Senai" id="senai-logo2" style="width: 80%;">
     </div>
     <div class="div-links">
         <a href="./home.php" class="links"><i class="bi bi-house-door-fill"></i> Início</a>
@@ -115,7 +117,7 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
             <div class="avatar"><i class="bi bi-person-badge-fill"></i></div>
             <h4 style="color:var(--corTxt3)">
                 Olá, <span style="color:var(--corDestaque);"><?php echo htmlspecialchars($_SESSION['usuario_nome'] ?? 'Gestor'); ?></span>
-                <small style="font-size:12px;color:var(--corTxt2);">(Gestor)</small>
+                <small style="font-size:12px;color:var(--corTxt2);">(<?= htmlspecialchars($_SESSION['usuario_nivel'], ENT_QUOTES, 'UTF-8') ?>)</small>
             </h4>
         </div>
         <div class="div-txt-header">
@@ -204,10 +206,16 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
                         <td style="padding: 15px; text-align: center;">
                             <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
                                 <?php $vinculosArr = $u->getAmbientesVinculados(); ?>
+                                <?php if (AuthController::temNivelAcesso(['Administrador']) || $u->getNivelAcesso() !== 'Administrador'): ?>
                                 <button onclick="abrirModalEditar(<?php echo $u->getId(); ?>, '<?php echo addslashes($u->getNome()); ?>', '<?php echo addslashes($u->getNivelAcesso()); ?>', [<?php echo implode(',', $vinculosArr ?: []); ?>])" 
                                     style="background: var(--corDestaque); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;">
                                     <i class="bi bi-pencil-square"></i> Editar
                                 </button>
+                                <?php if (AuthController::temNivelAcesso(['Administrador'])): ?>
+                                <button type="button" class="btn-reset-senha" data-id="<?= (int)$u->getId() ?>" data-nome="<?= htmlspecialchars($u->getNome(), ENT_QUOTES, 'UTF-8') ?>" style="background:var(--corFundo2);color:var(--corTxt3);border:1px solid var(--corBorda);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px;">
+                                    <i class="bi bi-key-fill"></i> Resetar senha
+                                </button>
+                                <?php endif; ?>
                                 <?php if ($u->getId() !== $_SESSION['usuario_id']): ?>
                                     <?php if ($u->getStatus() === 'Ativo'): ?>
                                         <button onclick="alterarStatusUsuario(<?php echo $u->getId(); ?>, 'Inativo')" 
@@ -220,6 +228,7 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
                                             <i class="bi bi-person-check-fill"></i> Ativar
                                         </button>
                                     <?php endif; ?>
+                                <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -238,6 +247,7 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
             <p style="font-size: 13px; color: #666; margin-bottom: 20px;">A senha padrão para novos usuários será <strong>senai123</strong>. Eles poderão alterá-la futuramente.</p>
             
             <form action="../../src/Controllers/UsuarioController.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfUsuarios, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="acao" value="criar">
                 
                 <div style="margin-bottom: 15px;">
@@ -287,6 +297,7 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
             <button type="button" onclick="document.getElementById('modalEditarUsuario').style.display='none'" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;"><i class="bi bi-x-lg"></i></button>
             <h2 style="margin: 0 0 20px 0; color: var(--corBase); font-size: 22px;">Editar Usuário</h2>
             <form action="../../src/Controllers/UsuarioController.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfUsuarios, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="acao" value="editar_usuario">
                 <input type="hidden" name="id" id="edit-user-id" value="">
                 
@@ -322,6 +333,7 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
                             <?php endforeach; ?>
                         </select>
                         <button type="button" onclick="adicionarAmbiente()" style="background: var(--corDestaque); color: #fff; border: none; border-radius: 8px; padding: 0 15px; font-weight: bold; cursor: pointer; transition: 0.2s;"><i class="bi bi-plus-circle"></i> Adicionar</button>
+                    </div>
                     </div>
                     
                     <div id="lista-ambientes-vinculados" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; min-height: 50px; background: #fafafa;">
@@ -445,11 +457,31 @@ $nivelOpcoes = ['Solicitante', 'Executor', 'Gestor', 'Administrador'];
     </script>
 
     <form id="form-status-usuario" action="../../src/Controllers/UsuarioController.php" method="POST" style="display:none;">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfUsuarios, ENT_QUOTES, 'UTF-8') ?>">
         <input type="hidden" name="acao" value="alterar_status">
         <input type="hidden" name="id" id="status-user-id" value="">
         <input type="hidden" name="status" id="status-user-value" value="">
     </form>
 
     <script src="../assets/js/scripts.js" defer></script>
+    <?php if (AuthController::temNivelAcesso(['Administrador'])): ?>
+    <div class="modal-novo-usuario" id="modalResetSenha" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloResetSenha">
+        <div class="modal-box">
+            <h2 id="tituloResetSenha">Resetar senha</h2>
+            <p>Tem certeza de que deseja redefinir a senha de <strong id="reset-usuario-nome"></strong>?</p>
+            <p>A senha será redefinida para a senha padrão do sistema.</p>
+            <form action="../../src/Controllers/UsuarioController.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfUsuarios, ENT_QUOTES, 'UTF-8') ?>">
+                <input type="hidden" name="acao" value="resetar_senha">
+                <input type="hidden" name="id" id="reset-usuario-id">
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:24px;">
+                    <button type="button" id="cancelar-reset-senha" style="padding:10px 16px;border-radius:8px;cursor:pointer;">Cancelar</button>
+                    <button type="submit" style="padding:10px 16px;background:var(--corBase);color:#fff;border:0;border-radius:8px;cursor:pointer;">Resetar senha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="../assets/js/usuarios-admin.js" defer></script>
+    <?php endif; ?>
 </body>
 </html>

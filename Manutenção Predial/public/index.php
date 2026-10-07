@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="div-img">
                     <img src="./assets/img/senailogo.png" alt="Logo Senai" id="senai-logo" style="width: 70%;">
                 </div>
+                <h1 class="login-title">Manutenção Predial</h1>
 
                 <!-- Exibe mensagem de erro caso as credenciais estejam erradas -->
                 <?php if (!empty($erro)): ?>

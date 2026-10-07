@@ -10,9 +10,11 @@ require_once __DIR__ . '/../../src/Controllers/AuthController.php';
 require_once __DIR__ . '/../../src/Controllers/ChecklistController.php';
 require_once __DIR__ . '/../../src/Models/Ambiente.php';
 require_once __DIR__ . '/../../src/Models/Checklist.php';
+require_once __DIR__ . '/../../src/Models/ItemPreventiva.php';
+require_once __DIR__ . '/../../src/Models/InspecaoMensal.php';
 
 // Exige autenticação e privilégio de Gestor ou Executor
-AuthController::exigirNivelAcesso(['Gestor', 'Executor']);
+AuthController::exigirNivelAcesso(['Gestor', 'Executor', 'Administrador']);
 
 $usuarioNome = $_SESSION['usuario_nome'] ?? 'Usuário';
 $usuarioNivel = $_SESSION['usuario_nivel'] ?? 'Executor';
@@ -28,6 +30,7 @@ if (isset($_GET['logout'])) {
 // Processamento de Ações do Controller antes do carregamento da página
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['acao'])) {
     $controller = new ChecklistController();
+    $controller->processarAcao();
 }
 
 // =========================================================================
@@ -82,11 +85,24 @@ if (isset($_GET['action']) && $_GET['action'] == 'exportar_excel') {
     exit;
 }
 // =========================================================================    $controller->processarAcao();
-}
 
 // Busca dados necessários para renderizar a página
-$ambientesAtivos = Ambiente::listarAtivos();
+$usuarioId = (int)($_SESSION['usuario_id'] ?? 0);
+$ambientesAtivos = $usuarioNivel === 'Executor'
+    ? Ambiente::listarAtivosVinculados($usuarioId)
+    : Ambiente::listarAtivos();
 $checklists = Checklist::listarTodos();
+$inspecaoAtiva = InspecaoMensal::ativa();
+$historicoInspecoes = InspecaoMensal::listarTodas();
+$checklistsInspecaoAtiva = $inspecaoAtiva === null
+    ? []
+    : (InspecaoMensal::buscarDetalhes((int)$inspecaoAtiva['id'])['checklists'] ?? []);
+$quantidadeAmbientesInspecionados = count(array_unique(array_column($checklistsInspecaoAtiva, 'ambiente_id')));
+$itensPreventiva = [];
+foreach (ItemPreventiva::familias() as $familia) $itensPreventiva[$familia] = [];
+foreach (ItemPreventiva::listar() as $item) $itensPreventiva[$item['familia']][] = $item['nome'];
+$familiasAmbientes = [];
+foreach ($ambientesAtivos as $ambiente) $familiasAmbientes[(string)$ambiente->getId()] = $ambiente->getFamilia();
 
 // Data atual formatada para exibição no cabeçalho
 $dataAtual = date('d/m/Y');
@@ -228,6 +244,58 @@ $dataAtual = date('d/m/Y');
             color: var(--corTxt3);
             font-size: 14px;
         }
+        .tabela-bg2.inspecao-ciclo {
+            height: auto;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        .inspecao-ciclo__cabecalho {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
+        }
+        .inspecao-ciclo .inspecao-ambientes { margin-top: 0; }
+        .inspecao-ambientes__titulo {
+            display: flex; align-items: center; gap: 9px; margin: 0 0 14px;
+            color: var(--corTxt3); font-size: 16px;
+        }
+        .inspecao-ambientes__cabecalho {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 0;
+        }
+        .inspecao-ambientes__titulo { margin-bottom: 4px; }
+        .inspecao-ambientes__contagem { color: var(--corTxt2); font-size: 12px; white-space: nowrap; margin-bottom: 16px; }
+        .inspecao-lista {
+            width: 100%; overflow: hidden; border: 1px solid var(--corBorda); border-radius: 9px;
+            background: var(--corFundo2, #fff);
+        }
+        .inspecao-lista table { width: 100%; border-collapse: collapse; text-align: left; }
+        .inspecao-lista thead { background: rgba(0, 0, 0, .035); }
+        .inspecao-lista th {
+            padding: 12px 16px; color: var(--corTxt2); font-size: 11px; font-weight: 700;
+            letter-spacing: .035em; text-transform: uppercase;
+        }
+        .inspecao-lista td { padding: 12px 16px; color: var(--corTxt2); font-size: 13px; }
+        .inspecao-lista tbody tr + tr td { border-top: 1px solid var(--corBorda); }
+        .inspecao-lista__ambiente { color: var(--corTxt3) !important; font-weight: 650; }
+        .inspecao-lista__situacao { white-space: nowrap; }
+        .inspecao-lista__situacao > span:not(.inspecao-lista__mobile-label) {
+            display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 999px;
+            background: rgba(40, 167, 69, .1); color: #218838; font-size: 12px; font-weight: 600;
+        }
+        .inspecao-lista__situacao i { font-size: 11px; }
+        .inspecao-lista__mobile-label { display: none; }
+        .inspecao-ambientes__vazio {
+            margin: 0; padding: 18px; border: 1px dashed var(--corBorda); border-radius: 10px;
+            color: var(--corTxt2); text-align: center;
+        }
+        @media (max-width: 560px) {
+            .inspecao-lista thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+            .inspecao-lista tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 12px; padding: 9px 12px; }
+            .inspecao-lista tbody tr + tr { border-top: 1px solid var(--corBorda); }
+            .inspecao-lista td { display: block; min-width: 0; padding: 0; }
+            .inspecao-lista td:first-child { grid-column: 1 / -1; }
+            .inspecao-lista__mobile-label { display: block; margin-bottom: 2px; color: var(--corTxt2); font-size: 10px; font-weight: 500; }
+            .inspecao-lista__situacao { justify-self: end; text-align: right; }
+        }
     </style>
 </head>
 <body>
@@ -344,31 +412,92 @@ $dataAtual = date('d/m/Y');
             </div>
         </div>
 
-        <!-- BARRA DE AÇÕES UNIFICADA -->
+        <!-- Primary action: execute the checklist; the catalog is configuration only. -->
         <div class="page-actions-bar" style="margin-top: 30px;">
-            <div style="flex-grow: 1;">
-                <h2 style="font-family: 'TASA Orbiter', sans-serif; font-weight: bold; color: var(--corTxt3);">Manutenção Preventiva (Mensal)</h2>
-                <p style="color: var(--corTxt2); font-size: 13px; margin-top: 5px;">Acompanhe o ciclo de vistorias mensais e inspecione os ambientes.</p>
+            <div style="flex-grow:1;">
+                <h2 style="font-family:'TASA Orbiter',sans-serif;font-weight:bold;color:var(--corTxt3);">Manutenção Preventiva (Mensal)</h2>
+                <p style="color:var(--corTxt2);font-size:13px;margin-top:5px;">Execute inspeções nos ambientes e consulte os ciclos anteriores.</p>
             </div>
-            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="abrirModalExportacao()" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                    <i class="bi bi-file-earmark-excel-fill"></i> 📥 Exportar Relatório Excel
-                </button>
-                <button onclick="abrirModalGerenciarItens()" style="background: var(--corDestaque); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                    <i class="bi bi-list-check"></i> Gerenciar Itens
-                </button>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <?php if ($inspecaoAtiva !== null): ?>
+                    <button type="button" id="btnExecutarInspecao" onclick="abrirModalChecklistRapido(<?= (int)$inspecaoAtiva['id'] ?>, null, '')" style="background:var(--corDestaque);color:#fff;border:0;padding:12px 20px;border-radius:8px;cursor:pointer;font-weight:bold;display:flex;align-items:center;gap:8px;">
+                        <i class="bi bi-clipboard-check"></i> Inspecionar ambiente
+                    </button>
+                <?php elseif (in_array($usuarioNivel,['Gestor','Administrador'],true)): ?>
+                    <button type="button" id="btnExecutarInspecao" onclick="iniciarInspecaoMensal()" style="background:var(--corDestaque);color:#fff;border:0;padding:12px 20px;border-radius:8px;cursor:pointer;font-weight:bold;display:flex;align-items:center;gap:8px;">
+                        <i class="bi bi-play-circle"></i> Iniciar ciclo e inspecionar
+                    </button>
+                <?php else: ?>
+                    <span style="color:var(--corTxt2);font-size:13px;">Aguardando o Gestor iniciar o ciclo mensal.</span>
+                <?php endif; ?>
+                <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
+                    <button type="button" id="btnGerenciarCatalogo" onclick="abrirModalGerenciarItens()" title="Configura o catálogo por família; não inicia uma inspeção." style="background:transparent;color:var(--corTxt2);border:1px solid var(--corBorda);padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;">
+                        <i class="bi bi-list-check"></i> Configurar catálogo
+                    </button>
+                    <button type="button" id="btnExportarPreventiva" onclick="abrirModalExportacao()" style="background:transparent;color:var(--corTxt2);border:1px solid var(--corBorda);padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;">
+                        <i class="bi bi-file-earmark-excel"></i> Exportar relatório
+                    </button>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
         </div>
 
-        <!-- INJETAR_INSPECAO_ATIVA -->
+        <?php if ($inspecaoAtiva !== null): ?>
+        <div class="tabela-bg2 inspecao-ciclo" style="margin-top: 22px;">
+          <div class="inspecao-ciclo__cabecalho">
+            <div>
+                <strong>Inspeção mensal em andamento #<?= (int)$inspecaoAtiva['id'] ?></strong>
+                <span style="display:block;color:var(--corTxt2);font-size:13px;margin-top:5px;">Iniciada em <?= htmlspecialchars(date('d/m/Y',strtotime($inspecaoAtiva['data_inicio']))) ?></span>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <?php if (in_array($usuarioNivel,['Gestor','Administrador'],true)): ?>
+                <button type="button" onclick="finalizarInspecao(<?= (int)$inspecaoAtiva['id'] ?>)" style="background:#28a745;color:#fff;border:0;padding:11px 18px;border-radius:8px;cursor:pointer;font-weight:bold;"><i class="bi bi-check-lg"></i> Finalizar ciclo</button>
+                <?php endif; ?>
+            </div>
+          </div>
+          <section class="inspecao-ambientes" aria-labelledby="tituloAmbientesInspecionados">
+            <div class="inspecao-ambientes__cabecalho">
+                <h3 class="inspecao-ambientes__titulo" id="tituloAmbientesInspecionados"><i class="bi bi-buildings" aria-hidden="true"></i> Ambientes inspecionados neste ciclo</h3>
+                <span class="inspecao-ambientes__contagem"><?= $quantidadeAmbientesInspecionados ?> <?= $quantidadeAmbientesInspecionados === 1 ? 'ambiente inspecionado' : 'ambientes inspecionados' ?></span>
+            </div>
+            <?php if (empty($checklistsInspecaoAtiva)): ?>
+                <p class="inspecao-ambientes__vazio"><i class="bi bi-clipboard2-check" aria-hidden="true"></i> Nenhum ambiente foi inspecionado neste ciclo ainda.</p>
+            <?php else: ?>
+                <div class="inspecao-lista">
+                  <table>
+                    <thead>
+                      <tr><th scope="col">Ambiente</th><th scope="col">Data da inspeção</th><th scope="col">Situação</th></tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($checklistsInspecaoAtiva as $checklistAtivo): ?>
+                        <?php
+                        $nomeAmbienteExibicao = (string)$checklistAtivo['ambiente_nome'];
+                        if ((int)$checklistAtivo['ambiente_id'] === 20770006 && $nomeAmbienteExibicao === 'ARQUIVOPOST') {
+                            $nomeAmbienteExibicao = 'ARQUIVO POST';
+                        }
+                        ?>
+                        <tr>
+                          <td class="inspecao-lista__ambiente" data-label="Ambiente"><span class="inspecao-lista__mobile-label">Ambiente</span><i class="bi bi-geo-alt" aria-hidden="true"></i> <?= htmlspecialchars($nomeAmbienteExibicao, ENT_QUOTES, 'UTF-8') ?></td>
+                          <td data-label="Data da inspeção"><span class="inspecao-lista__mobile-label">Data da inspeção</span><i class="bi bi-calendar3" aria-hidden="true"></i> <time datetime="<?= htmlspecialchars(date('Y-m-d', strtotime($checklistAtivo['data_inspecao'])), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(date('d/m/Y', strtotime($checklistAtivo['data_inspecao'])), ENT_QUOTES, 'UTF-8') ?></time></td>
+                          <td class="inspecao-lista__situacao" data-label="Situação"><span class="inspecao-lista__mobile-label">Situação</span><span><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Inspecionado</span></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                  </table>
+                </div>
+            <?php endif; ?>
+          </section>
+        </div>
+        <?php elseif (in_array($usuarioNivel,['Gestor','Administrador'],true)): ?>
+        <div class="tabela-bg2" style="margin-top:22px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+            <span>Nenhuma inspeção mensal está em andamento.</span>
+        </div>
+        <?php endif; ?>
 
         <!-- HISTÓRICO DE INSPEÇÕES MENSAIS -->
         <div class="tabela-bg2" style="margin-top: 25px;">
             <div class="tabela-titulo" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                 <i class="bi bi-clock-history" style="font-size: 1.5rem; color: var(--corBase);"></i>
-                <h2>Histórico de Inspeções Finalizadas</h2>
+                <h2>Ciclos mensais</h2>
             </div>
             
             <div class="tabela-wrapper" style="overflow-x: auto; background: var(--corFundo); border-radius: 12px; border: 1px solid var(--corBorda);">
@@ -385,7 +514,7 @@ $dataAtual = date('d/m/Y');
                     <tbody id="tabela-historico">
                         <?php if (empty($historicoInspecoes)): ?>
                             <tr id="linha-vazia">
-                                <td colspan="5" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum ciclo finalizado no histórico.</td>
+                                <td colspan="5" style="padding: 30px; text-align: center; color: var(--corTxt2);">Nenhum ciclo mensal cadastrado.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($historicoInspecoes as $h): ?>
@@ -394,7 +523,11 @@ $dataAtual = date('d/m/Y');
                                     <td style="padding: 15px; font-size: 14px; color: var(--corTxt3);"><?php echo date('d/m/Y', strtotime($h['data_inicio'])); ?></td>
                                     <td style="padding: 15px; font-size: 14px; color: var(--corTxt3);"><?php echo $h['data_fim'] ? date('d/m/Y', strtotime($h['data_fim'])) : '-'; ?></td>
                                     <td style="padding: 15px; text-align: center;">
-                                        <span class="badge" style="background: rgba(40,167,69,0.1); color: #28a745; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;"><i class="bi bi-check2-circle"></i> Finalizada</span>
+                                        <?php if ($h['status'] === 'Finalizada'): ?>
+                                            <span class="badge" style="background: rgba(40,167,69,0.1); color: #28a745; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;"><i class="bi bi-check2-circle"></i> Finalizada</span>
+                                        <?php else: ?>
+                                            <span class="badge" style="background: rgba(255,193,7,0.15); color: #9a7100; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;"><i class="bi bi-hourglass-split"></i> Em andamento</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td style="padding: 15px; text-align: right;">
                                         <button onclick="visualizarHistorico(<?php echo $h['id']; ?>)" style="background: var(--corBase); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;"><i class="bi bi-eye"></i> Visualizar</button>
@@ -474,6 +607,9 @@ $dataAtual = date('d/m/Y');
                                     <option value="<?php echo $a->getId(); ?>"><?php echo $a->getId(); ?> - <?php echo htmlspecialchars($a->getNomeAmbiente()); ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <?php if (empty($ambientesAtivos)): ?>
+                                <small style="display:block;margin-top:6px;color:var(--corTxt2);">Nenhum ambiente ativo vinculado esta disponivel para este perfil.</small>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -595,25 +731,42 @@ $dataAtual = date('d/m/Y');
                     } else {
                         dados.checklists.forEach(c => {
                             let hasError = false;
+                            const statusChecklist = [c.status_tomadas, c.status_forros, c.status_paredes, c.status_projetor, c.status_tela, c.status_lousa];
                             if (c.itens_dinamicos) {
-                                Object.values(c.itens_dinamicos).forEach(val => {
-                                    if (val === 'Reparo Necessário' || val === 'NOk' || val === 'NOK') hasError = true;
-                                });
+                                statusChecklist.push(...Object.values(c.itens_dinamicos));
                             }
+                            statusChecklist.forEach(val => {
+                                    if (val === 'Defeito' || val === 'Reparo Necessário' || val === 'NOk' || val === 'NOK') hasError = true;
+                            });
                             
                             const badgeOk = `<span style="background:rgba(40,167,69,0.1); color:#28a745; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:bold;"><i class="bi bi-check-circle-fill"></i> OK</span>`;
                             const badgeNok = `<span style="background:rgba(220,53,69,0.1); color:#dc3545; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:bold;"><i class="bi bi-exclamation-triangle-fill"></i> Com Ocorrências</span>`;
 
                             const dataInspecao = c.data_inspecao ? c.data_inspecao.split('-').reverse().join('/') : '-';
 
-                            tbody.innerHTML += `
-                                <tr style="border-bottom: 1px solid var(--corBorda);">
-                                    <td style="padding: 12px 15px; font-weight: bold; color: var(--corTxt3);">${c.ambiente_nome}</td>
-                                    <td style="padding: 12px 15px; text-align: center;">${hasError ? badgeNok : badgeOk}</td>
-                                    <td style="padding: 12px 15px; text-align: center; font-size: 13px;">${dataInspecao}</td>
-                                    <td style="padding: 12px 15px; text-align: center;">${c.observacoes ? '<span title="' + c.observacoes + '" style="cursor:help; color:var(--corBase);"><i class="bi bi-chat-text-fill"></i></span>' : '-'}</td>
-                                </tr>
-                            `;
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid var(--corBorda)';
+                            const ambienteCell = document.createElement('td');
+                            ambienteCell.style.padding = '12px 15px';
+                            const abrirDetalhes = document.createElement('button');
+                            abrirDetalhes.type = 'button';
+                            abrirDetalhes.textContent = c.ambiente_nome || 'Ambiente indisponivel';
+                            abrirDetalhes.addEventListener('click', () => visualizarDetalhes(c));
+                            ambienteCell.appendChild(abrirDetalhes);
+                            tr.appendChild(ambienteCell);
+                            const statusCell = document.createElement('td');
+                            statusCell.style.cssText = 'padding:12px 15px;text-align:center';
+                            statusCell.innerHTML = hasError ? badgeNok : badgeOk;
+                            tr.appendChild(statusCell);
+                            const dataCell = document.createElement('td');
+                            dataCell.style.cssText = 'padding:12px 15px;text-align:center;font-size:13px';
+                            dataCell.textContent = dataInspecao;
+                            tr.appendChild(dataCell);
+                            const observacaoCell = document.createElement('td');
+                            observacaoCell.style.cssText = 'padding:12px 15px;text-align:center';
+                            observacaoCell.textContent = c.observacoes || '-';
+                            tr.appendChild(observacaoCell);
+                            tbody.appendChild(tr);
                         });
                     }
                     document.getElementById('modalVisualizarHistorico').style.display = 'flex';
@@ -886,7 +1039,11 @@ $dataAtual = date('d/m/Y');
             .then(data => {
                 if (data.success) {
                     showToast(data.message, 'success');
-                    setTimeout(() => window.location.reload(), 1000);
+                    setTimeout(() => {
+                        const destino = new URL(window.location.href);
+                        destino.searchParams.set('abrir_inspecao', '1');
+                        window.location.assign(destino.toString());
+                    }, 1000);
                 } else {
                     showToast(data.message, 'danger');
                 }
@@ -900,14 +1057,14 @@ $dataAtual = date('d/m/Y');
         let inspecaoAtualId = null;
 
         function abrirModalChecklistRapido(inspecaoId, ambId, ambNome) {
-            inspecaoAtualId = inspecaoId;
             abrirModalChecklist(ambId);
+            inspecaoAtualId = inspecaoId;
             
             // Se for um select visível, forçamos o valor e desabilitamos para o usuário não trocar
             let inpHiddenAmb = document.getElementById('ambiente_id');
             if(inpHiddenAmb && inpHiddenAmb.tagName === 'SELECT') {
-                inpHiddenAmb.style.pointerEvents = 'none';
-                inpHiddenAmb.style.opacity = '0.7';
+                inpHiddenAmb.style.pointerEvents = '';
+                inpHiddenAmb.style.opacity = '';
             }
         }
 
@@ -1010,6 +1167,10 @@ $dataAtual = date('d/m/Y');
 
     <!-- JS Globais -->
     <script src="../assets/js/scripts.js" defer></script>
+    <script>
+        window.ITENS_CHECKLIST = <?= json_encode($itensPreventiva, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+        window.AMBIENTES_FAMILIAS = <?= json_encode($familiasAmbientes, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+    </script>
 
     <!-- MODAL GERENCIAR ITENS DO CHECKLIST -->
     <div class="modal-fundo" id="modalGerenciarItens" style="display: none;">
@@ -1184,6 +1345,7 @@ $dataAtual = date('d/m/Y');
 
         const abrirModalChecklistOld = abrirModalChecklist;
         abrirModalChecklist = function(ambientePreSelecionado = null) {
+            inspecaoAtualId = null;
             document.getElementById('form-checklist').reset();
             
             const ambSelect = document.getElementById('ambiente_id');
@@ -1211,29 +1373,45 @@ $dataAtual = date('d/m/Y');
 
             const container = document.getElementById('detalhes-itens-container');
             container.innerHTML = '';
-            
-            if (info.itens_dinamicos) {
-                for (const [nome, status] of Object.entries(info.itens_dinamicos)) {
-                    let badgeClass = 'badge-nsa';
-                    let iconClass = 'bi-slash-circle';
-                    if (status === 'Ok') { badgeClass = 'badge-ok'; iconClass = 'bi-check-circle-fill'; } 
-                    else if (status === 'Defeito') { badgeClass = 'badge-defeito'; iconClass = 'bi-exclamation-triangle-fill'; }
-                    
-                    container.innerHTML += `
-                        <div class="card-detalhe-item">
-                            <span class="title">${nome}:</span>
-                            <div>
-                                <span class="badge-status ${badgeClass}">
-                                    <i class="bi ${iconClass}"></i> ${status}
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
+
+            const itens = [
+                ['Tomadas', info.status_tomadas], ['Forros', info.status_forros],
+                ['Paredes', info.status_paredes], ['Projetor', info.status_projetor],
+                ['Tela', info.status_tela], ['Lousa', info.status_lousa]
+            ];
+            if (info.itens_dinamicos) itens.push(...Object.entries(info.itens_dinamicos));
+            itens.forEach(([nome, status]) => {
+                let badgeClass = 'badge-nsa';
+                let iconClass = 'bi-slash-circle';
+                if (status === 'Ok') { badgeClass = 'badge-ok'; iconClass = 'bi-check-circle-fill'; }
+                else if (status === 'Defeito') { badgeClass = 'badge-defeito'; iconClass = 'bi-exclamation-triangle-fill'; }
+
+                const card = document.createElement('div');
+                card.className = 'card-detalhe-item';
+                const title = document.createElement('span');
+                title.className = 'title';
+                title.textContent = nome + ':';
+                const value = document.createElement('span');
+                value.className = 'badge-status ' + badgeClass;
+                const icon = document.createElement('i');
+                icon.className = 'bi ' + iconClass;
+                value.append(icon, document.createTextNode(' ' + (status || 'N/A')));
+                card.append(title, value);
+                container.appendChild(card);
+            });
 
             document.getElementById('detalhe_observacoes').innerText = info.observacoes || 'Nenhuma observação registrada.';
             document.getElementById('modalVerDetalhes').style.display = 'flex';
+        }
+
+        const query = new URLSearchParams(window.location.search);
+        const abrirInspecaoId = <?= $inspecaoAtiva !== null ? (int)$inspecaoAtiva['id'] : 'null' ?>;
+        if (query.get('abrir_inspecao') === '1' && abrirInspecaoId) {
+            query.delete('abrir_inspecao');
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('abrir_inspecao');
+            window.history.replaceState({}, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+            window.requestAnimationFrame(() => abrirModalChecklistRapido(abrirInspecaoId, null, ''));
         }
     </script>
     

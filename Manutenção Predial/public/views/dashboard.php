@@ -61,11 +61,22 @@ foreach ($statusRows as $r) {
 // ── Query 2: Tendência mensal Corretiva vs Preventiva (Linha) ─────────────────
 $stmtTendencia = $pdo->query("
     SELECT
-        DATE_FORMAT(data_abertura, '%Y-%m') AS mes,
-        SUM(CASE WHEN tipo = 'Corretivo' OR tipo IS NULL OR tipo = '' THEN 1 ELSE 0 END) AS corretivas,
-        SUM(CASE WHEN tipo = 'Preventivo' THEN 1 ELSE 0 END) AS preventivas
-    FROM ordens_servico
-    WHERE data_abertura IS NOT NULL
+        mes,
+        SUM(corretivas) AS corretivas,
+        SUM(preventivas) AS preventivas
+    FROM (
+        SELECT DATE_FORMAT(data_abertura, '%Y-%m') AS mes,
+               COUNT(*) AS corretivas, 0 AS preventivas
+        FROM ordens_servico
+        WHERE data_abertura IS NOT NULL
+        GROUP BY DATE_FORMAT(data_abertura, '%Y-%m')
+        UNION ALL
+        SELECT DATE_FORMAT(data_inspecao, '%Y-%m') AS mes,
+               0 AS corretivas, COUNT(*) AS preventivas
+        FROM checklists
+        WHERE data_inspecao IS NOT NULL
+        GROUP BY DATE_FORMAT(data_inspecao, '%Y-%m')
+    ) AS manutencoes_mensais
     GROUP BY mes
     ORDER BY mes ASC
     LIMIT 12
@@ -99,10 +110,10 @@ $mesAtual  = date('Y-m');
 $stmtFluxo = $pdo->prepare("
     SELECT
         SUM(CASE WHEN DATE_FORMAT(data_abertura, '%Y-%m') = :mes THEN 1 ELSE 0 END) AS abertas,
-        SUM(CASE WHEN (status = 'Concluída' OR status = 'FINALIZADO') AND DATE_FORMAT(data_abertura, '%Y-%m') = :mes THEN 1 ELSE 0 END) AS concluidas
+        SUM(CASE WHEN (status = 'Concluída' OR status = 'FINALIZADO') AND DATE_FORMAT(data_abertura, '%Y-%m') = :mes_concluidas THEN 1 ELSE 0 END) AS concluidas
     FROM ordens_servico
 ");
-$stmtFluxo->execute([':mes' => $mesAtual]);
+$stmtFluxo->execute([':mes' => $mesAtual, ':mes_concluidas' => $mesAtual]);
 $fluxoRow    = $stmtFluxo->fetch(PDO::FETCH_ASSOC);
 $dadosFluxo  = [
     'labels'    => ['Abertas no Mês', 'Concluídas no Mês'],
@@ -114,10 +125,10 @@ $dadosFluxo  = [
 $stmtCarga = $pdo->query("
     SELECT u.nome, COUNT(os.id) AS total
     FROM ordens_servico os
-    LEFT JOIN usuarios u ON os.executor_atual_id = u.id
+    LEFT JOIN usuarios u ON os.executor_id = u.id
     WHERE os.status NOT IN ('Concluída', 'FINALIZADO')
-      AND os.executor_atual_id IS NOT NULL
-    GROUP BY os.executor_atual_id, u.nome
+      AND os.executor_id IS NOT NULL
+    GROUP BY os.executor_id, u.nome
     ORDER BY total DESC
     LIMIT 10
 ");

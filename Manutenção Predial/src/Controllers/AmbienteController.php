@@ -78,6 +78,7 @@ class AmbienteController {
         $id = (int)($_POST['id'] ?? 0);
         $nome = trim($_POST['nome_ambiente'] ?? '');
         $status = trim($_POST['status'] ?? 'Ativo');
+        $familia = trim($_POST['familia'] ?? 'Geral');
 
         if ($id <= 0) {
             $this->retornarResposta(false, "O código (ID) do ambiente é obrigatório e deve ser numérico.");
@@ -92,12 +93,16 @@ class AmbienteController {
         }
 
         try {
-            $ambiente = new Ambiente($nome, $status, $id);
+            if (Ambiente::buscarPorId($id) !== null) {
+                $this->retornarResposta(false, 'Já existe um ambiente cadastrado com esse ID.');
+            }
+            $ambiente = new Ambiente($nome, $status, $familia, $id);
             if ($ambiente->salvar()) {
                 $this->retornarResposta(true, "Ambiente '{$nome}' cadastrado com sucesso!", [
                     'id' => $ambiente->getId(),
                     'nome_ambiente' => $ambiente->getNomeAmbiente(),
-                    'status' => $ambiente->getStatus()
+                    'status' => $ambiente->getStatus(),
+                    'familia' => $ambiente->getFamilia()
                 ]);
             } else {
                 $this->retornarResposta(false, "Erro ao salvar o ambiente. Tente novamente.");

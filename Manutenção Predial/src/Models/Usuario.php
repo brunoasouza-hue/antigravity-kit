@@ -63,6 +63,23 @@ class Usuario {
         }
     }
 
+    private static function carregarAmbientesVinculados(PDO $db, int $usuarioId): array {
+        $stmt = $db->prepare('SELECT ambiente_id FROM usuario_ambiente WHERE usuario_id = :id ORDER BY ambiente_id');
+        $stmt->execute(['id' => $usuarioId]);
+        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+
+    private function salvarAmbientesVinculados(): void {
+        if ($this->id === null) return;
+        $delete = $this->db->prepare('DELETE FROM usuario_ambiente WHERE usuario_id = :id');
+        $delete->execute(['id' => $this->id]);
+        $insert = $this->db->prepare('INSERT INTO usuario_ambiente (usuario_id, ambiente_id) VALUES (:usuario, :ambiente)');
+        foreach (array_unique(array_map('intval', $this->ambientes_vinculados)) as $ambienteId) {
+            if ($ambienteId <= 0) continue;
+            $insert->execute(['usuario' => $this->id, 'ambiente' => $ambienteId]);
+        }
+    }
+
     /**
      * Autentica o usuário pelo e-mail e senha.
      *
@@ -84,7 +101,7 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                self::carregarAmbientesVinculados($db, (int)$row['id']),
                 $row['status'] ?? 'Ativo'
             );
         }
@@ -98,38 +115,30 @@ class Usuario {
      * @return bool
      */
     public function salvar(): bool {
-        if ($this->id === null) {
-            // Inserção de novo usuário
-            // Criptografa a senha antes de salvar
-            $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO usuarios (nome, email, senha, nivel_acesso, status, ambientes_vinculados) VALUES (:nome, :email, :senha, :nivel_acesso, :status, :ambientes_vinculados)";
-            $stmt = $this->db->prepare($sql);
-            $success = $stmt->execute([
-                'nome' => $this->nome,
-                'email' => $this->email,
-                'senha' => $senhaHash,
-                'nivel_acesso' => $this->nivel_acesso,
-                'status' => $this->status,
-                'ambientes_vinculados' => json_encode($this->ambientes_vinculados)
-            ]);
-            if ($success) {
+        $transacaoPropria = !$this->db->inTransaction();
+        if ($transacaoPropria) $this->db->beginTransaction();
+        try {
+            if ($this->id === null) {
+                $sql = 'INSERT INTO usuarios (nome,email,senha,nivel_acesso,status) VALUES (:nome,:email,:senha,:nivel_acesso,:status)';
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([
+                    'nome' => $this->nome, 'email' => $this->email,
+                    'senha' => password_hash($this->senha, PASSWORD_DEFAULT),
+                    'nivel_acesso' => $this->nivel_acesso, 'status' => $this->status
+                ]);
                 $this->id = (int)$this->db->lastInsertId();
-                return true;
+            } else {
+                $sql = 'UPDATE usuarios SET nome=:nome,email=:email,nivel_acesso=:nivel_acesso,status=:status WHERE id=:id';
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute(['nome'=>$this->nome,'email'=>$this->email,'nivel_acesso'=>$this->nivel_acesso,'status'=>$this->status,'id'=>$this->id]);
             }
-        } else {
-            // Atualização de usuário existente (sem alterar a senha diretamente por aqui)
-            $sql = "UPDATE usuarios SET nome = :nome, email = :email, nivel_acesso = :nivel_acesso, status = :status, ambientes_vinculados = :ambientes_vinculados WHERE id = :id";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
-                'nome' => $this->nome,
-                'email' => $this->email,
-                'nivel_acesso' => $this->nivel_acesso,
-                'status' => $this->status,
-                'ambientes_vinculados' => json_encode($this->ambientes_vinculados),
-                'id' => $this->id
-            ]);
+            $this->salvarAmbientesVinculados();
+            if ($transacaoPropria) $this->db->commit();
+            return true;
+        } catch (Throwable $e) {
+            if ($transacaoPropria && $this->db->inTransaction()) $this->db->rollBack();
+            throw $e;
         }
-        return false;
     }
 
     /**
@@ -146,7 +155,7 @@ class Usuario {
             'senha' => $senhaHash,
             'id' => $this->id
         ]);
-        if ($success) {
+        if ($success && $stmt->rowCount() === 1) {
             $this->senha = $senhaHash;
             return true;
         }
@@ -173,7 +182,7 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                self::carregarAmbientesVinculados($db, (int)$row['id']),
                 $row['status'] ?? 'Ativo'
             );
         }
@@ -200,7 +209,7 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                self::carregarAmbientesVinculados($db, (int)$row['id']),
                 $row['status'] ?? 'Ativo'
             );
         }
@@ -224,7 +233,7 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                self::carregarAmbientesVinculados($db, (int)$row['id']),
                 $row['status'] ?? 'Ativo'
             );
         }
@@ -250,7 +259,7 @@ class Usuario {
                 $row['nivel_acesso'],
                 (int)$row['id'],
                 $row['data_criacao'],
-                isset($row['ambientes_vinculados']) ? (json_decode($row['ambientes_vinculados'], true) ?: []) : [],
+                self::carregarAmbientesVinculados($db, (int)$row['id']),
                 $row['status'] ?? 'Ativo'
             );
         }

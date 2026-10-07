@@ -22,7 +22,7 @@ $usuarioNivel = $_SESSION['usuario_nivel'] ?? 'Solicitante';
 // =========================================================================
 // EXPORTAÇÃO DE RELATÓRIO PARA EXCEL (CSV)
 // =========================================================================
-if (isset($_GET['action']) && $_GET['action'] === 'exportar_excel' && $usuarioNivel === 'Gestor') {
+if (isset($_GET['action']) && $_GET['action'] === 'exportar_excel' && AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)) {
     $filtroAno = $_GET['filtro_ano'] ?? '';
     $filtroStatus = $_GET['filtro_status'] ?? '';
 
@@ -86,18 +86,30 @@ if (isset($_GET['action']) && $_GET['action'] === 'exportar_excel' && $usuarioNi
     $output = fopen('php://output', 'w');
     // Adiciona o BOM do UTF-8 para o Excel reconhecer acentuação corretamente
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-    fputcsv($output, ['ID O.S.', 'Solicitante', 'Data Abertura', 'Ambiente', 'Descrição do Problema', 'Executor', 'Tipo de Execução', 'Status', 'Data Fechamento'], ';');
+    fputcsv($output, ['ID O.S.', 'Solicitante', 'Data Abertura', 'Ambiente', 'Descrição do Problema', 'Histórico', 'Executor', 'Tipo de Execução', 'Status', 'Data Fechamento'], ';');
 
     foreach ($resultados as $row) {
         $dataAb_br = $row['data_abertura'] ? date('d/m/Y H:i', strtotime($row['data_abertura'])) : '';
         $dataFech_br = $row['data_fechamento'] ? date('d/m/Y H:i', strtotime($row['data_fechamento'])) : '';
+        
+        // Separar descrição original do histórico de ações
+        $descCompleta = $row['descricao_problema'] ?? '';
+        $posHistorico = strpos($descCompleta, "\n\n[");
+        if ($posHistorico !== false) {
+            $descOriginal = trim(substr($descCompleta, 0, $posHistorico));
+            $historico = trim(substr($descCompleta, $posHistorico));
+        } else {
+            $descOriginal = trim($descCompleta);
+            $historico = '';
+        }
         
         fputcsv($output, [
             '#' . $row['id'],
             $row['solicitante'] ?? 'N/D',
             $dataAb_br,
             $row['ambiente'] ?? 'N/D',
-            $row['descricao_problema'],
+            $descOriginal,
+            $historico,
             $row['executor'] ?? 'Não Atribuído',
             $row['tipo_execucao'] ?? '',
             $row['status'],
@@ -133,14 +145,15 @@ unset($_SESSION['alerta_sucesso'], $_SESSION['alerta_erro']);
 $pesquisa = $_GET['search'] ?? '';
 
 // Carrega dados baseados no nível de acesso do usuário para as tabelas e modais
-$ambientesAtivos = [];
+$ambientesAtivos = in_array($usuarioNivel, ['Solicitante', 'Gestor', 'Administrador'], true)
+    ? Ambiente::listarAtivos()
+    : [];
 $executores = [];
 $ordensServico = [];
 
 if ($usuarioNivel === 'Solicitante') {
     $ordensServico = OrdemServico::listarPorSolicitante($usuarioId);
-    $ambientesAtivos = Ambiente::listarAtivos(); // para o modal de abertura
-} elseif ($usuarioNivel === 'Gestor') {
+} elseif (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)) {
     $ordensServico = OrdemServico::listarTodosComRelacionamentos();
     $executores = Usuario::listarPorNivel('Executor'); // para o modal de despacho
 } elseif ($usuarioNivel === 'Executor') {
@@ -163,6 +176,7 @@ $dataAtual = date('d/m/Y');
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/modal.css">
+    <link rel="stylesheet" href="../assets/css/ambiente-autocomplete.css">
     <link rel="stylesheet" href="../assets/css/bootstrap-icons.min.css">
     <link rel="shortcut icon" href="../assets/img/favicon.ico" type="image/x-icon">
 </head>
@@ -191,7 +205,7 @@ $dataAtual = date('d/m/Y');
             </a>
 
             <!-- Menu Manutenção condicional: Apenas para Gestor e Executor -->
-            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
+            <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel) || $usuarioNivel === 'Executor'): ?>
                 <div class="menu-manutencao aberto">
                     <a href="javascript:void(0)" class="links ativo manutencao-btn" id="btn-manutencao">
                         <div>
@@ -236,7 +250,7 @@ $dataAtual = date('d/m/Y');
             </div>
 
             <!-- Painel de Ambientes: Apenas Gestor -->
-            <?php if ($usuarioNivel === 'Gestor'): ?>
+            <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)): ?>
                 <a href="./ambientes.php" class="links">
                     <i class="bi bi-building"></i> Painel de Ambientes
                 </a>
@@ -334,7 +348,7 @@ $dataAtual = date('d/m/Y');
             </div>
             
             <div style="display: flex; gap: 10px;">
-                <?php if ($usuarioNivel === 'Gestor'): ?>
+                <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)): ?>
                     <button class="btn-page-action" onclick="abrirModalExportar()" style="background: #28a745; color: #fff; border: none; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold;">
                         <i class="bi bi-file-earmark-spreadsheet-fill"></i> Exportar Planilha
                     </button>
@@ -505,7 +519,9 @@ $dataAtual = date('d/m/Y');
                                         <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
                                             <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
                                             <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="visualizarOS(<?php echo $os->getId(); ?>)" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
-                                            <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>
+                                            <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)): ?>
+                                                <button class="btn-excluir" type="button" title="Excluir ordem de serviço" onclick="excluirOS(<?php echo $os->getId(); ?>)" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
@@ -537,7 +553,7 @@ $dataAtual = date('d/m/Y');
                                 <option value="" disabled selected>Selecione o ambiente com problema...</option>
                                 <?php foreach ($ambientesAtivos as $amb): ?>
                                     <option value="<?php echo $amb->getId(); ?>">
-                                        #<?php echo $amb->getId(); ?> - <?php echo htmlspecialchars($amb->getNomeBlocoSala()); ?>
+                                        #<?php echo $amb->getId(); ?> - <?php echo htmlspecialchars($amb->getNomeAmbiente(), ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -578,7 +594,7 @@ $dataAtual = date('d/m/Y');
     <!-- =========================================================================
          2. MODAL DE DESPACHO DE O.S. (GESTOR)
          ========================================================================= -->
-    <?php if ($usuarioNivel === 'Gestor'): ?>
+    <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)): ?>
         <div class="modal-fundo" id="modalDespacho" style="display: none;">
             <div class="modal-box" style="backdrop-filter: blur(20px); border: 1px solid var(--corBorda);">
                 <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
@@ -675,7 +691,7 @@ $dataAtual = date('d/m/Y');
     <!-- =========================================================================
          4. MODAL DE VALIDAÇÃO / AVALIAÇÃO DE O.S. (SOLICITANTE)
          ========================================================================= -->
-    <?php if ($usuarioNivel === 'Solicitante' || $usuarioNivel === 'Gestor'): ?>
+    <?php if ($usuarioNivel === 'Solicitante' || AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)): ?>
         <div class="modal-fundo" id="modalValidacao" style="display: none;">
             <div class="modal-box" style="width: 550px; backdrop-filter: blur(20px); border: 1px solid var(--corBorda);">
                 <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
@@ -748,9 +764,14 @@ $dataAtual = date('d/m/Y');
                     <strong>Status Atual:</strong> <span id="vis_status"></span>
                 </div>
 
-                <div style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border-left: 4px solid var(--corBase); max-height: 180px; overflow-y: auto;">
-                    <strong>Histórico de Ocorrência & Conclusão:</strong>
+                <div style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border-left: 4px solid var(--corBase);">
+                    <strong>Descrição do Problema:</strong>
                     <p id="vis_descricao" style="margin: 5px 0 0 0; white-space: pre-line; color: var(--corTxt3); font-size: 13.5px;"></p>
+                </div>
+
+                <div id="vis_historico_container" style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border-left: 4px solid #17a2b8; max-height: 180px; overflow-y: auto; display: none;">
+                    <strong style="display: flex; align-items: center; gap: 6px;"><i class="bi bi-clock-history" style="color: #17a2b8;"></i> Histórico de Ações:</strong>
+                    <p id="vis_historico" style="margin: 5px 0 0 0; white-space: pre-line; color: var(--corTxt3); font-size: 13px; line-height: 1.5;"></p>
                 </div>
                 
                 <!-- Corpo do Modal: Interface do Formulário de Atribuição e Status -->
@@ -769,7 +790,7 @@ $dataAtual = date('d/m/Y');
     <!-- =========================================================================
          6. MODAL DE EXPORTAÇÃO DE O.S. (GESTOR)
          ========================================================================= -->
-    <?php if ($usuarioNivel === 'Gestor'): ?>
+    <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)): ?>
         <div class="modal-fundo" id="modalExportar" style="display: none;">
             <div class="modal-box" style="backdrop-filter: blur(20px); border: 1px solid var(--corBorda); width: 450px;">
                 <div class="modal-header" style="border-bottom: 1px solid var(--corBorda); padding-bottom: 15px;">
@@ -822,6 +843,23 @@ $dataAtual = date('d/m/Y');
         function formatarNewlines(str) {
             if (!str) return '';
             return str.replace(/\\n/g, '\n');
+        }
+
+        /**
+         * Separa a descrição original do problema do histórico de ações concatenado.
+         * Retorna { descricao: string, historico: string }
+         */
+        function separarDescricaoHistorico(textoCompleto) {
+            if (!textoCompleto) return { descricao: '', historico: '' };
+            const texto = formatarNewlines(textoCompleto);
+            const idx = texto.search(/\n\n\[/);
+            if (idx === -1) {
+                return { descricao: texto.trim(), historico: '' };
+            }
+            return {
+                descricao: texto.substring(0, idx).trim(),
+                historico: texto.substring(idx).trim()
+            };
         }
 
         function extrairAno(dateStr) {
@@ -943,12 +981,42 @@ $dataAtual = date('d/m/Y');
         }
 
         // Constrói HTML das ações dinamicamente de acordo com o nível de acesso e status
+        const podeExcluirOS = <?php echo AuthController::temNivelAcesso(['Gestor'], $usuarioNivel) ? 'true' : 'false'; ?>;
+
         function renderActionsHtml(id, status) {
+            const botaoExcluir = podeExcluirOS
+                ? `<button class="btn-excluir" type="button" title="Excluir ordem de serviço" onclick="excluirOS(${id})" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>`
+                : '';
             return `
                 <button class="btn-visualizar" type="button" title="Visualizar/Tramitar" onclick="visualizarOS(${id})" style="background-color: #00C5FF; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-eye-fill"></i></button>
                 <button class="btn-aprovar" type="button" title="Aprovar/Finalizar" onclick="visualizarOS(${id})" style="background-color: #00E676; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-check-lg"></i></button>
-                <button class="btn-excluir" type="button" title="Excluir/Cancelar" onclick="alert('Funcionalidade de cancelamento a ser implementada.');" style="background-color: #FF1744; border: none; color: white; padding: 5px; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center;"><i class="bi bi-trash-fill"></i></button>
+                ${botaoExcluir}
             `;
+        }
+
+        async function excluirOS(id) {
+            if (!podeExcluirOS || !confirm(`Confirma a exclusão permanente da O.S. #${id}?`)) return;
+
+            const formData = new FormData();
+            formData.append('acao', 'excluir');
+            formData.append('id', String(id));
+            formData.append('ajax', '1');
+
+            try {
+                const response = await fetch(window.location.href, { method: 'POST', body: formData });
+                const resultado = await response.json();
+                if (!resultado.success) {
+                    showToast(resultado.message || 'Não foi possível excluir a O.S.', 'danger');
+                    return;
+                }
+
+                const linha = document.getElementById(`row-${id}`);
+                if (linha) linha.remove();
+                showToast(resultado.message, 'success');
+                if (typeof window.atualizarFiltros === 'function') window.atualizarFiltros();
+            } catch (erro) {
+                showToast('Erro de comunicação ao excluir a O.S.', 'danger');
+            }
         }
 
         // Re-renderiza de forma inteligente e reativa as linhas da tabela
@@ -1057,7 +1125,7 @@ $dataAtual = date('d/m/Y');
                     
                     const nivel = '<?php echo $usuarioNivel; ?>';
                     novaLinha.style.cursor = 'pointer';
-                    if (nivel === 'Gestor') {
+                    if (['Gestor', 'Administrador'].includes(nivel)) {
                         novaLinha.onclick = () => abrirModalDespacho(data.data.id);
                     } else {
                         novaLinha.onclick = () => visualizarOS(data.data.id);
@@ -1118,7 +1186,8 @@ $dataAtual = date('d/m/Y');
                 if (res.success) {
                     document.getElementById('despacho_id').value = res.data.id;
                     document.getElementById('despacho_id_display').innerText = res.data.id;
-                    document.getElementById('despacho_descricao_display').innerText = formatarNewlines(res.data.descricao_problema);
+                    const despachoSeparado = separarDescricaoHistorico(res.data.descricao_problema);
+                    document.getElementById('despacho_descricao_display').innerText = despachoSeparado.descricao;
                     document.getElementById('modalDespacho').style.display = 'flex';
                 } else {
                     showToast(res.message, 'danger');
@@ -1199,7 +1268,8 @@ $dataAtual = date('d/m/Y');
                 if (res.success) {
                     document.getElementById('finalizacao_id').value = res.data.id;
                     document.getElementById('finalizacao_id_display').innerText = res.data.id;
-                    document.getElementById('finalizacao_descricao_display').innerText = formatarNewlines(res.data.descricao_problema);
+                    const finalizacaoSeparado = separarDescricaoHistorico(res.data.descricao_problema);
+                    document.getElementById('finalizacao_descricao_display').innerText = finalizacaoSeparado.descricao;
                     document.getElementById('modalFinalizacao').style.display = 'flex';
                 } else {
                     showToast(res.message, 'danger');
@@ -1288,7 +1358,8 @@ $dataAtual = date('d/m/Y');
                 if (res.success) {
                     document.getElementById('validacao_id').value = res.data.id;
                     document.getElementById('validacao_id_display').innerText = res.data.id;
-                    document.getElementById('validacao_historico_display').innerText = formatarNewlines(res.data.descricao_problema);
+                    const validacaoSeparado = separarDescricaoHistorico(res.data.descricao_problema);
+                    document.getElementById('validacao_historico_display').innerText = validacaoSeparado.historico || validacaoSeparado.descricao;
                     document.getElementById('modalValidacao').style.display = 'flex';
                 } else {
                     showToast(res.message, 'danger');
@@ -1391,7 +1462,15 @@ $dataAtual = date('d/m/Y');
                     document.getElementById('vis_executor').innerText = os.executor_nome ? os.executor_nome : 'Não designado';
                     document.getElementById('vis_tipo').innerText = os.tipo_execucao;
                     document.getElementById('vis_status').innerHTML = renderStatusBadge(os.status);
-                    document.getElementById('vis_descricao').innerText = formatarNewlines(os.descricao_problema);
+                    const visSeparado = separarDescricaoHistorico(os.descricao_problema);
+                    document.getElementById('vis_descricao').innerText = visSeparado.descricao;
+                    const visHistContainer = document.getElementById('vis_historico_container');
+                    if (visSeparado.historico) {
+                        document.getElementById('vis_historico').innerText = visSeparado.historico;
+                        visHistContainer.style.display = 'block';
+                    } else {
+                        visHistContainer.style.display = 'none';
+                    }
 
                     // 3. Normalização de dados para controle da Máquina de Estados
                     const statusOS = (os.status || '').trim().toUpperCase();
@@ -1413,7 +1492,7 @@ $dataAtual = date('d/m/Y');
                     // 4. Fluxo Triplo de Aprovação (Máquina de Estados)
                     
                     // GESTOR/ADMIN - PENDENTE -> Despacho
-                    if (statusOS === 'PENDENTE' && (nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMIN')) {
+                    if (statusOS === 'PENDENTE' && (nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMINISTRADOR')) {
                         actionHTML = `
                             <div style="background: rgba(245, 158, 11, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2); margin-top: 15px;">
                                 <strong style="color: #f59e0b; display: block; margin-bottom: 10px;"><i class="bi bi-exclamation-triangle-fill"></i> Designar Técnico Responsável</strong>
@@ -1447,7 +1526,7 @@ $dataAtual = date('d/m/Y');
                         `;
                     }
                     // EXECUTOR DESIGNADO - AGUARDANDO ACEITE -> Aceite
-                    else if (statusOS === 'AGUARDANDO ACEITE' && currentUserId === executorIdOS && (nivelUserOS === 'EXECUTOR' || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMIN')) {
+                    else if (statusOS === 'AGUARDANDO ACEITE' && currentUserId === executorIdOS && (nivelUserOS === 'EXECUTOR' || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMINISTRADOR')) {
                         actionHTML = `
                             <div style="background: rgba(59, 130, 246, 0.08); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2); margin-top: 15px; display: flex; align-items: center; gap: 10px;">
                                 <i class="bi bi-info-circle-fill" style="color: #3b82f6; font-size: 1.5rem;"></i>
@@ -1462,7 +1541,7 @@ $dataAtual = date('d/m/Y');
                         `;
                     }
                     // EXECUTOR DESIGNADO - EM EXECUÇÃO -> Finalizar
-                    else if (statusOS === 'EM EXECUÇÃO' && currentUserId === executorIdOS && (nivelUserOS === 'EXECUTOR' || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMIN')) {
+                    else if (statusOS === 'EM EXECUÇÃO' && currentUserId === executorIdOS && (nivelUserOS === 'EXECUTOR' || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMINISTRADOR')) {
                         actionHTML = `
                             <div style="background: rgba(16, 185, 129, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); margin-top: 15px;">
                                 <label for="vis_relato_textarea" style="font-weight: bold; display: block; margin-bottom: 8px; color: #10b981; font-size: 13.5px;"><i class="bi bi-pencil-square"></i> Relato Técnico de Conclusão (Solução):</label>
@@ -1478,7 +1557,7 @@ $dataAtual = date('d/m/Y');
                         `;
                     }
                     // SOLICITANTE OU GESTOR - AGUARDANDO VALIDAÇÃO -> Validar/Recusar
-                    else if (statusOS === 'AGUARDANDO VALIDAÇÃO' && (currentUserId === solicitanteIdOS || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMIN')) {
+                    else if (statusOS === 'AGUARDANDO VALIDAÇÃO' && (currentUserId === solicitanteIdOS || nivelUserOS === 'GESTOR' || nivelUserOS === 'ADMINISTRADOR')) {
                         actionHTML = `
                             <div style="background: rgba(16, 185, 129, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); margin-top: 15px;">
                                 <label for="vis_validacao_textarea" style="font-weight: bold; display: block; margin-bottom: 8px; color: var(--corTxt3); font-size: 13.5px;"><i class="bi bi-chat-left-text-fill"></i> Observações da Validação / Motivo da Recusa:</label>
@@ -1755,7 +1834,7 @@ $dataAtual = date('d/m/Y');
                         selectExecutor.style.display = 'none';
                         document.getElementById('nova_observacao').disabled = false;
 
-                        if (nivel === 'Gestor' && os.status === 'Pendente') {
+                        if (['Gestor', 'Administrador'].includes(nivel) && os.status === 'Pendente') {
                             selectExecutor.style.display = 'block';
                             btnTramitar.innerText = 'Atribuir a Executor';
                             btnTramitar.style.background = '#007bff';
@@ -2095,5 +2174,6 @@ $dataAtual = date('d/m/Y');
 
     <!-- Scripts de utilidades globais e relógio em tempo real -->
     <script src="../assets/js/scripts.js" defer></script>
+    <script src="../assets/js/ambiente-autocomplete.js" defer></script>
 </body>
 </html>

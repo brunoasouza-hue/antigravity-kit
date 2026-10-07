@@ -403,7 +403,7 @@ $dataAtual = date('d/m/Y');
             </a>
 
             <!-- Menu Manutenção condicional -->
-            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador' || $usuarioNivel === 'Executor'): ?>
+            <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel) || $usuarioNivel === 'Administrador' || $usuarioNivel === 'Executor'): ?>
                 <div class="menu-manutencao">
                     <a href="javascript:void(0)" class="links manutencao-btn" id="btn-manutencao">
                         <div>
@@ -447,7 +447,7 @@ $dataAtual = date('d/m/Y');
             </div>
 
             <!-- Painel de Ambientes: Apenas Gestor -->
-            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador'): ?>
+            <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel) || $usuarioNivel === 'Administrador'): ?>
                 <a href="./ambientes.php" class="links">
                     <i class="bi bi-building"></i> Painel de Ambientes
                 </a>
@@ -545,7 +545,7 @@ $dataAtual = date('d/m/Y');
                             </p>
                         </div>
                         <div style="display: flex; gap: 10px;">
-                            <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
+                            <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel) || $usuarioNivel === 'Executor'): ?>
                             <button class="btn-premium" onclick="abrirModalNovaInspecaoSetor(<?php echo $inspecaoGeralAtiva->getId(); ?>, '<?php echo htmlspecialchars(addslashes($inspecaoGeralAtiva->getUnidade())); ?>', '<?php echo $inspecaoGeralAtiva->getDataInspecao(); ?>')">
                                 <i class="bi bi-plus-lg"></i> Adicionar Setor
                             </button>
@@ -613,7 +613,7 @@ $dataAtual = date('d/m/Y');
                     <p style="max-width: 600px; margin: 0 auto 25px auto; color: var(--corTxt2); line-height: 1.5; font-size: 0.9rem;">
                         Uma inspeção de segurança NR10 de quadros elétricos é realizada por visita técnica ao prédio, analisando diversos setores. Inicie uma nova auditoria para agrupar todas as inspeções da visita em um único relatório consolidado.
                     </p>
-                    <?php if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Executor'): ?>
+                    <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel) || $usuarioNivel === 'Executor'): ?>
                     <button class="btn-premium" onclick="abrirModalIniciarGeral()">
                         <i class="bi bi-play-fill"></i> Iniciar Inspeção Geral (Auditoria)
                     </button>
@@ -675,7 +675,7 @@ $dataAtual = date('d/m/Y');
                                         <button class="table-action-btn" onclick="exportarPDFGeral(<?php echo $ins->getId(); ?>)" style="background: #28a745; color: white; border-color: #28a745;">
                                             <i class="bi bi-file-earmark-pdf-fill"></i> PDF Consolidado
                                         </button>
-                                        <?php if ($usuarioNivel === 'Gestor'): ?>
+                                        <?php if (AuthController::temNivelAcesso(['Gestor'], $usuarioNivel)): ?>
                                         <button class="table-action-btn" onclick="excluirInspecao(<?php echo $ins->getId(); ?>)" style="background: #dc3545; color: white; border-color: #dc3545;">
                                             <i class="bi bi-trash"></i> Excluir
                                         </button>

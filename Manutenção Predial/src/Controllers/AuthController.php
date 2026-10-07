@@ -35,6 +35,7 @@ class AuthController {
         $usuario = Usuario::autenticar($email, $senha);
 
         if ($usuario !== null) {
+            session_regenerate_id(true);
             // Login de sucesso - Define variáveis de sessão seguras
             $_SESSION['usuario_id'] = $usuario->getId();
             $_SESSION['usuario_nome'] = $usuario->getNome();
@@ -89,6 +90,13 @@ class AuthController {
             header("Location: " . BASE_URL . "/public/index.php");
             exit;
         }
+        $usuario = Usuario::buscarPorId((int)$_SESSION['usuario_id']);
+        if ($usuario === null || $usuario->getStatus() !== 'Ativo') {
+            $_SESSION = [];
+            header('Location: ' . BASE_URL . '/public/index.php');
+            exit;
+        }
+        $_SESSION['usuario_nivel'] = $usuario->getNivelAcesso();
     }
 
     /**
@@ -102,11 +110,23 @@ class AuthController {
 
         $nivelUsuario = $_SESSION['usuario_nivel'] ?? '';
 
-        if (!in_array($nivelUsuario, $niveisPermitidos, true)) {
+        if (!self::temNivelAcesso($niveisPermitidos, $nivelUsuario)) {
             // Acesso negado - Redireciona para a tela inicial Home com mensagem de erro de permissão
             $_SESSION['alerta_erro'] = "Acesso negado: Seu perfil (" . $nivelUsuario . ") não possui permissão para acessar esta área.";
             header("Location: " . BASE_URL . "/public/views/home.php");
             exit;
         }
+    }
+
+    /** Administrador herda os acessos de Gestor; ações exclusivas usam ['Administrador']. */
+    public static function temNivelAcesso(array $niveis, ?string $nivel = null): bool {
+        $nivel = $nivel ?? ($_SESSION['usuario_nivel'] ?? '');
+        return in_array($nivel, $niveis, true)
+            || ($nivel === 'Administrador' && in_array('Gestor', $niveis, true));
+    }
+
+    public static function tokenCsrf(): string {
+        if (empty($_SESSION['csrf_usuarios'])) $_SESSION['csrf_usuarios'] = bin2hex(random_bytes(32));
+        return $_SESSION['csrf_usuarios'];
     }
 }

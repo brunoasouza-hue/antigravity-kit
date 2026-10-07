@@ -6,6 +6,7 @@ declare(strict_types=1);
  */
 
 require_once __DIR__ . '/../../config/Database.php';
+require_once __DIR__ . '/ItemPreventiva.php';
 
 class Checklist {
     private ?int $id = null;
@@ -101,6 +102,10 @@ class Checklist {
      */
     public function salvar(): bool {
         if ($this->id !== null) {
+            if ($this->id <= 0) return false;
+            $exists = $this->db->prepare('SELECT 1 FROM checklists WHERE id = ?');
+            $exists->execute([$this->id]);
+            if (!$exists->fetchColumn()) return false;
             // Checklists de inspeção são registros históricos, mas permitimos edição na mesma inspeção
             return $this->atualizar();
         }
@@ -135,6 +140,27 @@ class Checklist {
         }
 
         return false;
+    }
+
+    /** Grava as respostas dinâmicas sem apagar respostas históricas de itens arquivados. */
+    public static function salvarRespostasDinamicas(PDO $db, int $checklistId, int $ambienteId, array $respostas): void {
+        $q=$db->prepare('SELECT familia FROM ambientes WHERE id=?'); $q->execute([$ambienteId]);
+        $family=$q->fetchColumn();
+        if ($family === false) throw new InvalidArgumentException('Ambiente inexistente.');
+        $insert=$db->prepare('INSERT INTO checklist_itens (checklist_id,item_id,status) VALUES (?,?,?) ON DUPLICATE KEY UPDATE status=VALUES(status)');
+        foreach ($respostas as $name=>$status) {
+            if (!in_array($status,['Ok','Defeito','Não se aplica'],true)) throw new InvalidArgumentException('Status de item preventivo inválido.');
+            $itemId=ItemPreventiva::idAtivo((string)$family,(string)$name);
+            if ($itemId===null) throw new InvalidArgumentException('Um item enviado não pertence ao catálogo ativo deste ambiente.');
+            $insert->execute([$checklistId,$itemId,$status]);
+        }
+    }
+
+    public static function respostasDinamicas(int $checklistId): array {
+        $q=Database::getConnection()->prepare('SELECT i.nome,ci.status,ci.observacao FROM checklist_itens ci JOIN itens_preventiva i ON i.id=ci.item_id WHERE ci.checklist_id=? ORDER BY i.ordem,i.nome');
+        $q->execute([$checklistId]); $out=[];
+        foreach ($q->fetchAll() as $row) $out[$row['nome']]=$row['status'];
+        return $out;
     }
 
     public function atualizar(): bool {

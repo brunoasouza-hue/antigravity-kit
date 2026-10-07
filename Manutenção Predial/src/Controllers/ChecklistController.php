@@ -6,6 +6,9 @@ declare(strict_types=1);
  */
 
 require_once __DIR__ . '/../Models/Checklist.php';
+require_once __DIR__ . '/../Models/Ambiente.php';
+require_once __DIR__ . '/../Models/InspecaoMensal.php';
+require_once __DIR__ . '/ItemPreventivaController.php';
 require_once __DIR__ . '/AuthController.php';
 
 class ChecklistController {
@@ -53,6 +56,23 @@ class ChecklistController {
         $acao = $_POST['acao'] ?? $_GET['acao'] ?? '';
 
         switch ($acao) {
+            case 'iniciar_inspecao':
+                AuthController::exigirNivelAcesso(['Gestor','Administrador']);
+                $this->iniciarInspecaoMensal();
+                break;
+            case 'finalizar_inspecao':
+                AuthController::exigirNivelAcesso(['Gestor','Administrador']);
+                $this->finalizarInspecaoMensal();
+                break;
+            case 'buscar_historico_detalhes':
+                AuthController::exigirNivelAcesso(['Gestor','Executor','Administrador']);
+                $this->buscarHistoricoDetalhes();
+                break;
+            case 'adicionar_item_checklist':
+            case 'editar_item_checklist':
+            case 'remover_item_checklist':
+                (new ItemPreventivaController())->processarAcao($acao);
+                break;
             case 'cadastrar':
             case 'salvar_checklist':
                 $this->cadastrar();
@@ -67,7 +87,20 @@ class ChecklistController {
      * Registra uma nova inspeção preventiva de sala ou atualiza uma existente.
      */
     private function cadastrar(): void {
-        $checklistId = isset($_POST['checklist_id']) ? (int)$_POST['checklist_id'] : null;
+        $nivelUsuario = $_SESSION['usuario_nivel'] ?? '';
+        if (!in_array($nivelUsuario, ['Gestor', 'Executor', 'Administrador'], true)) {
+            $this->retornarResposta(false, 'Acesso negado para registrar inspecoes preventivas.');
+        }
+
+        $checklistIdRaw = $_POST['checklist_id'] ?? '';
+        if (!is_scalar($checklistIdRaw)) {
+            $this->retornarResposta(false, 'Identificador de checklist inválido.');
+        }
+        $checklistIdRaw = trim((string)$checklistIdRaw);
+        if ($checklistIdRaw !== '' && (!ctype_digit($checklistIdRaw) || (int)$checklistIdRaw <= 0)) {
+            $this->retornarResposta(false, 'Identificador de checklist inválido.');
+        }
+        $checklistId = $checklistIdRaw === '' ? null : (int)$checklistIdRaw;
         $ambienteId = (int)($_POST['ambiente_id'] ?? 0);
         $dataInspecao = trim($_POST['data_inspecao'] ?? '');
         $statusTomadas = trim($_POST['status_tomadas'] ?? 'Não se aplica');
@@ -81,6 +114,15 @@ class ChecklistController {
         // Validações básicas
         if ($ambienteId <= 0) {
             $this->retornarResposta(false, "Selecione um ambiente válido.");
+        }
+
+        $ambiente = Ambiente::buscarPorId($ambienteId);
+        if ($ambiente === null || $ambiente->getStatus() !== 'Ativo') {
+            $this->retornarResposta(false, 'O ambiente selecionado nao esta disponivel para inspecao.');
+        }
+        if ($nivelUsuario === 'Executor'
+            && !Ambiente::usuarioPossuiVinculo((int)($_SESSION['usuario_id'] ?? 0), $ambienteId)) {
+            $this->retornarResposta(false, 'Acesso negado: ambiente sem vinculo com o usuario.');
         }
 
         if (empty($dataInspecao)) {
@@ -105,6 +147,7 @@ class ChecklistController {
         }
 
         $responsavelId = (int)$_SESSION['usuario_id'];
+        $inspecaoMensalId = (int)($_POST['inspecao_id'] ?? 0);
 
         try {
             $checklist = new Checklist(
@@ -121,7 +164,25 @@ class ChecklistController {
                 $checklistId
             );
 
+            $db = Database::getConnection();
+            $db->beginTransaction();
             if ($checklist->salvar()) {
+                if ($inspecaoMensalId > 0) {
+                    $ciclo=$db->prepare("SELECT id FROM inspecoes_mensais WHERE id=? AND status='Em Andamento'");
+                    $ciclo->execute([$inspecaoMensalId]);
+                    if (!$ciclo->fetchColumn()) throw new InvalidArgumentException('A inspeção mensal selecionada não está em andamento.');
+                    $link=$db->prepare('UPDATE checklists SET inspecao_mensal_id=? WHERE id=?');
+                    $link->execute([$inspecaoMensalId,$checklist->getId()]);
+                }
+                $respostas = [];
+                foreach ($_POST as $key => $value) {
+                    if (preg_match('/^item_name_(\d+)$/', (string)$key, $match)) {
+                        $index = $match[1];
+                        $respostas[(string)$value] = trim((string)($_POST['item_status_' . $index] ?? 'Não se aplica'));
+                    }
+                }
+                Checklist::salvarRespostasDinamicas($db, (int)$checklist->getId(), $ambienteId, $respostas);
+                $db->commit();
                 // Busca o log cadastrado para retornar seus dados hidratados
                 $logSalvo = Checklist::buscarPorId($checklist->getId() ?? 0);
                 $dataRetorno = null;
@@ -143,12 +204,19 @@ class ChecklistController {
 
                 $this->retornarResposta(true, "Inspeção preventiva registrada com sucesso!", $dataRetorno);
             } else {
+                if ($db->inTransaction()) $db->rollBack();
                 $this->retornarResposta(false, "Erro ao registrar inspeção. Tente novamente.");
             }
         } catch (InvalidArgumentException $e) {
+            if (isset($db) && $db->inTransaction()) $db->rollBack();
             $this->retornarResposta(false, $e->getMessage());
         } catch (PDOException $e) {
+            if (isset($db) && $db->inTransaction()) $db->rollBack();
             $this->retornarResposta(false, "Erro no banco de dados: " . $e->getMessage());
+        } catch (Throwable $e) {
+            if (isset($db) && $db->inTransaction()) $db->rollBack();
+            error_log('Falha ao salvar inspeção preventiva: ' . $e->getMessage());
+            $this->retornarResposta(false, 'Não foi possível salvar as respostas dinâmicas.');
         }
 
         // TRIGGER DE AUTOMAÇÃO (Gerar O.S. Corretiva se houver defeito)
@@ -187,7 +255,7 @@ class ChecklistController {
     private function excluir(): void {
         // Apenas Gestores possuem privilégio para remover logs de manutenção/inspeção do histórico
         $nivelUsuario = $_SESSION['usuario_nivel'] ?? '';
-        if ($nivelUsuario !== 'Gestor') {
+        if (!AuthController::temNivelAcesso(['Gestor'], $nivelUsuario)) {
             $this->retornarResposta(false, "Acesso negado: Apenas gestores podem excluir logs do histórico.");
         }
 
@@ -211,6 +279,32 @@ class ChecklistController {
         } catch (PDOException $e) {
             $this->retornarResposta(false, "Erro no banco de dados ao excluir: " . $e->getMessage());
         }
+    }
+
+    private function iniciarInspecaoMensal(): void {
+        try {
+            $id=InspecaoMensal::iniciar((int)$_SESSION['usuario_id']);
+            $this->retornarResposta(true,'Inspeção mensal iniciada.',['id'=>$id]);
+        } catch (DomainException $e) {
+            $this->retornarResposta(false,$e->getMessage());
+        } catch (PDOException $e) {
+            $this->retornarResposta(false,'Não foi possível iniciar a inspeção mensal.');
+        }
+    }
+
+    private function finalizarInspecaoMensal(): void {
+        $id=(int)($_POST['inspecao_id'] ?? 0);
+        if($id<=0 || !InspecaoMensal::finalizar($id)) {
+            $this->retornarResposta(false,'Inspeção mensal não encontrada ou já finalizada.');
+        }
+        $this->retornarResposta(true,'Inspeção mensal finalizada.',['id'=>$id]);
+    }
+
+    private function buscarHistoricoDetalhes(): void {
+        $id=(int)($_POST['inspecao_id'] ?? $_GET['inspecao_id'] ?? 0);
+        $dados=$id>0 ? InspecaoMensal::buscarDetalhes($id) : null;
+        if($dados===null) $this->retornarResposta(false,'Inspeção mensal não encontrada.');
+        $this->retornarResposta(true,'Detalhes da inspeção mensal.',$dados);
     }
 
     /**

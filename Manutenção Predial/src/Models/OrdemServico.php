@@ -178,7 +178,7 @@ class OrdemServico {
         }
 
         $sql = "UPDATE ordens_servico 
-                SET gestor_id = :gestor_id, executor_atual_id = :executor_atual_id, tipo_execucao = :tipo_execucao, status = 'Aguardando Aceite' 
+                SET gestor_id = :gestor_id, executor_id = :executor_atual_id, tipo_execucao = :tipo_execucao, status = 'Aguardando Aceite' 
                 WHERE id = :id";
         
         $stmt = $this->db->prepare($sql);
@@ -297,7 +297,7 @@ class OrdemServico {
      */
     public static function buscarPorId(int $id): ?self {
         $db = Database::getConnection();
-        $sql = "SELECT os.*, 
+        $sql = "SELECT os.*, os.executor_id AS executor_atual_id,
                        a.nome_ambiente AS ambiente_nome,
                        us.nome AS solicitante_nome,
                        ug.nome AS gestor_nome,
@@ -306,7 +306,7 @@ class OrdemServico {
                 LEFT JOIN ambientes a ON os.ambiente_id = a.id
                 LEFT JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
-                LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
+                LEFT JOIN usuarios ue ON os.executor_id = ue.id
                 WHERE os.id = :id 
                 LIMIT 1";
         
@@ -345,7 +345,7 @@ class OrdemServico {
      */
     public static function listarPorSolicitante(int $solicitanteId): array {
         $db = Database::getConnection();
-        $sql = "SELECT os.*, 
+        $sql = "SELECT os.*, os.executor_id AS executor_atual_id,
                        a.nome_ambiente AS ambiente_nome,
                        us.nome AS solicitante_nome,
                        ug.nome AS gestor_nome,
@@ -354,7 +354,7 @@ class OrdemServico {
                 LEFT JOIN ambientes a ON os.ambiente_id = a.id
                 LEFT JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
-                LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
+                LEFT JOIN usuarios ue ON os.executor_id = ue.id
                 WHERE os.solicitante_id = :solicitante_id
                 ORDER BY os.id DESC";
         
@@ -392,7 +392,7 @@ class OrdemServico {
      */
     public static function listarTodosComRelacionamentos(): array {
         $db = Database::getConnection();
-        $sql = "SELECT os.*, 
+        $sql = "SELECT os.*, os.executor_id AS executor_atual_id,
                        a.nome_ambiente AS ambiente_nome,
                        us.nome AS solicitante_nome,
                        ug.nome AS gestor_nome,
@@ -401,7 +401,7 @@ class OrdemServico {
                 LEFT JOIN ambientes a ON os.ambiente_id = a.id
                 LEFT JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
-                LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
+                LEFT JOIN usuarios ue ON os.executor_id = ue.id
                 ORDER BY os.id DESC";
         
         $stmt = $db->query($sql);
@@ -438,7 +438,7 @@ class OrdemServico {
      */
     public static function listarPorExecutor(int $executorId): array {
         $db = Database::getConnection();
-        $sql = "SELECT os.*, 
+        $sql = "SELECT os.*, os.executor_id AS executor_atual_id,
                        a.nome_ambiente AS ambiente_nome,
                        us.nome AS solicitante_nome,
                        ug.nome AS gestor_nome,
@@ -447,8 +447,8 @@ class OrdemServico {
                 LEFT JOIN ambientes a ON os.ambiente_id = a.id
                 LEFT JOIN usuarios us ON os.solicitante_id = us.id
                 LEFT JOIN usuarios ug ON os.gestor_id = ug.id
-                LEFT JOIN usuarios ue ON os.executor_atual_id = ue.id
-                WHERE os.executor_atual_id = :executor_atual_id
+                LEFT JOIN usuarios ue ON os.executor_id = ue.id
+                WHERE os.executor_id = :executor_atual_id
                 ORDER BY os.id DESC";
         
         $stmt = $db->prepare($sql);
@@ -496,5 +496,15 @@ class OrdemServico {
             return true;
         }
         return false;
+    }
+
+    /** Exclui somente esta ordem de serviço; a autorização é validada no controlador. */
+    public function excluir(): bool {
+        if ($this->id === null) return false;
+
+        $stmt = $this->db->prepare('DELETE FROM ordens_servico WHERE id = :id');
+        $stmt->execute(['id' => $this->id]);
+
+        return $stmt->rowCount() === 1;
     }
 }

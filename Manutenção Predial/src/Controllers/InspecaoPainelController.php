@@ -190,7 +190,7 @@ class InspecaoPainelController {
 
     private function excluir(): void {
         $nivelUsuario = $_SESSION['usuario_nivel'] ?? '';
-        if ($nivelUsuario !== 'Gestor') {
+        if (!AuthController::temNivelAcesso(['Gestor'], $nivelUsuario)) {
             $this->retornarResposta(false, "Acesso negado: Apenas gestores podem excluir vistorias.");
         }
 

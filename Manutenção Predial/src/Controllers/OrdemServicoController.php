@@ -80,6 +80,42 @@ class OrdemServicoController {
             case 'recusar_servico':
                 $this->recusarServico();
                 break;
+            case 'excluir':
+                $this->excluir();
+                break;
+        }
+    }
+
+    /**
+     * Exclui uma O.S. somente pelo perfil administrativo (Gestor no sistema).
+     */
+    private function excluir(): void {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            $this->retornarResposta(false, 'Ação inválida.');
+        }
+
+        if (!AuthController::temNivelAcesso(['Gestor'])) {
+            $this->retornarResposta(false, 'Acesso negado: apenas administradores podem excluir ordens de serviço.');
+        }
+
+        $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+        if (!$id || $id <= 0) {
+            $this->retornarResposta(false, 'ID de ordem de serviço inválido.');
+        }
+
+        try {
+            $os = OrdemServico::buscarPorId($id);
+            if ($os === null) {
+                $this->retornarResposta(false, 'Ordem de serviço não encontrada.');
+            }
+
+            if ($os->excluir()) {
+                $this->retornarResposta(true, 'Ordem de serviço excluída com sucesso!', ['id' => $id]);
+            }
+
+            $this->retornarResposta(false, 'Não foi possível excluir a ordem de serviço.');
+        } catch (Exception $e) {
+            $this->retornarResposta(false, 'Erro ao excluir a ordem de serviço.');
         }
     }
 
@@ -89,7 +125,7 @@ class OrdemServicoController {
     private function abrir(): void {
         // Apenas Solicitantes ou Gestores podem abrir OS corretiva
         $nivelAcesso = $_SESSION['usuario_nivel'] ?? '';
-        if ($nivelAcesso !== 'Solicitante' && $nivelAcesso !== 'Gestor') {
+        if ($nivelAcesso !== 'Solicitante' && !AuthController::temNivelAcesso(['Gestor'], $nivelAcesso)) {
             $this->retornarResposta(false, "Acesso negado: Apenas solicitantes e gestores podem abrir ordens de serviço.");
         }
 
@@ -146,7 +182,7 @@ class OrdemServicoController {
      */
     private function despachar(): void {
         $nivelAcesso = $_SESSION['usuario_nivel'] ?? '';
-        if ($nivelAcesso !== 'Gestor') {
+        if (!AuthController::temNivelAcesso(['Gestor'], $nivelAcesso)) {
             $this->retornarResposta(false, "Acesso negado: Apenas gestores podem despachar ordens de serviço.");
         }
 
@@ -283,7 +319,7 @@ class OrdemServicoController {
 
         // Garante que o solicitante original da OS é quem está logado (ou Gestor como backup auditor)
         $nivelAcesso = $_SESSION['usuario_nivel'] ?? '';
-        if ($os->getSolicitanteId() !== (int)$_SESSION['usuario_id'] && $nivelAcesso !== 'Gestor') {
+        if ($os->getSolicitanteId() !== (int)$_SESSION['usuario_id'] && !AuthController::temNivelAcesso(['Gestor'], $nivelAcesso)) {
             $this->retornarResposta(false, "Acesso negado: Apenas o solicitante original pode validar este serviço.");
         }
 
@@ -345,8 +381,6 @@ class OrdemServicoController {
             'data_abertura' => $os->getDataAbertura() ? date('d/m/Y H:i', strtotime($os->getDataAbertura())) : '',
             'data_fechamento' => $os->getDataFechamento() ? date('d/m/Y H:i', strtotime($os->getDataFechamento())) : ''
         ]);
-    }
-
     }
 
     /**
@@ -461,7 +495,7 @@ class OrdemServicoController {
         }
 
         $nivelAcesso = $_SESSION['usuario_nivel'] ?? '';
-        if ($os->getSolicitanteId() !== (int)$_SESSION['usuario_id'] && $nivelAcesso !== 'Gestor') {
+        if ($os->getSolicitanteId() !== (int)$_SESSION['usuario_id'] && !AuthController::temNivelAcesso(['Gestor'], $nivelAcesso)) {
             $this->retornarResposta(false, "Acesso negado: Apenas o solicitante original ou gestores podem validar.");
         }
 
@@ -512,7 +546,7 @@ class OrdemServicoController {
         }
 
         $nivelAcesso = $_SESSION['usuario_nivel'] ?? '';
-        if ($os->getSolicitanteId() !== (int)$_SESSION['usuario_id'] && $nivelAcesso !== 'Gestor') {
+        if ($os->getSolicitanteId() !== (int)$_SESSION['usuario_id'] && !AuthController::temNivelAcesso(['Gestor'], $nivelAcesso)) {
             $this->retornarResposta(false, "Acesso negado: Apenas o solicitante original ou gestores podem validar.");
         }
 

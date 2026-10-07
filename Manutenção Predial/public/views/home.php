@@ -29,6 +29,59 @@ if (isset($_GET['logout'])) {
 
 // Data atual formatada para o cabeçalho
 $dataAtual = date('d/m/Y');
+
+// Busca pendências para notificações
+require_once __DIR__ . '/../../src/Models/OrdemServico.php';
+
+$usuarioId = (int)($_SESSION['usuario_id'] ?? 0);
+$pendenciasCount = 0;
+$alertaMensagem = '';
+
+if ($usuarioNivel === 'Gestor' || $usuarioNivel === 'Administrador') {
+    $todas = OrdemServico::listarTodosComRelacionamentos();
+    $despachosCount = 0;
+    $validacoesCount = 0;
+    foreach ($todas as $os) {
+        if ($os->getStatus() === 'Pendente') {
+            $despachosCount++;
+        } elseif ($os->getStatus() === 'Aguardando Validação') {
+            $validacoesCount++;
+        }
+    }
+    $pendenciasCount = $despachosCount + $validacoesCount;
+    if ($pendenciasCount > 0) {
+        $pendenciasMensagem = [];
+        if ($despachosCount > 0) {
+            $pendenciasMensagem[] = $despachosCount === 1
+                ? '1 O.S. aguardando aprovação e despacho'
+                : "{$despachosCount} O.S. aguardando aprovação e despacho";
+        }
+        if ($validacoesCount > 0) {
+            $pendenciasMensagem[] = $validacoesCount === 1
+                ? '1 O.S. aguardando validação do reparo'
+                : "{$validacoesCount} O.S. aguardando validação do reparo";
+        }
+        $alertaMensagem = 'Você possui ' . implode(' e ', $pendenciasMensagem) . '.';
+    }
+} elseif ($usuarioNivel === 'Executor') {
+    $minhas = OrdemServico::listarPorExecutor($usuarioId);
+    $pendentes = array_filter($minhas, function($os) {
+        return $os->getStatus() === 'Aguardando Aceite';
+    });
+    $pendenciasCount = count($pendentes);
+    if ($pendenciasCount > 0) {
+        $alertaMensagem = "Você possui {$pendenciasCount} Ordem(ns) de Serviço aguardando o seu aceite.";
+    }
+} elseif ($usuarioNivel === 'Solicitante') {
+    $minhas = OrdemServico::listarPorSolicitante($usuarioId);
+    $pendentes = array_filter($minhas, function($os) {
+        return $os->getStatus() === 'Aguardando Validação';
+    });
+    $pendenciasCount = count($pendentes);
+    if ($pendenciasCount > 0) {
+        $alertaMensagem = "Você possui {$pendenciasCount} Ordem(ns) de Serviço aguardando a sua validação.";
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br" data-tema="claro">
@@ -304,6 +357,44 @@ $dataAtual = date('d/m/Y');
                     <i class="bi bi-exclamation-triangle-fill" style="margin-right: 8px;"></i> <?php echo htmlspecialchars($alertaErro); ?>
                 </div>
             <?php endif; ?>
+
+            <!-- NOTIFICACOES_PENDENTES_BLOQUEIO -->
+            <?php if ($pendenciasCount > 0): ?>
+                <?php
+                $bannerClass = '';
+                $bannerIcon = 'bi-exclamation-triangle-fill';
+                $bannerColor = '#f59e0b'; // Amber por padrão
+                $bannerBg = 'rgba(245, 158, 11, 0.08)';
+                $bannerBorder = 'rgba(245, 158, 11, 0.3)';
+                
+                if ($usuarioNivel === 'Executor') {
+                    $bannerIcon = 'bi-info-circle-fill';
+                    $bannerColor = '#3b82f6'; // Azul
+                    $bannerBg = 'rgba(59, 130, 246, 0.08)';
+                    $bannerBorder = 'rgba(59, 130, 246, 0.3)';
+                } elseif ($usuarioNivel === 'Solicitante') {
+                    $bannerIcon = 'bi-question-circle-fill';
+                    $bannerColor = '#10b981'; // Verde
+                    $bannerBg = 'rgba(16, 185, 129, 0.08)';
+                    $bannerBorder = 'rgba(16, 185, 129, 0.3)';
+                }
+                ?>
+                <div style="background: <?php echo $bannerBg; ?>; border: 1px solid <?php echo $bannerBorder; ?>; padding: 20px; border-radius: 16px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: var(--sombra); transition: all 0.3s ease;" class="notificacao-banner">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="background: <?php echo $bannerBg; ?>; border: 1px solid <?php echo $bannerBorder; ?>; color: <?php echo $bannerColor; ?>; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                            <i class="bi <?php echo $bannerIcon; ?>"></i>
+                        </div>
+                        <div>
+                            <strong style="color: <?php echo $bannerColor; ?>; display: block; font-size: 15px; margin-bottom: 3px; font-family: 'TASA Orbiter', sans-serif;">Atenção: Ação Requerida</strong>
+                            <span style="color: var(--corTxt3); font-size: 14px; opacity: 0.9;"><?php echo htmlspecialchars($alertaMensagem); ?></span>
+                        </div>
+                    </div>
+                    <a href="./corretivas.php" style="background: <?php echo $bannerColor; ?>; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 13.5px; transition: 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 8px;" class="notificacao-btn">
+                        Ver chamados <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            <?php endif; ?>
+            <!-- FIM_NOTIFICACOES_PENDENTES_BLOQUEIO -->
 
             <!-- BANNER DE BOAS-VINDAS HERO -->
             <div class="home-welcome-hero">
